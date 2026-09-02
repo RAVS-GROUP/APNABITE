@@ -807,4 +807,24 @@
       getFriendlyError,
     handleApiError: handleApiError
   });
+
+    window.ApnaBiteUI = Object.freeze({
+    showToast: showToast,
+    setButtonLoading: setButtonLoading,
+    createSpinner: createSpinner,
+    showLoader: showLoader,
+    createSkeletonCard: createSkeletonCard,
+    showSkeletons: showSkeletons,
+    createState: createState,
+    showEmptyState: showEmptyState,
+    showErrorState: showErrorState,
+    showOfflineState: showOfflineState,
+    showModal: showModal,
+    closeModal: closeModal,
+    confirmAction: confirmAction,
+    createQuantityControl: createQuantityControl,
+    getFriendlyError: getFriendlyError,
+    handleApiError: handleApiError
+  });
+  
 })(window, document);
