@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="ApnaBite offline screen."
+  >
+
+  <title>You’re Offline | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="assets/css/components.css"
+  >
+
+  <style>
+    .offline-page {
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--safe-top) + 24px) 18px
+        calc(var(--safe-bottom) + 24px);
+      background:
+        radial-gradient(
+          circle at top right,
+          #ffedd5 0,
+          transparent 35%
+        ),
+        var(--color-background);
+    }
+
+    .offline-card {
+      width: min(100%, 420px);
+      padding: 28px 20px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-large);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-medium);
+      text-align: center;
+    }
+
+    .offline-icon {
+      display: inline-flex;
+      width: 72px;
+      height: 72px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      border-radius: 50%;
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .offline-title {
+      margin-bottom: 8px;
+      font-size: 1.35rem;
+    }
+
+    .offline-message {
+      margin-bottom: 22px;
+      font-size: 0.9rem;
+    }
+
+    .offline-status {
+      min-height: 22px;
+      margin: 14px 0 0;
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+
+    .offline-status--online {
+      color: var(--color-success);
+    }
+
+    .offline-status--offline {
+      color: var(--color-text-soft);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="offline-page">
+    <section
+      class="offline-card"
+      aria-labelledby="offline-title"
+    >
+      <div
+        class="offline-icon"
+        aria-hidden="true"
+      >
+        ↻
+      </div>
+
+      <h1
+        id="offline-title"
+        class="offline-title"
+      >
+        You’re offline
+      </h1>
+
+      <p class="offline-message">
+        Check your internet connection and try again.
+        ApnaBite will reconnect when your network returns.
+      </p>
+
+      <button
+        id="retry-button"
+        class="button button--primary button--large button--block"
+        type="button"
+      >
+        TRY AGAIN
+      </button>
+
+      <a
+        class="button button--ghost button--block"
+        href="index.html"
+      >
+        GO TO APP
+      </a>
+
+      <p
+        id="network-status"
+        class="offline-status offline-status--offline"
+        role="status"
+      >
+        Waiting for internet connection…
+      </p>
+    </section>
+  </main>
+
+  <script src="assets/js/core.js"></script>
+
+  <script>
+    (function() {
+      'use strict';
+
+      const retryButton =
+        document.getElementById(
+          'retry-button'
+        );
+
+      const networkStatus =
+        document.getElementById(
+          'network-status'
+        );
+
+      function updateNetworkStatus() {
+        if (navigator.onLine) {
+          networkStatus.textContent =
+            'Internet connection restored.';
+
+          networkStatus.className =
+            'offline-status offline-status--online';
+
+          retryButton.textContent =
+            'CONTINUE TO APNABITE';
+
+          return;
+        }
+
+        networkStatus.textContent =
+          'Waiting for internet connection…';
+
+        networkStatus.className =
+          'offline-status offline-status--offline';
+
+        retryButton.textContent =
+          'TRY AGAIN';
+      }
+
+      retryButton.addEventListener(
+        'click',
+        function() {
+          if (navigator.onLine) {
+            window.location.replace(
+              'index.html'
+            );
+
+            return;
+          }
+
+          updateNetworkStatus();
+        }
+      );
+
+      window.addEventListener(
+        'online',
+        updateNetworkStatus
+      );
+
+      window.addEventListener(
+        'offline',
+        updateNetworkStatus
+      );
+
+      updateNetworkStatus();
+    })();
+  </script>
+</body>
+</html>
