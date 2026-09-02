@@ -246,16 +246,13 @@
       }
 
       function wait(milliseconds) {
-        return new Promise(
-          functione(function(resolve) {
-            window.setTimeout(
-              resolve,
-              milliseconds
-            );
-          })
-        );
-      }
-
+  return new Promise(function(resolve) {
+    window.setTimeout(
+      resolve,
+      milliseconds
+    );
+  });
+}
       async function startApp() {
         loaderElement.hidden = false;
         errorContainer.hidden = true;
