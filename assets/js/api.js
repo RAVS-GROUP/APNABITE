@@ -8,8 +8,8 @@
 (function(window) {
   'use strict';
 
-  const API_CONFIG = Object.freeze({
-    URL: 'https://script.google.com/macros/s/AKfycbw1-6SqduHiP0zK2KvQF2cirYas3nXTDM2yaRGuERD9cVd3L6Wpolis-AH5laoWT0xBpSg4v/exec',
+  const CONFIG = Object.freeze({
+    API_URL: 'https://script.google.com/macros/s/AKfycbw1-6SqduHiP0zK2KvQF2cirYas3nXTDM2yaRGuERD9cVd3L6W-AH5laoWT0xBpSg4v/exec',
     TIMEOUT_MS: 15000,
     RETRY_COUNT: 1,
     RETRY_DELAY_MS: 700,
@@ -19,9 +19,9 @@
 
   const pendingRequests = new Map();
 
-  function getWait(ms) {
-    return new Promise(resolve => {
-      window.setTimeout(resolve, ms);
+  function waitForDelay(milliseconds) {
+    return new Promise(function(resolve) {
+      window.setTimeout(resolve, milliseconds);
     });
   }
 
@@ -33,24 +33,23 @@
       return window.crypto.randomUUID();
     }
 
-    return (
-      'device_' +
-      Date.now() +
-      '_' +
+    return [
+      'device',
+      Date.now(),
       Math.random().toString(36).slice(2, 12)
-    );
+    ].join('_');
   }
 
   function getDeviceId() {
     let deviceId = localStorage.getItem(
-      API_CONFIG.DEVICE_KEY
+      CONFIG.DEVICE_KEY
     );
 
     if (!deviceId) {
       deviceId = createDeviceId();
 
       localStorage.setItem(
-        API_CONFIG.DEVICE_KEY,
+        CONFIG.DEVICE_KEY,
         deviceId
       );
     }
@@ -60,7 +59,7 @@
 
   function getSessionToken() {
     return localStorage.getItem(
-      API_CONFIG.SESSION_KEY
+      CONFIG.SESSION_KEY
     ) || '';
   }
 
@@ -71,55 +70,15 @@
     }
 
     localStorage.setItem(
-      API_CONFIG.SESSION_KEY,
+      CONFIG.SESSION_KEY,
       String(token)
     );
   }
 
   function clearSessionToken() {
     localStorage.removeItem(
-      API_CONFIG.SESSION_KEY
+      CONFIG.SESSION_KEY
     );
-  }
-
-  function buildRequestKey(action, payload) {
-    return action + '|' + JSON.stringify(payload || {});
-  }
-
-  async function parseResponse(response) {
-    const responseText = await response.text();
-
-    let result;
-
-    try {
-      result = JSON.parse(responseText);
-    } catch (error) {
-      throw createApiError(
-        'INVALID_SERVER_RESPONSE',
-        'The server returned an invalid response.'
-      );
-    }
-
-    if (!result || typeof result.success !== 'boolean') {
-      throw createApiError(
-        'INVALID_SERVER_RESPONSE',
-        'The server response is incomplete.'
-      );
-    }
-
-    if (!result.success) {
-      const error = createApiError(
-        result.code || 'REQUEST_FAILED',
-        result.message ||
-          'Unable to complete the request.',
-        result.data || null
-      );
-
-      error.requestId = result.requestId || '';
-      throw error;
-    }
-
-    return result;
   }
 
   function createApiError(code, message, data) {
@@ -134,8 +93,50 @@
     return error;
   }
 
+  async function parseResponse(response) {
+    const responseText = await response.text();
+    let result;
+
+    try {
+      result = JSON.parse(responseText);
+    } catch (error) {
+      throw createApiError(
+        'INVALID_SERVER_RESPONSE',
+        'The server returned an invalid response.'
+      );
+    }
+
+    if (
+      !result ||
+      typeof result.success !== 'boolean'
+    ) {
+      throw createApiError(
+        'INVALID_SERVER_RESPONSE',
+        'The server response is incomplete.'
+      );
+    }
+
+    if (!result.success) {
+      const apiError = createApiError(
+        result.code || 'REQUEST_FAILED',
+        result.message ||
+          'Unable to complete the request.',
+        result.data || null
+      );
+
+      apiError.requestId =
+        result.requestId || '';
+
+      throw apiError;
+    }
+
+    return result;
+  }
+
   function shouldRetry(error, attempt, retryCount) {
-    if (attempt >= retryCount) return false;
+    if (attempt >= retryCount) {
+      return false;
+    }
 
     return [
       'REQUEST_TIMEOUT',
@@ -150,14 +151,14 @@
 
     const timeoutMs =
       Number(settings.timeoutMs) ||
-      API_CONFIG.TIMEOUT_MS;
+      CONFIG.TIMEOUT_MS;
 
     const retryCount =
       settings.retry === false
         ? 0
         : Number.isFinite(settings.retryCount)
           ? settings.retryCount
-          : API_CONFIG.RETRY_COUNT;
+          : CONFIG.RETRY_COUNT;
 
     const sessionToken =
       settings.sessionToken !== undefined
@@ -165,9 +166,9 @@
         : getSessionToken();
 
     const body = {
-      action,
+      action: action,
       payload: requestPayload,
-      sessionToken,
+      sessionToken: sessionToken,
       context: {
         deviceId: getDeviceId(),
         userAgent: navigator.userAgent
@@ -179,22 +180,28 @@
     while (true) {
       const controller = new AbortController();
 
-      const timeoutId = window.setTimeout(() => {
-        controller.abort();
-      }, timeoutMs);
+      const timeoutId = window.setTimeout(
+        function() {
+          controller.abort();
+        },
+        timeoutMs
+      );
 
       try {
-        const response = await fetch(API_CONFIG.URL, {
-          method: 'POST',
-          redirect: 'follow',
-          credentials: 'omit',
-          headers: {
-            'Content-Type':
-              'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(body),
-          signal: controller.signal
-        });
+        const response = await fetch(
+          CONFIG.API_URL,
+          {
+            method: 'POST',
+            redirect: 'follow',
+            credentials: 'omit',
+            headers: {
+              'Content-Type':
+                'text/plain;charset=utf-8'
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal
+          }
+        );
 
         window.clearTimeout(timeoutId);
 
@@ -239,16 +246,22 @@
 
         attempt += 1;
 
-        await wait(
-          API_CONFIG.RETRY_DELAY_MS * attempt
+        await waitForDelay(
+          CONFIG.RETRY_DELAY_MS * attempt
         );
       }
     }
   }
 
+  function createRequestKey(action, payload) {
+    return action + '|' +
+      JSON.stringify(payload || {});
+  }
+
   function request(action, payload, options) {
     const settings = options || {};
-    const requestKey = buildRequestKey(
+
+    const requestKey = createRequestKey(
       action,
       payload
     );
@@ -264,7 +277,7 @@
       action,
       payload,
       settings
-    ).finally(() => {
+    ).finally(function() {
       pendingRequests.delete(requestKey);
     });
 
@@ -276,7 +289,7 @@
     return requestPromise;
   }
 
-  async function health() {
+  function health() {
     return request(
       'health',
       {},
@@ -287,13 +300,67 @@
     );
   }
 
-  async function getPublicConfig() {
+  function getPublicConfig() {
     return request(
       'config',
       {},
       {
         retry: true,
         deduplicate: true
+      }
+    );
+  }
+
+  function requestOtp(data) {
+    return request(
+      'auth.requestOtp',
+      data,
+      {
+        retry: false,
+        deduplicate: false
+      }
+    );
+  }
+
+  function verifyOtp(data) {
+    return request(
+      'auth.verifyOtp',
+      data,
+      {
+        retry: false,
+        deduplicate: false
+      }
+    );
+  }
+
+  function register(data) {
+    return request(
+      'auth.register',
+      data,
+      {
+        retry: false,
+        deduplicate: false
+      }
+    );
+  }
+
+  function login(data) {
+    return request(
+      'auth.login',
+      data,
+      {
+        retry: false,
+        deduplicate: false
+      }
+    );
+  }
+
+  function validateSession() {
+    return request(
+      'auth.session',
+      {},
+      {
+        retry: false
       }
     );
   }
@@ -314,14 +381,19 @@
   }
 
   window.ApnaBiteAPI = Object.freeze({
-    config: API_CONFIG,
-    request,
-    health,
-    getPublicConfig,
-    getSessionToken,
-    setSessionToken,
-    clearSessionToken,
-    getDeviceId,
-    logout
+    config: CONFIG,
+    request: request,
+    health: health,
+    getPublicConfig: getPublicConfig,
+    requestOtp: requestOtp,
+    verifyOtp: verifyOtp,
+    register: register,
+    login: login,
+    validateSession: validateSession,
+    logout: logout,
+    getSessionToken: getSessionToken,
+    setSessionToken: setSessionToken,
+    clearSessionToken: clearSessionToken,
+    getDeviceId: getDeviceId
   });
 })(window);
