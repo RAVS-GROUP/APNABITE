@@ -30,7 +30,7 @@
   }
 
    function getToastContainer() {
-    if    if (
+    if (
       toastContainer &&
       document.body.contains(toastContainer)
     ) {
