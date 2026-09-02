@@ -46,10 +46,10 @@
     );
 
     const coreScript = scripts.find(function(script) {
-      return script.src &&
-        script.src.indexOf(
-          '/assets/js/core.js'
-        ) !== -1;
+      return (
+        script.src &&
+        script.src.indexOf('/assets/js/core.js') !== -1
+      );
     });
 
     if (coreScript) {
@@ -59,6 +59,7 @@
     }
 
     const path = window.location.pathname;
+
     const roleFolders = [
       '/customer/',
       '/chef/',
@@ -71,8 +72,9 @@
       index < roleFolders.length;
       index++
     ) {
-      const folder = roleFolders[index];
-      const position = path.indexOf(folder);
+      const position = path.indexOf(
+        roleFolders[index]
+      );
 
       if (position !== -1) {
         return (
@@ -100,9 +102,7 @@
   }
 
   function navigate(relativePath, replace) {
-    const targetUrl = getPageUrl(
-      relativePath
-    );
+    const targetUrl = getPageUrl(relativePath);
 
     if (replace) {
       window.location.replace(targetUrl);
@@ -235,20 +235,24 @@
     }
 
     if (
-      allowedRoles &&
+      Array.isArray(allowedRoles) &&
       allowedRoles.length
     ) {
-      const role = getCurrentRole();
-
       const normalizedRoles =
-        allowedRoles.map(function(item) {
-          return String(item).toUpperCase();
+        allowedRoles.map(function(role) {
+          return String(role).toUpperCase();
         });
 
       if (
-        normalizedRoles.indexOf(role) === -1
+        normalizedRoles.indexOf(
+          getCurrentRole()
+        ) === -1
       ) {
-        redirectToRoleHome(role, true);
+        redirectToRoleHome(
+          getCurrentRole(),
+          true
+        );
+
         return false;
       }
     }
@@ -463,29 +467,32 @@
     return function() {
       const context = this;
       const args = arguments;
-      const now = Date.now();
+      const currentTime = Date.now();
+
       const remaining =
         Number(delay || 500) -
-        (now - lastRun);
+        (currentTime - lastRun);
 
       if (remaining <= 0) {
         window.clearTimeout(timeoutId);
-        lastRun = now;
+        lastRun = currentTime;
         callback.apply(context, args);
-      } else {
-        window.clearTimeout(timeoutId);
-
-        timeoutId = window.setTimeout(
-          function() {
-            lastRun = Date.now();
-            callback.apply(
-              context,
-              args
-            );
-          },
-          remaining
-        );
+        return;
       }
+
+      window.clearTimeout(timeoutId);
+
+      timeoutId = window.setTimeout(
+        function() {
+          lastRun = Date.now();
+
+          callback.apply(
+            context,
+            args
+          );
+        },
+        remaining
+      );
     };
   }
 
@@ -537,7 +544,98 @@
     );
   }
 
+  function registerServiceWorker() {
+    if (
+      !('serviceWorker' in navigator) ||
+      window.location.protocol !== 'https:'
+    ) {
+      return Promise.resolve(null);
+    }
+
+    const serviceWorkerUrl =
+      getPageUrl('service-worker.js');
+
+    const serviceWorkerScope =
+      getAppRootUrl();
+
+    return navigator.serviceWorker
+      .register(
+        serviceWorkerUrl,
+        {
+          scope: serviceWorkerScope
+        }
+      )
+      .then(function(registration) {
+        registration.update();
+
+        return registration;
+      })
+      .catch(function(error) {
+        console.error(
+          'Service Worker registration failed:',
+          error
+        );
+
+        return null;
+      });
+  }
+
+  function getServiceWorkerRegistration() {
+    if (!('serviceWorker' in navigator)) {
+      return Promise.resolve(null);
+    }
+
+    return navigator.serviceWorker
+      .getRegistration(
+        getAppRootUrl()
+      );
+  }
+
+  function clearPwaCache() {
+    if (!('serviceWorker' in navigator)) {
+      return Promise.resolve(false);
+    }
+
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller
+        .postMessage({
+          type: 'CLEAR_APP_CACHE'
+        });
+    }
+
+    if (!('caches' in window)) {
+      return Promise.resolve(true);
+    }
+
+    return window.caches
+      .keys()
+      .then(function(cacheNames) {
+        return Promise.all(
+          cacheNames
+            .filter(function(cacheName) {
+              return (
+                cacheName.indexOf(
+                  'apnabite-'
+                ) === 0
+              );
+            })
+            .map(function(cacheName) {
+              return window.caches.delete(
+                cacheName
+              );
+            })
+        );
+      })
+      .then(function() {
+        return true;
+      });
+  }
+
   setupNetworkEvents();
+
+  ready(function() {
+    registerServiceWorker();
+  });
 
   window.ApnaBiteCore = Object.freeze({
     storageKeys: STORAGE_KEYS,
@@ -567,12 +665,9 @@
     setCache: setCache,
     getCache: getCache,
     removeCache: removeCache,
-    formatCurrency:
-      formatCurrency,
-    formatDateTime:
-      formatDateTime,
-    formatDistance:
-      formatDistance,
+    formatCurrency: formatCurrency,
+    formatDateTime: formatDateTime,
+    formatDistance: formatDistance,
     cleanText: cleanText,
     escapeHtml: escapeHtml,
     debounce: debounce,
@@ -581,6 +676,11 @@
     on: on,
     isOnline: isOnline,
     getQueryParameter:
-      getQueryParameter
+      getQueryParameter,
+    registerServiceWorker:
+      registerServiceWorker,
+    getServiceWorkerRegistration:
+      getServiceWorkerRegistration,
+    clearPwaCache: clearPwaCache
   });
 })(window, document);
