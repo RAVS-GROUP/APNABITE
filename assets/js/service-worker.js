@@ -6,8 +6,8 @@
  */
 
 const CACHE_PREFIX = 'apnabite-';
-const STATIC_CACHE = CACHE_PREFIX + 'static-v1';
-const PAGE_CACHE = CACHE_PREFIX + 'pages-v1';
+const STATIC_CACHE = CACHE_PREFIX + 'static-v2';
+const PAGE_CACHE = CACHE_PREFIX + 'pages-v2';
 
 const APP_SHELL_FILES = [
   './',
