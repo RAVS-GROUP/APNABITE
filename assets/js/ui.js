@@ -29,8 +29,8 @@
     return element;
   }
 
-  function getToastContainer() {
-    if (
+   function getToastContainer() {
+    if    if (
       toastContainer &&
       document.body.contains(toastContainer)
     ) {
@@ -59,27 +59,51 @@
     return toastContainer;
   }
 
+  function getToastIcon(type) {
+    const icons = {
+      success: '✓',
+      error: '!',
+      warning: '!',
+      info: 'i'
+    };
+
+    return icons[type] || 'i';
+  }
+
   function showToast(message, type, duration) {
-    const toastType = [
+    const allowedTypes = [
       'success',
       'error',
       'warning',
       'info'
-    ].includes(type)
-      ? type
-      : 'info';
+    ];
+
+    const toastType =
+      allowedTypes.includes(type)
+        ? type
+        : 'info';
 
     const toast = createElement(
       'div',
       'toast toast--' + toastType
     );
 
-    toast.setAttribute('role', 'status');
+    toast.setAttribute(
+      'role',
+      type === 'error'
+        ? 'alert'
+        : 'status'
+    );
 
     const icon = createElement(
       'span',
       'toast__icon',
       getToastIcon(toastType)
+    );
+
+    icon.setAttribute(
+      'aria-hidden',
+      'true'
     );
 
     const messageElement = createElement(
@@ -95,6 +119,7 @@
     );
 
     closeButton.type = 'button';
+
     closeButton.setAttribute(
       'aria-label',
       'Close notification'
@@ -109,22 +134,33 @@
     getToastContainer().appendChild(toast);
 
     window.requestAnimationFrame(function() {
-      toast.classList.add('toast--visible');
+      toast.classList.add(
+        'toast--visible'
+      );
     });
 
-    let removeTimer = window.setTimeout(
-      removeToast,
-      Number(duration || 3500)
-    );
+    let removed = false;
 
-    function removeToast() {
+    const removeToast = function() {
+      if (removed) return;
+
+      removed = true;
+
       window.clearTimeout(removeTimer);
-      toast.classList.remove('toast--visible');
+
+      toast.classList.remove(
+        'toast--visible'
+      );
 
       window.setTimeout(function() {
         toast.remove();
       }, 250);
-    }
+    };
+
+    const removeTimer = window.setTimeout(
+      removeToast,
+      Number(duration || 3500)
+    );
 
     closeButton.addEventListener(
       'click',
@@ -132,17 +168,6 @@
     );
 
     return toast;
-  }
-
-  function getToastIcon(type) {
-    const icons = {
-      success: '✓',
-      error: '!',
-      warning: '!',
-      info: 'i'
-    };
-
-    return icons[type] || 'i';
   }
 
   function setButtonLoading(
@@ -159,17 +184,19 @@
       }
 
       button.disabled = true;
+
       button.classList.add(
         'button--loading'
       );
 
       button.textContent =
-        loadingText || 'Please wait…';
+        loadingText || 'PLEASE WAIT…';
 
       return;
     }
 
     button.disabled = false;
+
     button.classList.remove(
       'button--loading'
     );
@@ -188,7 +215,10 @@
       'loading-state'
     );
 
-    wrapper.setAttribute('role', 'status');
+    wrapper.setAttribute(
+      'role',
+      'status'
+    );
 
     const spinner = createElement(
       'span',
@@ -206,7 +236,10 @@
       label || 'Loading…'
     );
 
-    wrapper.append(spinner, text);
+    wrapper.append(
+      spinner,
+      text
+    );
 
     return wrapper;
   }
@@ -214,17 +247,22 @@
   function showLoader(container, label) {
     if (!container) return null;
 
-    container.replaceChildren(
-      createSpinner(label)
-    );
+    const loader = createSpinner(label);
 
-    return container.firstElementChild;
+    container.replaceChildren(loader);
+
+    return loader;
   }
 
   function createSkeletonCard() {
     const card = createElement(
       'div',
       'skeleton-card'
+    );
+
+    card.setAttribute(
+      'aria-hidden',
+      'true'
     );
 
     const image = createElement(
@@ -252,7 +290,10 @@
       )
     );
 
-    card.append(image, content);
+    card.append(
+      image,
+      content
+    );
 
     return card;
   }
@@ -265,10 +306,17 @@
 
     const total = Math.max(
       1,
-      Math.min(Number(count || 4), 20)
+      Math.min(
+        Number(count || 4),
+        20
+      )
     );
 
-    for (let index = 0; index < total; index++) {
+    for (
+      let index = 0;
+      index < total;
+      index++
+    ) {
       fragment.appendChild(
         createSkeletonCard()
       );
@@ -303,16 +351,19 @@
       settings.title || 'Nothing here yet'
     );
 
-    const message = createElement(
-      'p',
-      'page-state__message',
-      settings.message || ''
+    state.append(
+      icon,
+      title
     );
 
-    state.append(icon, title);
-
     if (settings.message) {
-      state.appendChild(message);
+      state.appendChild(
+        createElement(
+          'p',
+          'page-state__message',
+          settings.message
+        )
+      );
     }
 
     if (
@@ -396,25 +447,34 @@
   function closeModal(result) {
     if (!activeModal) return;
 
-    const modal = activeModal;
+    const modalState = activeModal;
     activeModal = null;
 
     document.body.classList.remove(
       'modal-open'
     );
 
-    modal.overlay.classList.remove(
+    document.removeEventListener(
+      'keydown',
+      modalState.escapeHandler
+    );
+
+    modalState.overlay.classList.remove(
       'modal-overlay--visible'
     );
 
     window.setTimeout(function() {
-      modal.overlay.remove();
+      modalState.overlay.remove();
 
-      if (modal.previousFocus) {
-        modal.previousFocus.focus();
+      if (
+        modalState.previousFocus &&
+        typeof modalState.previousFocus.focus ===
+          'function'
+      ) {
+        modalState.previousFocus.focus();
       }
 
-      modal.resolve(result);
+      modalState.resolve(result);
     }, 200);
   }
 
@@ -467,6 +527,7 @@
       );
 
       closeButton.type = 'button';
+
       closeButton.setAttribute(
         'aria-label',
         'Close'
@@ -482,8 +543,13 @@
         'modal__body'
       );
 
-      if (settings.content instanceof Node) {
-        body.appendChild(settings.content);
+      if (
+        settings.content &&
+        settings.content instanceof window.Node
+      ) {
+        body.appendChild(
+          settings.content
+        );
       } else {
         body.textContent =
           settings.message ||
@@ -512,9 +578,7 @@
           }
         );
 
-        footer.appendChild(
-          cancelButton
-        );
+        footer.appendChild(cancelButton);
       }
 
       const confirmButton = createElement(
@@ -547,16 +611,32 @@
       );
 
       overlay.appendChild(modal);
+
       document.body.appendChild(overlay);
+
+      const escapeHandler = function(event) {
+        if (
+          event.key === 'Escape' &&
+          activeModal
+        ) {
+          closeModal(false);
+        }
+      };
 
       activeModal = {
         overlay: overlay,
         resolve: resolve,
-        previousFocus: previousFocus
+        previousFocus: previousFocus,
+        escapeHandler: escapeHandler
       };
 
       document.body.classList.add(
         'modal-open'
+      );
+
+      document.addEventListener(
+        'keydown',
+        escapeHandler
       );
 
       closeButton.addEventListener(
@@ -578,32 +658,13 @@
         }
       );
 
-      document.addEventListener(
-        'keydown',
-        function escapeHandler(event) {
-          if (
-            event.key === 'Escape' &&
-            activeModal
-          ) {
-            document.removeEventListener(
-              'keydown',
-              escapeHandler
-            );
+      window.requestAnimationFrame(function() {
+        overlay.classList.add(
+          'modal-overlay--visible'
+        );
 
-            closeModal(false);
-          }
-        }
-      );
-
-      window.requestAnimationFrame(
-        function() {
-          overlay.classList.add(
-            'modal-overlay--visible'
-          );
-
-          confirmButton.focus();
-        }
-      );
+        confirmButton.focus();
+      });
     });
   }
 
@@ -613,6 +674,7 @@
 
   function createQuantityControl(options) {
     const settings = options || {};
+
     const minimum = Number(
       settings.minimum === undefined
         ? 0
@@ -638,49 +700,65 @@
       'quantity-control'
     );
 
-    const minus = createElement(
+    const minusButton = createElement(
       'button',
       'quantity-control__button',
       '−'
     );
 
-    const value = createElement(
+    const quantityValue = createElement(
       'span',
       'quantity-control__value',
       quantity
     );
 
-    const plus = createElement(
+    const plusButton = createElement(
       'button',
       'quantity-control__button',
       '+'
     );
 
-    minus.type = 'button';
-    plus.type = 'button';
+    minusButton.type = 'button';
+    plusButton.type = 'button';
 
-    minus.setAttribute(
+    minusButton.setAttribute(
       'aria-label',
       'Decrease quantity'
     );
 
-    plus.setAttribute(
+    plusButton.setAttribute(
       'aria-label',
       'Increase quantity'
     );
 
+    function render() {
+      quantityValue.textContent =
+        String(quantity);
+
+      minusButton.disabled =
+        quantity <= minimum;
+
+      plusButton.disabled =
+        quantity >= maximum;
+    }
+
     function update(nextQuantity) {
+      const parsedQuantity =
+        Number(nextQuantity);
+
+      if (!Number.isFinite(parsedQuantity)) {
+        return;
+      }
+
       quantity = Math.max(
         minimum,
         Math.min(
-          Number(nextQuantity),
+          parsedQuantity,
           maximum
         )
       );
 
-      value.textContent = quantity;
-      minus.disabled = quantity <= minimum;
-      plus.disabled = quantity >= maximum;
+      render();
 
       if (
         typeof settings.onChange === 'function'
@@ -689,14 +767,14 @@
       }
     }
 
-    minus.addEventListener(
+    minusButton.addEventListener(
       'click',
       function() {
         update(quantity - 1);
       }
     );
 
-    plus.addEventListener(
+    plusButton.addEventListener(
       'click',
       function() {
         update(quantity + 1);
@@ -704,18 +782,18 @@
     );
 
     wrapper.append(
-      minus,
-      value,
-      plus
+      minusButton,
+      quantityValue,
+      plusButton
     );
-
-    update(quantity);
 
     wrapper.getValue = function() {
       return quantity;
     };
 
     wrapper.setValue = update;
+
+    render();
 
     return wrapper;
   }
@@ -730,18 +808,36 @@
         'Unable to connect. Check your internet connection.',
       REQUEST_TIMEOUT:
         'The request took too long. Please try again.',
+      HTTP_ERROR:
+        'Server connection failed. Please try again.',
       SESSION_REQUIRED:
         'Please log in to continue.',
       INVALID_SESSION:
         'Your session is invalid. Please log in again.',
       SESSION_EXPIRED:
         'Your session expired. Please log in again.',
+      SESSION_INACTIVE:
+        'Your session is no longer active.',
+      INVALID_MOBILE:
+        'Enter a valid 10-digit mobile number.',
       INVALID_OTP:
         'The OTP entered is incorrect.',
+      INVALID_OTP_FORMAT:
+        'Enter the 6-digit OTP.',
       OTP_EXPIRED:
         'OTP expired. Please request a new OTP.',
+      OTP_ATTEMPTS_EXCEEDED:
+        'Maximum OTP attempts exceeded. Request a new OTP.',
+      ACCOUNT_NOT_FOUND:
+        'No account was found for these details.',
+      ACCOUNT_ALREADY_EXISTS:
+        'An account already exists for these details.',
       RATE_LIMIT_EXCEEDED:
-        'Too many attempts. Please wait and try again.'
+        'Too many attempts. Please wait and try again.',
+      INVALID_REFERRAL_CODE:
+        'The referral code is invalid or unavailable.',
+      CONSENT_REQUIRED:
+        'Please accept the required consent to continue.'
     };
 
     return messages[error.code] ||
@@ -749,26 +845,31 @@
       'Something went wrong. Please try again.';
   }
 
-  function handleApiError(
-    error,
-    options
-  ) {
+  function handleApiError(error, options) {
     const settings = options || {};
     const message = getFriendlyError(error);
 
+    showToast(
+      message,
+      'error',
+      4500
+    );
+
+    const sessionErrors = [
+      'SESSION_REQUIRED',
+      'INVALID_SESSION',
+      'SESSION_EXPIRED',
+      'SESSION_INACTIVE'
+    ];
+
     if (
-      [
-        'SESSION_REQUIRED',
-        'INVALID_SESSION',
-        'SESSION_EXPIRED',
-        'SESSION_INACTIVE'
-      ].includes(error && error.code)
+      error &&
+      sessionErrors.includes(error.code) &&
+      settings.redirectToLogin !== false
     ) {
       if (window.ApnaBiteCore) {
         window.ApnaBiteCore.clearSession();
-      }
 
-      if (settings.redirectToLogin !== false) {
         window.setTimeout(function() {
           window.ApnaBiteCore.navigate(
             'login.html',
@@ -778,37 +879,10 @@
       }
     }
 
-    showToast(
-      message,
-      'error',
-      4500
-    );
-
     return message;
   }
 
   window.ApnaBiteUI = Object.freeze({
-    createElement: createElement,
-    showToast: showToast,
-    setButtonLoading:
-      setButtonLoading,
-    createSpinner: createSpinner,
-    showLoader: showLoader,
-    showSkeletons: showSkeletons,
-    showEmptyState: showEmptyState,
-    showErrorState: showErrorState,
-    showOfflineState: showOfflineState,
-    showModal: showModal,
-    closeModal: closeModal,
-    confirmAction: confirmAction,
-    createQuantityControl:
-      createQuantityControl,
-    getFriendlyError:
-      getFriendlyError,
-    handleApiError: handleApiError
-  });
-
-    window.ApnaBiteUI = Object.freeze({
     showToast: showToast,
     setButtonLoading: setButtonLoading,
     createSpinner: createSpinner,
@@ -822,9 +896,11 @@
     showModal: showModal,
     closeModal: closeModal,
     confirmAction: confirmAction,
-    createQuantityControl: createQuantityControl,
-    getFriendlyError: getFriendlyError,
-    handleApiError: handleApiError
+    createQuantityControl:
+      createQuantityControl,
+    getFriendlyError:
+      getFriendlyError,
+    handleApiError:
+      handleApiError
   });
-  
 })(window, document);
