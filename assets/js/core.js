@@ -21,7 +21,7 @@
 
   const ROLE_HOME_PAGES = Object.freeze({
     CUSTOMER: 'customer/home.html',
-    CHEF: 'chef/dashboard.html',
+    CHEF: 'chef/onboarding.html',
     RIDER: 'rider/dashboard.html',
     ADMIN: 'admin/dashboard.html'
   });
