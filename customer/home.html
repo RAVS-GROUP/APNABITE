@@ -27,17 +27,17 @@
 
   <link
     rel="stylesheet"
-    href="../assets/css/core.css?v=15"
+    href="../assets/css/core.css"
   >
 
   <link
     rel="stylesheet"
-    href="../assets/css/components.css?v=15"
+    href="../assets/css/components.css"
   >
 
   <link
     rel="stylesheet"
-    href="../assets/css/customer.css?v=15"
+    href="../assets/css/customer.css"
   >
 </head>
 
@@ -309,7 +309,7 @@
     <div class="customer-bottom-nav__inner">
       <a
         class="customer-bottom-nav__item customer-bottom-nav__item--active"
-        href="home.html?v=15"
+        href="home.html"
         aria-current="page"
       >
         <span
@@ -366,10 +366,10 @@
     </div>
   </nav>
 
-  <script src="../assets/js/core.js?v=15"></script>
-  <script src="../assets/js/api.js?v=15"></script>
-  <script src="../assets/js/ui.js?v=15"></script>
-  <script src="../assets/js/discovery.js?v=15"></script>
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/discovery.js"></script>
 
   <script>
     (function() {
@@ -448,7 +448,7 @@
 
       function openLocationPage() {
         window.location.href =
-          'location.html?v=14';
+          'location.html';
       }
 
       async function validateSession() {
@@ -513,7 +513,9 @@
               null
             );
 
-        displayLocation(savedLocation);
+        displayLocation(
+          savedLocation
+        );
 
         window.ApnaBiteDiscovery
           .setup(savedLocation);
