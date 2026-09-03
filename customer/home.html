@@ -14,6 +14,7 @@
     name="description"
     content="Discover nearby homemade-food Kitchens on ApnaBite."
   >
+
   <title>Home | ApnaBite</title>
 
   <link
@@ -22,15 +23,15 @@
   >
   <link
     rel="stylesheet"
-    href="../assets/css/core.css"
+    href="../assets/css/core.css?v=8"
   >
   <link
     rel="stylesheet"
-    href="../assets/css/components.css"
+    href="../assets/css/components.css?v=8"
   >
   <link
     rel="stylesheet"
-    href="../assets/css/customer.css"
+    href="../assets/css/customer.css?v=8"
   >
 </head>
 
@@ -49,7 +50,7 @@
           id="header-location"
           class="customer-location__value"
         >
-          Detecting your location…
+          Loading location…
         </span>
       </div>
 
@@ -192,6 +193,7 @@
         >
           ⌂
         </span>
+
         <span>Home</span>
       </a>
 
@@ -205,6 +207,7 @@
         >
           ◫
         </span>
+
         <span>Orders</span>
       </a>
 
@@ -218,6 +221,7 @@
         >
           ☆
         </span>
+
         <span>Rewards</span>
       </a>
 
@@ -231,14 +235,15 @@
         >
           ○
         </span>
+
         <span>Account</span>
       </a>
     </div>
   </nav>
 
-  <script src="../assets/js/core.js?v=6"></script>
-  <script src="../assets/js/api.js?v=6"></script>
-  <script src="../assets/js/ui.js?v=6"></script>
+  <script src="../assets/js/core.js?v=8"></script>
+  <script src="../assets/js/api.js?v=8"></script>
+  <script src="../assets/js/ui.js?v=8"></script>
 
   <script>
     (function() {
@@ -269,14 +274,16 @@
           'change-location-button'
         );
 
-      let locationRequestRunning = false;
+      let locationRequestRunning =
+        false;
 
       function showInitialKitchenState() {
         window.ApnaBiteUI.showEmptyState(
           kitchenList,
           {
             icon: '⌂',
-            title: 'No Kitchens available yet',
+            title:
+              'No Kitchens available yet',
             message:
               'No ApnaBite Kitchen is currently available near you. We’re expanding soon.'
           }
@@ -296,12 +303,16 @@
 
         greeting.textContent =
           firstName
-            ? 'Hello, ' + firstName + '!'
+            ? 'Hello, ' +
+              firstName +
+              '!'
             : 'Hello!';
       }
 
-      function displayLocation(locationData) {
-        const name =
+      function displayLocation(
+        locationData
+      ) {
+        const locationName =
           locationData &&
           locationData.locationName
             ? String(
@@ -310,7 +321,7 @@
             : '';
 
         headerLocation.textContent =
-          name ||
+          locationName ||
           'Select delivery location';
       }
 
@@ -338,19 +349,22 @@
           ) {
             window.ApnaBiteCore
               .redirectToRoleHome(
-                user ? user.role : '',
+                user
+                  ? user.role
+                  : '',
                 true
               );
 
             return null;
           }
 
-          window.ApnaBiteCore.saveSession({
-            sessionToken:
-              window.ApnaBiteCore
-                .getSessionToken(),
-            user: user
-          });
+          window.ApnaBiteCore
+            .saveSession({
+              sessionToken:
+                window.ApnaBiteCore
+                  .getSessionToken(),
+              user: user
+            });
 
           updateGreeting(user);
 
@@ -369,44 +383,36 @@
         }
       }
 
-      function requestLocation() {
+      function requestFirstLocation() {
         if (locationRequestRunning) {
           return;
         }
 
         if (!navigator.geolocation) {
           headerLocation.textContent =
-            'Add delivery address';
-
-          window.ApnaBiteUI.showToast(
-            'Location is not supported on this device.',
-            'warning'
-          );
+            'Select delivery location';
 
           return;
         }
 
         locationRequestRunning = true;
 
-        window.ApnaBiteUI.setButtonLoading(
-          changeLocationButton,
-          true,
-          'LOCATING…'
-        );
+        headerLocation.textContent =
+          'Detecting your location…';
 
         navigator.geolocation
           .getCurrentPosition(
-            handleLocationSuccess,
+            saveFirstLocation,
             handleLocationError,
             {
-              enableHighAccuracy: true,
-              timeout: 15000,
-              maximumAge: 60000
+              enableHighAccuracy: false,
+              timeout: 8000,
+              maximumAge: 300000
             }
           );
       }
 
-      async function handleLocationSuccess(
+      async function saveFirstLocation(
         position
       ) {
         const latitude =
@@ -417,20 +423,22 @@
 
         try {
           const response =
-            await window.ApnaBiteAPI.request(
-              'user.updateLocation',
-              {
-                latitude: latitude,
-                longitude: longitude
-              },
-              {
-                retry: false,
-                deduplicate: false
-              }
-            );
+            await window.ApnaBiteAPI
+              .request(
+                'user.updateLocation',
+                {
+                  latitude: latitude,
+                  longitude: longitude
+                },
+                {
+                  retry: false,
+                  deduplicate: false
+                }
+              );
 
           const serverData =
-            response && response.data
+            response &&
+            response.data
               ? response.data
               : {};
 
@@ -440,6 +448,9 @@
             locationName:
               serverData.locationName ||
               'Current location',
+            fullAddress:
+              serverData.locationName ||
+              '',
             accuracyMeters:
               position.coords.accuracy,
             capturedAt:
@@ -454,67 +465,34 @@
               locationData
             );
 
-          displayLocation(locationData);
-
-          window.ApnaBiteUI.showToast(
-            'Location updated successfully.',
-            'success'
+          displayLocation(
+            locationData
           );
         } catch (error) {
           headerLocation.textContent =
-            'Current location';
+            'Select delivery location';
 
-          window.ApnaBiteUI.handleApiError(
-            error,
-            {
-              redirectToLogin: true
-            }
+          window.ApnaBiteUI.showToast(
+            'Location name could not be loaded. Tap CHANGE to select it.',
+            'warning'
           );
         } finally {
-          locationRequestRunning = false;
-
-          window.ApnaBiteUI
-            .setButtonLoading(
-              changeLocationButton,
-              false
-            );
-
-          changeLocationButton.textContent =
-            'CHANGE';
+          locationRequestRunning =
+            false;
         }
       }
 
-      function handleLocationError(error) {
-        locationRequestRunning = false;
-
-        window.ApnaBiteUI.setButtonLoading(
-          changeLocationButton,
-          false
-        );
-
-        changeLocationButton.textContent =
-          'CHANGE';
+      function handleLocationError() {
+        locationRequestRunning =
+          false;
 
         headerLocation.textContent =
           'Select delivery location';
+      }
 
-        if (
-          error &&
-          error.code ===
-            error.PERMISSION_DENIED
-        ) {
-          window.ApnaBiteUI.showToast(
-            'Allow location access to find nearby Kitchens.',
-            'warning'
-          );
-
-          return;
-        }
-
-        window.ApnaBiteUI.showToast(
-          'Unable to detect your location.',
-          'error'
-        );
+      function openLocationPage() {
+        window.location.href =
+          'location.html?v=8';
       }
 
       async function initialize() {
@@ -548,17 +526,14 @@
             savedLocation
           );
         } else {
-          headerLocation.textContent =
-            'Detecting your location…';
+          requestFirstLocation();
         }
-
-        requestLocation();
       }
 
       changeLocationButton
         .addEventListener(
           'click',
-          requestLocation
+          openLocationPage
         );
 
       window.ApnaBiteCore.ready(
