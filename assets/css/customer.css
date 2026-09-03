@@ -1380,3 +1380,63 @@
     height: 270px;
   }
 }
+
+/* ============================================================
+   LOCATION TOAST AND FIXED BAR FIX V13
+   ============================================================ */
+
+.toast-container,
+.toast-wrapper,
+.toast-region,
+#toast-container {
+  position: fixed !important;
+  top: 84px !important;
+  right: 16px !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  width: min(380px, calc(100% - 32px)) !important;
+  pointer-events: none;
+}
+
+.toast,
+.app-toast,
+.ui-toast {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  z-index: 10000 !important;
+  width: 100% !important;
+  margin-bottom: 10px !important;
+  pointer-events: auto;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2) !important;
+}
+
+.location-confirm-bar {
+  z-index: 800 !important;
+}
+
+.location-confirm-bar .button {
+  width: calc(100% - 28px) !important;
+  max-width: 732px !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  display: block !important;
+}
+
+@media (max-width: 480px) {
+  .toast-container,
+  .toast-wrapper,
+  .toast-region,
+  #toast-container {
+    top: 74px !important;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+  }
+
+  .location-confirm-bar .button {
+    width: 100% !important;
+  }
+}
