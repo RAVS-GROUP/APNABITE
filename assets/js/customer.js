@@ -2,7 +2,6 @@
  * ============================================================
  * APNABITE V1 — CUSTOMER LOCATION CONTROLLER
  * File: assets/js/customer.js
- * Version: 14
  * ============================================================
  */
 
@@ -27,7 +26,7 @@
   const elements = {};
 
   function getElements() {
-    [
+    const elementMap = [
       ['backButton', 'location-back-button'],
       ['searchForm', 'location-search-form'],
       ['searchInput', 'location-search-input'],
@@ -55,7 +54,9 @@
       ['addressLabelGroup', 'address-label-group'],
       ['addressLabel', 'address-label'],
       ['confirmButton', 'confirm-location-button']
-    ].forEach(function(item) {
+    ];
+
+    elementMap.forEach(function(item) {
       elements[item[0]] =
         document.getElementById(item[1]);
     });
@@ -89,21 +90,32 @@
     if (!button) return;
 
     button.disabled = Boolean(loading);
+
     button.textContent =
-      loading ? loadingText : normalText;
+      loading
+        ? loadingText
+        : normalText;
   }
 
-  function setSearchMessage(message, error) {
+  function setSearchMessage(
+    message,
+    isError
+  ) {
+    if (!elements.searchMessage) return;
+
     elements.searchMessage.textContent =
       message || '';
 
-    elements.searchMessage.classList.toggle(
-      'location-helper-text--error',
-      Boolean(error)
-    );
+    elements.searchMessage.classList
+      .toggle(
+        'location-helper-text--error',
+        Boolean(isError)
+      );
   }
 
   function setMapLoading(loading) {
+    if (!elements.mapLoading) return;
+
     elements.mapLoading.hidden =
       !loading;
   }
@@ -123,15 +135,21 @@
 
   function readSessionCache(key) {
     try {
-      return JSON.parse(
-        sessionStorage.getItem(key)
-      );
+      const raw =
+        sessionStorage.getItem(key);
+
+      return raw
+        ? JSON.parse(raw)
+        : null;
     } catch (error) {
       return null;
     }
   }
 
-  function writeSessionCache(key, value) {
+  function writeSessionCache(
+    key,
+    value
+  ) {
     try {
       sessionStorage.setItem(
         key,
@@ -152,7 +170,10 @@
     );
   }
 
-  function reverseCacheKey(latitude, longitude) {
+  function reverseCacheKey(
+    latitude,
+    longitude
+  ) {
     return (
       Number(latitude).toFixed(5) +
       '_' +
@@ -197,11 +218,30 @@
       address.landmark
     );
 
-    addUniquePart(parts, address.area);
-    addUniquePart(parts, address.city);
-    addUniquePart(parts, address.district);
-    addUniquePart(parts, address.state);
-    addUniquePart(parts, address.postalCode);
+    addUniquePart(
+      parts,
+      address.area
+    );
+
+    addUniquePart(
+      parts,
+      address.city
+    );
+
+    addUniquePart(
+      parts,
+      address.district
+    );
+
+    addUniquePart(
+      parts,
+      address.state
+    );
+
+    addUniquePart(
+      parts,
+      address.postalCode
+    );
 
     return parts.join(', ');
   }
@@ -235,15 +275,21 @@
           input.fullAddress ||
           input.providerAddress
         ),
-      area: clean(input.area),
-      city: clean(input.city),
-      district: clean(input.district),
-      state: clean(input.state),
+      area:
+        clean(input.area),
+      city:
+        clean(input.city),
+      district:
+        clean(input.district),
+      state:
+        clean(input.state),
       postalCode:
         clean(input.postalCode),
-      country: clean(input.country),
+      country:
+        clean(input.country),
       countryCode:
-        clean(input.countryCode) || 'IN',
+        clean(input.countryCode) ||
+        'IN',
       source:
         clean(input.source) ||
         'MAP_PIN',
@@ -268,8 +314,13 @@
 
   function resetConfirmation() {
     state.locationConfirmed = false;
-    elements.receiverSection.hidden = true;
-    elements.confirmButton.disabled = false;
+
+    elements.receiverSection.hidden =
+      true;
+
+    elements.confirmButton.disabled =
+      false;
+
     elements.confirmButton.textContent =
       'CONFIRM PIN LOCATION';
   }
@@ -280,7 +331,8 @@
 
     if (!normalized) return;
 
-    state.selectedLocation = normalized;
+    state.selectedLocation =
+      normalized;
 
     elements.selectedName.textContent =
       normalized.locationName;
@@ -295,23 +347,32 @@
 
   function clearSearchResults() {
     state.searchResults = [];
-    elements.searchResults.innerHTML = '';
+
+    elements.searchResults.innerHTML =
+      '';
   }
 
   function renderSearchResults(results) {
-    elements.searchResults.innerHTML = '';
+    elements.searchResults.innerHTML =
+      '';
 
-    results.slice(0, 10)
+    results
+      .slice(0, 10)
       .forEach(function(result, index) {
         const button =
-          document.createElement('button');
+          document.createElement(
+            'button'
+          );
 
         button.type = 'button';
+
         button.className =
           'location-result-card';
 
         const icon =
-          document.createElement('span');
+          document.createElement(
+            'span'
+          );
 
         icon.className =
           'location-result-card__icon';
@@ -319,13 +380,17 @@
         icon.textContent = '⌖';
 
         const content =
-          document.createElement('span');
+          document.createElement(
+            'span'
+          );
 
         content.className =
           'location-result-card__content';
 
         const name =
-          document.createElement('strong');
+          document.createElement(
+            'strong'
+          );
 
         name.className =
           'location-result-card__name';
@@ -346,6 +411,7 @@
 
         content.appendChild(name);
         content.appendChild(address);
+
         button.appendChild(icon);
         button.appendChild(content);
 
@@ -367,17 +433,21 @@
     if (state.searchBusy) return;
 
     const query =
-      clean(elements.searchInput.value);
+      clean(
+        elements.searchInput.value
+      );
 
     if (query.length < 3) {
       setSearchMessage(
         'Enter at least 3 characters.',
         true
       );
+
       return;
     }
 
     state.searchBusy = true;
+
     clearSearchResults();
 
     setButtonLoading(
@@ -406,29 +476,37 @@
             : null;
 
         const response =
-          await window.ApnaBiteAPI.request(
-            'location.search',
-            {
-              query: query,
-              latitude:
-                center ? center.lat : '',
-              longitude:
-                center ? center.lng : ''
-            },
-            {
-              retry: false,
-              deduplicate: false,
-              timeoutMs: 12000
-            }
-          );
+          await window.ApnaBiteAPI
+            .request(
+              'location.search',
+              {
+                query: query,
+                latitude:
+                  center
+                    ? center.lat
+                    : '',
+                longitude:
+                  center
+                    ? center.lng
+                    : ''
+              },
+              {
+                retry: false,
+                deduplicate: false,
+                timeoutMs: 12000
+              }
+            );
 
         const data =
-          response && response.data
+          response &&
+          response.data
             ? response.data
             : {};
 
         locations =
-          Array.isArray(data.locations)
+          Array.isArray(
+            data.locations
+          )
             ? data.locations
             : [];
 
@@ -444,11 +522,14 @@
           .filter(Boolean)
           .slice(0, 10);
 
-      if (!state.searchResults.length) {
+      if (
+        !state.searchResults.length
+      ) {
         setSearchMessage(
           'No location found. Add society, sector, city or PIN code.',
           true
         );
+
         return;
       }
 
@@ -500,7 +581,12 @@
     const result =
       state.searchResults[index];
 
-    if (!result || !state.map) return;
+    if (
+      !result ||
+      !state.map
+    ) {
+      return;
+    }
 
     state.skipNextMoveEnd = true;
     state.pendingSource = 'SEARCH';
@@ -526,7 +612,9 @@
     );
 
     document
-      .getElementById('location-map')
+      .getElementById(
+        'location-map'
+      )
       .scrollIntoView({
         behavior: 'smooth',
         block: 'center'
@@ -546,14 +634,17 @@
     }
 
     const cachedLocation =
-      window.ApnaBiteCore.getJsonStorage(
-        window.ApnaBiteCore
-          .storageKeys.LOCATION,
-        null
-      );
+      window.ApnaBiteCore
+        .getJsonStorage(
+          window.ApnaBiteCore
+            .storageKeys.LOCATION,
+          null
+        );
 
     const cached =
-      normalizeLocation(cachedLocation);
+      normalizeLocation(
+        cachedLocation
+      );
 
     const latitude =
       cached
@@ -566,14 +657,22 @@
         : 77.209;
 
     state.map =
-      window.L.map('location-map', {
-        zoomControl: true,
-        attributionControl: true,
-        preferCanvas: true
-      }).setView(
-        [latitude, longitude],
-        cached ? 17 : 11
-      );
+      window.L
+        .map(
+          'location-map',
+          {
+            zoomControl: true,
+            attributionControl: true,
+            preferCanvas: true
+          }
+        )
+        .setView(
+          [
+            latitude,
+            longitude
+          ],
+          cached ? 17 : 11
+        );
 
     const tiles =
       window.L.tileLayer(
@@ -589,17 +688,23 @@
 
     tiles.addTo(state.map);
 
-    tiles.once('load', function() {
-      setMapLoading(false);
-    });
-
-    window.setTimeout(function() {
-      setMapLoading(false);
-
-      if (state.map) {
-        state.map.invalidateSize();
+    tiles.once(
+      'load',
+      function() {
+        setMapLoading(false);
       }
-    }, 900);
+    );
+
+    window.setTimeout(
+      function() {
+        setMapLoading(false);
+
+        if (state.map) {
+          state.map.invalidateSize();
+        }
+      },
+      900
+    );
 
     state.map.on(
       'dragstart zoomstart',
@@ -628,8 +733,12 @@
     state.map.on(
       'moveend',
       function() {
-        if (state.skipNextMoveEnd) {
-          state.skipNextMoveEnd = false;
+        if (
+          state.skipNextMoveEnd
+        ) {
+          state.skipNextMoveEnd =
+            false;
+
           return;
         }
 
@@ -650,22 +759,25 @@
     );
 
     state.reverseTimer =
-      window.setTimeout(function() {
-        if (!state.map) return;
+      window.setTimeout(
+        function() {
+          if (!state.map) return;
 
-        const center =
-          state.map.getCenter();
+          const center =
+            state.map.getCenter();
 
-        reverseLocation(
-          center.lat,
-          center.lng,
-          state.pendingSource ||
-          'MAP_PIN'
-        );
+          reverseLocation(
+            center.lat,
+            center.lng,
+            state.pendingSource ||
+            'MAP_PIN'
+          );
 
-        state.pendingSource =
-          'MAP_PIN';
-      }, 650);
+          state.pendingSource =
+            'MAP_PIN';
+        },
+        650
+      );
   }
 
   async function reverseLocation(
@@ -681,25 +793,34 @@
 
     if (
       cacheKey ===
-      state.lastReverseKey &&
+        state.lastReverseKey &&
       state.selectedLocation
     ) {
       resetConfirmation();
       return;
     }
 
-    state.lastReverseKey = cacheKey;
+    state.lastReverseKey =
+      cacheKey;
 
     const cached =
-      state.reverseCache.get(cacheKey);
+      state.reverseCache.get(
+        cacheKey
+      );
 
     if (cached) {
       setSelectedLocation(
-        Object.assign({}, cached, {
-          source:
-            source || 'MAP_PIN'
-        })
+        Object.assign(
+          {},
+          cached,
+          {
+            source:
+              source ||
+              'MAP_PIN'
+          }
+        )
       );
+
       return;
     }
 
@@ -711,32 +832,39 @@
 
     try {
       const response =
-        await window.ApnaBiteAPI.request(
-          'location.reverse',
-          {
-            latitude: latitude,
-            longitude: longitude
-          },
-          {
-            retry: false,
-            deduplicate: true,
-            timeoutMs: 12000
-          }
-        );
+        await window.ApnaBiteAPI
+          .request(
+            'location.reverse',
+            {
+              latitude: latitude,
+              longitude: longitude
+            },
+            {
+              retry: false,
+              deduplicate: true,
+              timeoutMs: 12000
+            }
+          );
 
       const data =
-        response && response.data
+        response &&
+        response.data
           ? response.data
           : null;
 
       const location =
         normalizeLocation(
-          Object.assign({}, data || {}, {
-            latitude: latitude,
-            longitude: longitude,
-            source:
-              source || 'MAP_PIN'
-          })
+          Object.assign(
+            {},
+            data || {},
+            {
+              latitude: latitude,
+              longitude: longitude,
+              source:
+                source ||
+                'MAP_PIN'
+            }
+          )
         );
 
       if (!location) {
@@ -765,7 +893,8 @@
         fullAddress:
           'Pin placed on the selected location',
         source:
-          source || 'MAP_PIN'
+          source ||
+          'MAP_PIN'
       });
 
       showToast(
@@ -783,6 +912,7 @@
         'GPS is not supported on this device.',
         'error'
       );
+
       return;
     }
 
@@ -795,32 +925,51 @@
       'USE MY CURRENT LOCATION'
     );
 
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        const latitude =
-          position.coords.latitude;
+    navigator.geolocation
+      .getCurrentPosition(
+        function(position) {
+          const latitude =
+            position.coords.latitude;
 
-        const longitude =
-          position.coords.longitude;
+          const longitude =
+            position.coords.longitude;
 
-        state.skipNextMoveEnd = true;
-        state.pendingSource =
-          'CURRENT_GPS';
+          state.skipNextMoveEnd =
+            true;
 
-        state.map.setView(
-          [latitude, longitude],
-          18,
-          {
-            animate: false
-          }
-        );
+          state.pendingSource =
+            'CURRENT_GPS';
 
-        reverseLocation(
-          latitude,
-          longitude,
-          'CURRENT_GPS'
-        ).finally(function() {
-          state.locationBusy = false;
+          state.map.setView(
+            [
+              latitude,
+              longitude
+            ],
+            18,
+            {
+              animate: false
+            }
+          );
+
+          reverseLocation(
+            latitude,
+            longitude,
+            'CURRENT_GPS'
+          ).finally(function() {
+            state.locationBusy =
+              false;
+
+            setButtonLoading(
+              elements.currentButton,
+              false,
+              'DETECTING LOCATION…',
+              'USE MY CURRENT LOCATION'
+            );
+          });
+        },
+        function(error) {
+          state.locationBusy =
+            false;
 
           setButtonLoading(
             elements.currentButton,
@@ -828,45 +977,36 @@
             'DETECTING LOCATION…',
             'USE MY CURRENT LOCATION'
           );
-        });
-      },
-      function(error) {
-        state.locationBusy = false;
 
-        setButtonLoading(
-          elements.currentButton,
-          false,
-          'DETECTING LOCATION…',
-          'USE MY CURRENT LOCATION'
-        );
+          if (
+            error &&
+            error.code ===
+              error.PERMISSION_DENIED
+          ) {
+            showToast(
+              'Please allow location permission.',
+              'warning'
+            );
 
-        if (
-          error &&
-          error.code ===
-            error.PERMISSION_DENIED
-        ) {
+            return;
+          }
+
           showToast(
-            'Please allow location permission.',
-            'warning'
+            'Current location could not be detected.',
+            'error'
           );
-          return;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 180000
         }
-
-        showToast(
-          'Current location could not be detected.',
-          'error'
-        );
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 180000
-      }
-    );
+      );
   }
 
   function renderSavedAddresses() {
-    elements.savedList.innerHTML = '';
+    elements.savedList.innerHTML =
+      '';
 
     elements.noSaved.hidden =
       state.savedAddresses.length > 0;
@@ -874,38 +1014,50 @@
     state.savedAddresses
       .forEach(function(address) {
         const button =
-          document.createElement('button');
+          document.createElement(
+            'button'
+          );
 
         button.type = 'button';
+
         button.className =
           'saved-address-card';
 
         const icon =
-          document.createElement('span');
+          document.createElement(
+            'span'
+          );
 
         icon.className =
           'saved-address-card__icon';
 
         icon.textContent =
           clean(address.addressType)
-            .toUpperCase() === 'WORK'
+            .toUpperCase() ===
+            'WORK'
             ? '▣'
             : '⌂';
 
         const content =
-          document.createElement('span');
+          document.createElement(
+            'span'
+          );
 
         content.className =
           'saved-address-card__content';
 
         const label =
-          document.createElement('strong');
+          document.createElement(
+            'strong'
+          );
 
         label.className =
           'saved-address-card__label';
 
         label.textContent =
-          clean(address.addressLabel) ||
+          clean(
+            address.addressLabel
+          ) ||
           'Saved address';
 
         const text =
@@ -919,13 +1071,16 @@
 
         content.appendChild(label);
         content.appendChild(text);
+
         button.appendChild(icon);
         button.appendChild(content);
 
         button.addEventListener(
           'click',
           function() {
-            selectSavedAddress(address);
+            selectSavedAddress(
+              address
+            );
           }
         );
 
@@ -937,19 +1092,22 @@
   async function loadSavedAddresses() {
     try {
       const response =
-        await window.ApnaBiteAPI.request(
-          'address.list',
-          {},
-          {
-            retry: false,
-            deduplicate: true,
-            timeoutMs: 10000
-          }
-        );
+        await window.ApnaBiteAPI
+          .request(
+            'address.list',
+            {},
+            {
+              retry: false,
+              deduplicate: true,
+              timeoutMs: 10000
+            }
+          );
 
       state.savedAddresses =
         response &&
-        Array.isArray(response.data)
+        Array.isArray(
+          response.data
+        )
           ? response.data
           : [];
     } catch (error) {
@@ -962,24 +1120,34 @@
   function selectSavedAddress(address) {
     const location =
       normalizeLocation({
-        addressId: address.addressId,
-        latitude: address.latitude,
-        longitude: address.longitude,
+        addressId:
+          address.addressId,
+        latitude:
+          address.latitude,
+        longitude:
+          address.longitude,
         locationName:
           address.addressLabel ||
           address.area ||
           address.city,
         fullAddress:
           buildFullAddress(address),
-        area: address.area,
-        city: address.city,
-        district: address.district,
-        state: address.state,
+        area:
+          address.area,
+        city:
+          address.city,
+        district:
+          address.district,
+        state:
+          address.state,
         postalCode:
           address.postalCode,
-        country: 'India',
-        countryCode: 'IN',
-        source: 'SAVED_ADDRESS'
+        country:
+          'India',
+        countryCode:
+          'IN',
+        source:
+          'SAVED_ADDRESS'
       });
 
     if (!location) {
@@ -987,14 +1155,18 @@
         'Map location is missing for this address.',
         'warning'
       );
+
       return;
     }
 
     state.skipNextMoveEnd = true;
+
     setSelectedLocation(location);
 
     elements.receiverName.value =
-      clean(address.receiverName);
+      clean(
+        address.receiverName
+      );
 
     elements.receiverMobile.value =
       digits(
@@ -1008,12 +1180,20 @@
       );
 
     elements.addressLandmark.value =
-      clean(address.landmark);
+      clean(
+        address.landmark
+      );
 
     state.locationConfirmed = true;
-    elements.receiverSection.hidden = false;
+
+    elements.receiverSection.hidden =
+      false;
+
     elements.useOnce.checked = true;
-    elements.addressLabelGroup.hidden = true;
+
+    elements.addressLabelGroup.hidden =
+      true;
+
     elements.confirmButton.textContent =
       'USE THIS ADDRESS';
 
@@ -1041,7 +1221,9 @@
 
     if (
       elements.saveFuture.checked &&
-      !clean(elements.addressLabel.value)
+      !clean(
+        elements.addressLabel.value
+      )
     ) {
       elements.addressLabel.value =
         'Home';
@@ -1050,7 +1232,9 @@
 
   function validateDetails() {
     const receiverName =
-      clean(elements.receiverName.value);
+      clean(
+        elements.receiverName.value
+      );
 
     const receiverMobile =
       digits(
@@ -1058,7 +1242,9 @@
       );
 
     const addressLine1 =
-      clean(elements.addressFlat.value);
+      clean(
+        elements.addressFlat.value
+      );
 
     if (receiverName.length < 2) {
       showToast(
@@ -1072,7 +1258,9 @@
 
     if (
       receiverMobile.length !== 10 ||
-      !/^[6-9]/.test(receiverMobile)
+      !/^[6-9]/.test(
+        receiverMobile
+      )
     ) {
       showToast(
         'Please enter a valid 10-digit mobile number.',
@@ -1095,8 +1283,9 @@
 
     if (
       elements.saveFuture.checked &&
-      clean(elements.addressLabel.value)
-        .length < 2
+      clean(
+        elements.addressLabel.value
+      ).length < 2
     ) {
       showToast(
         'Please enter an address label.',
@@ -1109,20 +1298,27 @@
 
     return {
       addressId:
-        state.selectedLocation.addressId ||
+        state.selectedLocation
+          .addressId ||
         '',
       addressLabel:
         elements.saveFuture.checked
-          ? clean(elements.addressLabel.value)
+          ? clean(
+              elements.addressLabel.value
+            )
           : '',
       addressType:
         elements.saveFuture.checked
-          ? clean(elements.addressLabel.value)
-              .toUpperCase()
+          ? clean(
+              elements.addressLabel.value
+            ).toUpperCase()
           : 'OTHER',
-      receiverName: receiverName,
-      receiverMobile: receiverMobile,
-      addressLine1: addressLine1,
+      receiverName:
+        receiverName,
+      receiverMobile:
+        receiverMobile,
+      addressLine1:
+        addressLine1,
       addressLine2: '',
       landmark:
         clean(
@@ -1171,32 +1367,39 @@
         'Please select a delivery location.',
         'warning'
       );
+
       return;
     }
 
     if (!state.locationConfirmed) {
       state.locationConfirmed = true;
-      elements.receiverSection.hidden = false;
+
+      elements.receiverSection.hidden =
+        false;
+
       elements.confirmButton.textContent =
         'SAVE & CONTINUE';
 
-      window.setTimeout(function() {
-        elements.receiverSection
-          .scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+      window.setTimeout(
+        function() {
+          elements.receiverSection
+            .scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
 
-        if (
-          !clean(
-            elements.receiverName.value
-          )
-        ) {
-          elements.receiverName.focus();
-        } else {
-          elements.addressFlat.focus();
-        }
-      }, 100);
+          if (
+            !clean(
+              elements.receiverName.value
+            )
+          ) {
+            elements.receiverName.focus();
+          } else {
+            elements.addressFlat.focus();
+          }
+        },
+        100
+      );
 
       return;
     }
@@ -1215,19 +1418,21 @@
 
     try {
       if (
-        deliveryAddress.saveForFuture &&
+        deliveryAddress
+          .saveForFuture &&
         !deliveryAddress.addressId
       ) {
         const response =
-          await window.ApnaBiteAPI.request(
-            'address.save',
-            deliveryAddress,
-            {
-              retry: false,
-              deduplicate: false,
-              timeoutMs: 12000
-            }
-          );
+          await window.ApnaBiteAPI
+            .request(
+              'address.save',
+              deliveryAddress,
+              {
+                retry: false,
+                deduplicate: false,
+                timeoutMs: 12000
+              }
+            );
 
         if (
           response &&
@@ -1239,11 +1444,12 @@
         }
       }
 
-      window.ApnaBiteCore.setJsonStorage(
-        window.ApnaBiteCore
-          .storageKeys.LOCATION,
-        deliveryAddress
-      );
+      window.ApnaBiteCore
+        .setJsonStorage(
+          window.ApnaBiteCore
+            .storageKeys.LOCATION,
+          deliveryAddress
+        );
 
       showToast(
         deliveryAddress.saveForFuture
@@ -1252,11 +1458,14 @@
         'success'
       );
 
-      window.setTimeout(function() {
-        window.location.replace(
-          'home.html?v=14'
-        );
-      }, 500);
+      window.setTimeout(
+        function() {
+          window.location.replace(
+            'home.html'
+          );
+        },
+        500
+      );
     } catch (error) {
       console.error(
         'Address confirmation failed:',
@@ -1286,25 +1495,28 @@
     }
 
     window.location.replace(
-      'home.html?v=14'
+      'home.html'
     );
   }
 
   function bindEvents() {
-    elements.backButton.addEventListener(
-      'click',
-      goBack
-    );
+    elements.backButton
+      .addEventListener(
+        'click',
+        goBack
+      );
 
-    elements.searchForm.addEventListener(
-      'submit',
-      searchLocation
-    );
+    elements.searchForm
+      .addEventListener(
+        'submit',
+        searchLocation
+      );
 
-    elements.currentButton.addEventListener(
-      'click',
-      useCurrentLocation
-    );
+    elements.currentButton
+      .addEventListener(
+        'click',
+        useCurrentLocation
+      );
 
     elements.mapCurrentButton
       .addEventListener(
@@ -1312,15 +1524,17 @@
         useCurrentLocation
       );
 
-    elements.useOnce.addEventListener(
-      'change',
-      handleSaveChoice
-    );
+    elements.useOnce
+      .addEventListener(
+        'change',
+        handleSaveChoice
+      );
 
-    elements.saveFuture.addEventListener(
-      'change',
-      handleSaveChoice
-    );
+    elements.saveFuture
+      .addEventListener(
+        'change',
+        handleSaveChoice
+      );
 
     elements.receiverMobile
       .addEventListener(
@@ -1362,10 +1576,13 @@
     bindEvents();
 
     state.savedAddresses = [];
+
     renderSavedAddresses();
     setMapLoading(true);
 
-    if (!initializeMap()) return;
+    if (!initializeMap()) {
+      return;
+    }
 
     loadSavedAddresses();
 
