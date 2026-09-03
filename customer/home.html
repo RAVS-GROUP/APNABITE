@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
+
   <meta
     name="theme-color"
     content="#f97316"
   >
+
   <meta
     name="description"
     content="Discover nearby homemade-food Kitchens on ApnaBite."
@@ -21,26 +24,31 @@
     rel="manifest"
     href="../manifest.webmanifest"
   >
+
   <link
     rel="stylesheet"
-    href="../assets/css/core.css?v=8"
+    href="../assets/css/core.css?v=15"
   >
+
   <link
     rel="stylesheet"
-    href="../assets/css/components.css?v=8"
+    href="../assets/css/components.css?v=15"
   >
+
   <link
     rel="stylesheet"
-    href="../assets/css/customer.css?v=8"
+    href="../assets/css/customer.css?v=15"
   >
 </head>
 
 <body class="customer-page">
   <header class="customer-header">
     <div class="customer-header__inner">
-      <div
+      <button
+        id="location-header-button"
         class="customer-location"
-        aria-label="Selected delivery location"
+        type="button"
+        aria-label="Change delivery location"
       >
         <span class="customer-location__label">
           DELIVERING TO
@@ -50,9 +58,9 @@
           id="header-location"
           class="customer-location__value"
         >
-          Loading location…
+          Select delivery location
         </span>
-      </div>
+      </button>
 
       <button
         id="change-location-button"
@@ -83,7 +91,7 @@
         class="visually-hidden"
         for="kitchen-search"
       >
-        Search Kitchens
+        Search Kitchens or food
       </label>
 
       <input
@@ -103,11 +111,12 @@
       </span>
     </section>
 
-    <section class="customer-section">
+    <section class="customer-section customer-filter-section">
       <div class="horizontal-scroll">
         <button
           class="chip chip--active"
           type="button"
+          data-kitchen-category="ALL"
           disabled
         >
           All
@@ -116,6 +125,7 @@
         <button
           class="chip"
           type="button"
+          data-kitchen-category="VEG"
           disabled
         >
           Veg
@@ -124,6 +134,7 @@
         <button
           class="chip"
           type="button"
+          data-kitchen-category="NON_VEG"
           disabled
         >
           Non-Veg
@@ -132,6 +143,7 @@
         <button
           class="chip"
           type="button"
+          data-kitchen-category="BREAKFAST"
           disabled
         >
           Breakfast
@@ -140,6 +152,7 @@
         <button
           class="chip"
           type="button"
+          data-kitchen-category="LUNCH"
           disabled
         >
           Lunch
@@ -148,29 +161,141 @@
         <button
           class="chip"
           type="button"
+          data-kitchen-category="DINNER"
           disabled
         >
           Dinner
         </button>
+
+        <button
+          class="chip"
+          type="button"
+          data-kitchen-category="SNACKS"
+          disabled
+        >
+          Snacks
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          data-kitchen-category="MEAL"
+          disabled
+        >
+          Meals
+        </button>
+      </div>
+
+      <div class="discovery-controls">
+        <span
+          id="discovery-radius"
+          class="discovery-radius"
+        >
+          Within 3 km
+        </span>
+
+        <label
+          class="visually-hidden"
+          for="kitchen-sort"
+        >
+          Sort Kitchens
+        </label>
+
+        <select
+          id="kitchen-sort"
+          class="discovery-sort"
+          disabled
+        >
+          <option value="NEAREST">
+            Nearest
+          </option>
+
+          <option value="TOP_RATED">
+            Top Rated
+          </option>
+
+          <option value="FASTEST">
+            Fastest
+          </option>
+
+          <option value="PRICE_LOW_TO_HIGH">
+            Price: Low to High
+          </option>
+        </select>
       </div>
     </section>
 
     <section class="customer-section">
       <div class="customer-section__header">
-        <h2 class="customer-section__title">
-          Nearby Kitchens
-        </h2>
+        <div>
+          <h2 class="customer-section__title">
+            Nearby Kitchens
+          </h2>
+
+          <p class="customer-section__subtitle">
+            Homemade food near your delivery address
+          </p>
+        </div>
+
+        <div class="customer-section__status">
+          <span
+            id="open-kitchen-count"
+            class="kitchen-count"
+          >
+            0
+          </span>
+
+          <span
+            id="backend-status"
+            class="badge badge--warning"
+          >
+            Connecting
+          </span>
+        </div>
+      </div>
+
+      <button
+        id="refresh-kitchens"
+        class="discovery-refresh"
+        type="button"
+        disabled
+      >
+        Refresh
+      </button>
+
+      <div
+        id="kitchen-list"
+        class="kitchen-list"
+        aria-live="polite"
+      ></div>
+    </section>
+
+    <section
+      id="closed-kitchen-section"
+      class="customer-section"
+      hidden
+    >
+      <div class="customer-section__header">
+        <div>
+          <h2 class="customer-section__title">
+            Closed Kitchens
+          </h2>
+
+          <p class="customer-section__subtitle">
+            These Kitchens are currently unavailable
+          </p>
+        </div>
 
         <span
-          id="backend-status"
-          class="badge badge--warning"
+          id="closed-kitchen-count"
+          class="kitchen-count kitchen-count--muted"
         >
-          Connecting
+          0
         </span>
       </div>
 
       <div
-        id="kitchen-list"
+        id="closed-kitchen-list"
         class="kitchen-list"
         aria-live="polite"
       ></div>
@@ -184,7 +309,7 @@
     <div class="customer-bottom-nav__inner">
       <a
         class="customer-bottom-nav__item customer-bottom-nav__item--active"
-        href="home.html"
+        href="home.html?v=15"
         aria-current="page"
       >
         <span
@@ -241,9 +366,10 @@
     </div>
   </nav>
 
-  <script src="../assets/js/core.js?v=8"></script>
-  <script src="../assets/js/api.js?v=8"></script>
-  <script src="../assets/js/ui.js?v=8"></script>
+  <script src="../assets/js/core.js?v=15"></script>
+  <script src="../assets/js/api.js?v=15"></script>
+  <script src="../assets/js/ui.js?v=15"></script>
+  <script src="../assets/js/discovery.js?v=15"></script>
 
   <script>
     (function() {
@@ -252,16 +378,6 @@
       const greeting =
         document.getElementById(
           'customer-greeting'
-        );
-
-      const backendStatus =
-        document.getElementById(
-          'backend-status'
-        );
-
-      const kitchenList =
-        document.getElementById(
-          'kitchen-list'
         );
 
       const headerLocation =
@@ -274,27 +390,22 @@
           'change-location-button'
         );
 
-      let locationRequestRunning =
-        false;
-
-      function showInitialKitchenState() {
-        window.ApnaBiteUI.showEmptyState(
-          kitchenList,
-          {
-            icon: '⌂',
-            title:
-              'No Kitchens available yet',
-            message:
-              'No ApnaBite Kitchen is currently available near you. We’re expanding soon.'
-          }
+      const locationHeaderButton =
+        document.getElementById(
+          'location-header-button'
         );
+
+      function clean(value) {
+        return String(value || '')
+          .replace(/\s+/g, ' ')
+          .trim();
       }
 
       function updateGreeting(user) {
         const fullName =
-          user && user.fullName
-            ? user.fullName.trim()
-            : '';
+          clean(
+            user && user.fullName
+          );
 
         const firstName =
           fullName
@@ -309,39 +420,48 @@
             : 'Hello!';
       }
 
-      function displayLocation(
-        locationData
-      ) {
+      function displayLocation(location) {
         const locationName =
-          locationData &&
-          locationData.locationName
-            ? String(
-                locationData.locationName
-              ).trim()
-            : '';
+          clean(
+            location &&
+            location.locationName
+          );
+
+        const area =
+          clean(
+            location &&
+            location.area
+          );
+
+        const city =
+          clean(
+            location &&
+            location.city
+          );
 
         headerLocation.textContent =
           locationName ||
+          area ||
+          city ||
           'Select delivery location';
       }
 
-      async function validateCustomerSession() {
-        if (
-          !window.ApnaBiteCore
-            .requireLocalSession(
-              ['CUSTOMER']
-            )
-        ) {
-          return null;
-        }
+      function openLocationPage() {
+        window.location.href =
+          'location.html?v=14';
+      }
 
+      async function validateSession() {
         try {
           const response =
             await window.ApnaBiteAPI
               .validateSession();
 
           const user =
-            response.data.user;
+            response &&
+            response.data
+              ? response.data.user
+              : null;
 
           if (
             !user ||
@@ -349,9 +469,7 @@
           ) {
             window.ApnaBiteCore
               .redirectToRoleHome(
-                user
-                  ? user.role
-                  : '',
+                user ? user.role : '',
                 true
               );
 
@@ -361,18 +479,12 @@
           window.ApnaBiteCore
             .saveSession({
               sessionToken:
-                window.ApnaBiteCore
+                window.ApnaBiteAPI
                   .getSessionToken(),
               user: user
             });
 
           updateGreeting(user);
-
-          backendStatus.textContent =
-            'Connected';
-
-          backendStatus.className =
-            'badge badge--success';
 
           return user;
         } catch (error) {
@@ -383,132 +495,15 @@
         }
       }
 
-      function requestFirstLocation() {
-        if (locationRequestRunning) {
+      function initialize() {
+        if (
+          !window.ApnaBiteCore
+            .requireLocalSession(
+              ['CUSTOMER']
+            )
+        ) {
           return;
         }
-
-        if (!navigator.geolocation) {
-          headerLocation.textContent =
-            'Select delivery location';
-
-          return;
-        }
-
-        locationRequestRunning = true;
-
-        headerLocation.textContent =
-          'Detecting your location…';
-
-        navigator.geolocation
-          .getCurrentPosition(
-            saveFirstLocation,
-            handleLocationError,
-            {
-              enableHighAccuracy: false,
-              timeout: 8000,
-              maximumAge: 300000
-            }
-          );
-      }
-
-      async function saveFirstLocation(
-        position
-      ) {
-        const latitude =
-          position.coords.latitude;
-
-        const longitude =
-          position.coords.longitude;
-
-        try {
-          const response =
-            await window.ApnaBiteAPI
-              .request(
-                'user.updateLocation',
-                {
-                  latitude: latitude,
-                  longitude: longitude
-                },
-                {
-                  retry: false,
-                  deduplicate: false
-                }
-              );
-
-          const serverData =
-            response &&
-            response.data
-              ? response.data
-              : {};
-
-          const locationData = {
-            latitude: latitude,
-            longitude: longitude,
-            locationName:
-              serverData.locationName ||
-              'Current location',
-            fullAddress:
-              serverData.locationName ||
-              '',
-            accuracyMeters:
-              position.coords.accuracy,
-            capturedAt:
-              new Date().toISOString(),
-            source: 'CURRENT_GPS'
-          };
-
-          window.ApnaBiteCore
-            .setJsonStorage(
-              window.ApnaBiteCore
-                .storageKeys.LOCATION,
-              locationData
-            );
-
-          displayLocation(
-            locationData
-          );
-        } catch (error) {
-          headerLocation.textContent =
-            'Select delivery location';
-
-          window.ApnaBiteUI.showToast(
-            'Location name could not be loaded. Tap CHANGE to select it.',
-            'warning'
-          );
-        } finally {
-          locationRequestRunning =
-            false;
-        }
-      }
-
-      function handleLocationError() {
-        locationRequestRunning =
-          false;
-
-        headerLocation.textContent =
-          'Select delivery location';
-      }
-
-      function openLocationPage() {
-        window.location.href =
-          'location.html?v=8';
-      }
-
-      async function initialize() {
-        window.ApnaBiteUI.showSkeletons(
-          kitchenList,
-          3
-        );
-
-        const user =
-          await validateCustomerSession();
-
-        if (!user) {
-          return;
-        }
-
-        showInitialKitchenState();
 
         const savedLocation =
           window.ApnaBiteCore
@@ -518,19 +513,21 @@
               null
             );
 
-        if (
-          savedLocation &&
-          savedLocation.locationName
-        ) {
-          displayLocation(
-            savedLocation
-          );
-        } else {
-          requestFirstLocation();
-        }
+        displayLocation(savedLocation);
+
+        window.ApnaBiteDiscovery
+          .setup(savedLocation);
+
+        validateSession();
       }
 
       changeLocationButton
+        .addEventListener(
+          'click',
+          openLocationPage
+        );
+
+      locationHeaderButton
         .addEventListener(
           'click',
           openLocationPage
