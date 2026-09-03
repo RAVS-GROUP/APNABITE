@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Create or update your ApnaBite Kitchen profile."
+  >
+
+  <title>Kitchen Profile | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+</head>
+
+<body class="chef-page chef-kitchen-profile-page">
+  <header class="chef-header">
+    <div class="chef-header__inner">
+      <button
+        id="kitchen-profile-back-button"
+        class="chef-header__back"
+        type="button"
+        aria-label="Return to Chef onboarding"
+      >
+        ‹
+      </button>
+
+      <div class="chef-header__content">
+        <span class="chef-header__label">
+          STEP 1 OF 6
+        </span>
+
+        <h1 class="chef-header__title">
+          Kitchen Profile
+        </h1>
+      </div>
+
+      <span
+        id="kitchen-profile-save-status"
+        class="chef-header__save-status"
+        aria-live="polite"
+      ></span>
+    </div>
+  </header>
+
+  <main class="chef-main">
+    <section class="chef-page-intro">
+      <span
+        class="chef-page-intro__icon"
+        aria-hidden="true"
+      >
+        🍲
+      </span>
+
+      <div>
+        <h2 class="chef-page-intro__title">
+          Tell Customers about your Kitchen
+        </h2>
+
+        <p class="chef-page-intro__text">
+          Add accurate information about the homemade food you prepare.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="kitchen-profile-status"
+      class="chef-status-card chef-status-card--loading"
+      aria-live="polite"
+    >
+      <span
+        id="kitchen-profile-status-icon"
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        …
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="kitchen-profile-status-title">
+          Loading Kitchen profile
+        </strong>
+
+        <p id="kitchen-profile-status-message">
+          Please wait while we check your saved details.
+        </p>
+      </div>
+    </section>
+
+    <form
+      id="kitchen-profile-form"
+      class="chef-form"
+      novalidate
+    >
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>Basic information</h2>
+
+          <p>
+            This information will be visible to Customers after approval.
+          </p>
+        </div>
+
+        <div class="chef-form-grid">
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="kitchen-name"
+            >
+              Kitchen name
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-name"
+              class="form-input"
+              name="kitchenName"
+              type="text"
+              maxlength="80"
+              autocomplete="organization"
+              placeholder="Example: Menka's Home Kitchen"
+              required
+            >
+
+            <small class="form-help">
+              Use a clear name that Customers can easily recognize.
+            </small>
+
+            <p
+              id="kitchen-name-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="kitchen-description"
+            >
+              Kitchen description
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <textarea
+              id="kitchen-description"
+              class="form-input chef-textarea"
+              name="description"
+              rows="4"
+              maxlength="500"
+              placeholder="Briefly describe your homemade food, speciality and cooking style."
+              required
+            ></textarea>
+
+            <div class="chef-field-footer">
+              <small class="form-help">
+                Do not add a mobile number or external contact details.
+              </small>
+
+              <small
+                id="kitchen-description-count"
+                class="chef-character-count"
+              >
+                0/500
+              </small>
+            </div>
+
+            <p
+              id="kitchen-description-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-food-type"
+            >
+              Food type
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <select
+              id="kitchen-food-type"
+              class="form-input"
+              name="foodType"
+              required
+            >
+              <option value="">
+                Select food type
+              </option>
+
+              <option value="VEG">
+                Vegetarian only
+              </option>
+
+              <option value="NON_VEG">
+                Non-Vegetarian only
+              </option>
+
+              <option value="BOTH">
+                Vegetarian and Non-Vegetarian
+              </option>
+            </select>
+
+            <p
+              id="kitchen-food-type-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-daily-capacity"
+            >
+              Daily order capacity
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-daily-capacity"
+              class="form-input"
+              name="dailyCapacity"
+              type="number"
+              min="1"
+              max="500"
+              inputmode="numeric"
+              placeholder="Example: 25"
+              required
+            >
+
+            <small class="form-help">
+              Maximum orders you can prepare in one day.
+            </small>
+
+            <p
+              id="kitchen-daily-capacity-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-preparation-time"
+            >
+              Average preparation time
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <select
+              id="kitchen-preparation-time"
+              class="form-input"
+              name="preparationTimeMinutes"
+              required
+            >
+              <option value="">
+                Select preparation time
+              </option>
+
+              <option value="15">
+                15 minutes
+              </option>
+
+              <option value="20">
+                20 minutes
+              </option>
+
+              <option value="30">
+                30 minutes
+              </option>
+
+              <option value="45">
+                45 minutes
+              </option>
+
+              <option value="60">
+                60 minutes
+              </option>
+
+              <option value="90">
+                90 minutes
+              </option>
+
+              <option value="120">
+                120 minutes
+              </option>
+            </select>
+
+            <p
+              id="kitchen-preparation-time-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-speciality"
+            >
+              Kitchen speciality
+              <span class="form-label__optional">
+                Optional
+              </span>
+            </label>
+
+            <input
+              id="kitchen-speciality"
+              class="form-input"
+              name="speciality"
+              type="text"
+              maxlength="120"
+              placeholder="Example: North Indian home meals"
+            >
+
+            <p
+              id="kitchen-speciality-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>Meal availability</h2>
+
+          <p>
+            Select the meal types your Kitchen generally provides.
+          </p>
+        </div>
+
+        <fieldset class="chef-choice-fieldset">
+          <legend class="form-label">
+            Available meal types
+            <span aria-hidden="true">*</span>
+          </legend>
+
+          <div class="chef-choice-grid">
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-breakfast"
+                name="mealTypes"
+                type="checkbox"
+                value="BREAKFAST"
+              >
+
+              <span>Breakfast</span>
+            </label>
+
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-lunch"
+                name="mealTypes"
+                type="checkbox"
+                value="LUNCH"
+              >
+
+              <span>Lunch</span>
+            </label>
+
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-dinner"
+                name="mealTypes"
+                type="checkbox"
+                value="DINNER"
+              >
+
+              <span>Dinner</span>
+            </label>
+
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-snacks"
+                name="mealTypes"
+                type="checkbox"
+                value="SNACKS"
+              >
+
+              <span>Snacks</span>
+            </label>
+
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-meal-plan"
+                name="mealTypes"
+                type="checkbox"
+                value="MEAL_PLAN"
+              >
+
+              <span>Meal Plans</span>
+            </label>
+
+            <label class="chef-choice-card">
+              <input
+                id="meal-type-small-party"
+                name="mealTypes"
+                type="checkbox"
+                value="SMALL_PARTY"
+              >
+
+              <span>Small Party Orders</span>
+            </label>
+          </div>
+
+          <p
+            id="kitchen-meal-types-error"
+            class="form-error"
+            role="alert"
+            hidden
+          ></p>
+        </fieldset>
+      </section>
+
+      <section class="chef-information-card">
+        <span
+          class="chef-information-card__icon"
+          aria-hidden="true"
+        >
+          i
+        </span>
+
+        <p>
+          Your Kitchen will not appear to Customers until all onboarding
+          steps are completed and approved by ApnaBite Admin.
+        </p>
+      </section>
+
+      <div class="chef-form-bottom-space"></div>
+    </form>
+  </main>
+
+  <div class="chef-onboarding-action-bar">
+    <button
+      id="kitchen-profile-save-button"
+      class="button button--primary button--block button--large"
+      type="submit"
+      form="kitchen-profile-form"
+      disabled
+    >
+      LOADING…
+    </button>
+  </div>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-kitchen-profile.js"></script>
+</body>
+</html>
