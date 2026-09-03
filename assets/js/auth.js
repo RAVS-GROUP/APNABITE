@@ -306,7 +306,7 @@
 
       startCountdown(
         button,
-        response.data.expiresInSeconds
+        response.data.resendAfterSeconds
       );
     } catch (error) {
       window.ApnaBiteUI.setButtonLoading(
@@ -535,7 +535,7 @@
 
       startCountdown(
         button,
-        response.data.expiresInSeconds
+        response.data.resendAfterSeconds
       );
     } catch (error) {
       window.ApnaBiteUI.setButtonLoading(
