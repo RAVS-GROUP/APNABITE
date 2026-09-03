@@ -476,139 +476,237 @@
     });
   }
 
-  async function searchLocation(event) {
-    event.preventDefault();
+async function searchLocation(event) {
+  event.preventDefault();
 
-    if (state.searchBusy) return;
+  if (state.searchBusy) return;
 
-    const query =
-      clean(elements.searchInput.value);
+  const query =
+    clean(elements.searchInput.value);
 
-    if (query.length < 3) {
+  if (query.length < 3) {
+    setSearchMessage(
+      'Enter at least 3 characters.',
+      true
+    );
+    return;
+  }
+
+  state.searchBusy = true;
+
+  setButtonLoading(
+    elements.searchButton,
+    true,
+    'SEARCHING…',
+    'SEARCH'
+  );
+
+  setSearchMessage(
+    'Searching matching locations…',
+    false
+  );
+
+  clearSearchResults();
+
+  try {
+    let response =
+      await requestLocationSearch(query);
+
+    let fallbackUsed = false;
+
+    if (!response.length) {
+      const fallbackQuery =
+        buildFallbackSearchQuery(query);
+
+      if (
+        fallbackQuery &&
+        fallbackQuery.toLowerCase() !==
+          query.toLowerCase()
+      ) {
+        response =
+          await requestLocationSearch(
+            fallbackQuery
+          );
+
+        fallbackUsed = true;
+      }
+    }
+
+    if (!response.length) {
       setSearchMessage(
-        'Enter at least 3 characters.',
+        'Location not found. Search using area, sector, city or PIN code.',
         true
       );
-
       return;
     }
 
-    state.searchBusy = true;
+    state.searchResults =
+      response
+        .map(function(result) {
+          const parsed =
+            parseAddress(result.address);
 
-    setButtonLoading(
-      elements.searchButton,
-      true,
-      'SEARCHING…',
-      'SEARCH'
+          return {
+            latitude:
+              Number(result.lat),
+            longitude:
+              Number(result.lon),
+            locationName:
+              buildLocationName(
+                result.address
+              ),
+            fullAddress:
+              clean(result.display_name),
+            area: parsed.area,
+            city: parsed.city,
+            district:
+              parsed.district,
+            state: parsed.state,
+            postalCode:
+              parsed.postalCode,
+            country: parsed.country,
+            countryCode:
+              parsed.countryCode,
+            source: 'SEARCH'
+          };
+        })
+        .filter(function(result) {
+          return (
+            Number.isFinite(
+              result.latitude
+            ) &&
+            Number.isFinite(
+              result.longitude
+            )
+          );
+        });
+
+    renderSearchResults(
+      state.searchResults
     );
 
     setSearchMessage(
-      'Searching matching locations…',
+      fallbackUsed
+        ? 'Exact listing was not found. Select a nearby matching location and adjust the map pin.'
+        : state.searchResults.length +
+          ' matching location' +
+          (
+            state.searchResults.length === 1
+              ? ''
+              : 's'
+          ) +
+          ' found.',
       false
     );
+  } catch (error) {
+    setSearchMessage(
+      'Location search is temporarily unavailable. Please try again.',
+      true
+    );
 
-    clearSearchResults();
+    window.ApnaBiteUI.showToast(
+      'Unable to search location.',
+      'error'
+    );
+  } finally {
+    state.searchBusy = false;
 
-    try {
-      const url =
-        'https://nominatim.openstreetmap.org/search' +
-        '?format=jsonv2' +
-        '&addressdetails=1' +
-        '&countrycodes=in' +
-        '&limit=10' +
-        '&dedupe=1' +
-        '&q=' +
-        encodeURIComponent(query);
+    setButtonLoading(
+      elements.searchButton,
+      false,
+      'SEARCHING…',
+      'SEARCH'
+    );
+  }
+}
+  
+  async function requestLocationSearch(query) {
+  const mapCenter =
+    state.map
+      ? state.map.getCenter()
+      : null;
 
-      const response =
-        await fetchLocationJson(url);
+  let url =
+    'https://nominatim.openstreetmap.org/search' +
+    '?format=jsonv2' +
+    '&addressdetails=1' +
+    '&countrycodes=in' +
+    '&limit=10' +
+    '&dedupe=1' +
+    '&accept-language=en' +
+    '&q=' +
+    encodeURIComponent(query);
 
-      if (
-        !Array.isArray(response) ||
-        !response.length
-      ) {
-        setSearchMessage(
-          'No matching location found. Add area, city or nearby landmark.',
-          true
-        );
+  if (mapCenter) {
+    const longitudeSpan = 0.75;
+    const latitudeSpan = 0.55;
 
-        return;
-      }
-
-      state.searchResults =
-        response
-          .map(function(result) {
-            const parsed =
-              parseAddress(result.address);
-
-            return {
-              latitude: Number(result.lat),
-              longitude: Number(result.lon),
-              locationName:
-                buildLocationName(
-                  result.address
-                ),
-              fullAddress:
-                clean(result.display_name),
-              area: parsed.area,
-              city: parsed.city,
-              district: parsed.district,
-              state: parsed.state,
-              postalCode:
-                parsed.postalCode,
-              country: parsed.country,
-              countryCode:
-                parsed.countryCode,
-              source: 'SEARCH'
-            };
-          })
-          .filter(function(result) {
-            return (
-              Number.isFinite(
-                result.latitude
-              ) &&
-              Number.isFinite(
-                result.longitude
-              )
-            );
-          });
-
-      renderSearchResults(
-        state.searchResults
+    url +=
+      '&viewbox=' +
+      encodeURIComponent(
+        (mapCenter.lng - longitudeSpan) +
+        ',' +
+        (mapCenter.lat + latitudeSpan) +
+        ',' +
+        (mapCenter.lng + longitudeSpan) +
+        ',' +
+        (mapCenter.lat - latitudeSpan)
       );
+  }
 
-      setSearchMessage(
-        state.searchResults.length +
-        ' matching location' +
-        (
-          state.searchResults.length === 1
-            ? ''
-            : 's'
-        ) +
-        ' found. Select the correct one.',
-        false
-      );
-    } catch (error) {
-      setSearchMessage(
-        'Location search is temporarily unavailable.',
-        true
-      );
+  const result =
+    await fetchLocationJson(url);
 
-      window.ApnaBiteUI.showToast(
-        'Unable to search location.',
-        'error'
-      );
-    } finally {
-      state.searchBusy = false;
+  return Array.isArray(result)
+    ? result
+    : [];
+}
 
-      setButtonLoading(
-        elements.searchButton,
-        false,
-        'SEARCHING…',
-        'SEARCH'
+function buildFallbackSearchQuery(query) {
+  const originalParts =
+    clean(query)
+      .split(/\s+/)
+      .filter(Boolean);
+
+  if (originalParts.length <= 2) {
+    return query;
+  }
+
+  const locationWords = [];
+
+  originalParts.forEach(function(part, index) {
+    const word =
+      part.toLowerCase();
+
+    if (
+      word === 'sector' &&
+      originalParts[index + 1]
+    ) {
+      locationWords.push(part);
+      locationWords.push(
+        originalParts[index + 1]
       );
     }
-  }
+  });
+
+  const lastWords =
+    originalParts.slice(-2);
+
+  lastWords.forEach(function(part) {
+    if (
+      !locationWords.some(
+        function(existing) {
+          return existing.toLowerCase() ===
+            part.toLowerCase();
+        }
+      )
+    ) {
+      locationWords.push(part);
+    }
+  });
+
+  return locationWords.join(' ');
+}
 
   function selectSearchResult(index) {
     const result =
