@@ -10,36 +10,20 @@
   'use strict';
 
   const STEP_CONFIG = Object.freeze([
-    {
-      key: 'kitchen',
-      label: 'Kitchen Profile',
-      page: 'kitchen-profile.html'
-    },
-    {
-      key: 'address',
-      label: 'Kitchen Address',
-      page: 'kitchen-address.html'
-    },
-    {
-      key: 'image',
-      label: 'Kitchen Image',
-      page: 'kitchen-image.html'
-    },
-    {
-      key: 'kyc',
-      label: 'KYC Documents',
-      page: 'kyc.html'
-    },
-    {
-      key: 'payout',
-      label: 'Payout Details',
-      page: 'payout.html'
-    },
-    {
-      key: 'review',
-      label: 'Review & Submit',
-      page: 'review.html'
-    }
+    { key: 'kitchen', label: 'Kitchen Profile', page: 'kitchen-profile.html' },
+    { key: 'address', label: 'Kitchen Address', page: 'kitchen-address.html' },
+    { key: 'image', label: 'Kitchen Image', page: 'kitchen-image.html' },
+    { key: 'kyc', label: 'KYC Documents', page: 'kyc.html' },
+    { key: 'payout', label: 'Payout Details', page: 'payout.html' },
+    { key: 'review', label: 'Review & Submit', page: 'review.html' }
+  ]);
+
+  const REQUIRED_STEPS = Object.freeze([
+    'kitchen',
+    'address',
+    'image',
+    'kyc',
+    'payout'
   ]);
 
   const state = {
@@ -51,7 +35,7 @@
     kitchen: null,
     steps: {},
     completedCount: 0,
-    totalRequiredSteps: 5,
+    totalRequiredSteps: REQUIRED_STEPS.length,
     canSubmit: false,
     submitted: false,
     approved: false,
@@ -61,138 +45,25 @@
   const elements = {};
 
   function byId() {
-    for (
-      let index = 0;
-      index < arguments.length;
-      index++
-    ) {
-      const element =
-        document.getElementById(
-          arguments[index]
-        );
-
-      if (element) {
-        return element;
-      }
+    for (let index = 0; index < arguments.length; index++) {
+      const element = document.getElementById(arguments[index]);
+      if (element) return element;
     }
-
     return null;
   }
 
-  function getElements() {
-    elements.logoutButton = byId(
-      'chef-logout-button',
-      'logout-button'
-    );
-
-    elements.chefName = byId(
-      'chef-name',
-      'chef-welcome-name'
-    );
-
-    elements.progressBar = byId(
-      'onboarding-progress-bar',
-      'chef-progress-bar'
-    );
-
-    elements.progressValue = byId(
-      'onboarding-progress-value',
-      'chef-progress-value'
-    );
-
-    elements.progressLabel = byId(
-      'onboarding-progress-label',
-      'chef-progress-label'
-    );
-
-    elements.statusCard = byId(
-      'onboarding-status-card',
-      'chef-status-card'
-    );
-
-    elements.statusIcon = byId(
-      'onboarding-status-icon',
-      'chef-status-icon'
-    );
-
-    elements.statusTitle = byId(
-      'onboarding-status-title',
-      'chef-status-title'
-    );
-
-    elements.statusText = byId(
-      'onboarding-status-text',
-      'chef-status-text'
-    );
-
-    elements.approvalSection = byId(
-      'chef-approval-section',
-      'onboarding-approval-section',
-      'approval-section'
-    );
-
-    elements.approvalTitle = byId(
-      'chef-approval-title',
-      'onboarding-approval-title'
-    );
-
-    elements.approvalText = byId(
-      'chef-approval-text',
-      'onboarding-approval-text'
-    );
-
-    elements.primaryButton = byId(
-      'chef-primary-button',
-      'onboarding-primary-button',
-      'continue-onboarding-button'
-    );
-
-    elements.loading = byId(
-      'chef-onboarding-loading',
-      'onboarding-loading'
-    );
-
-    elements.content = byId(
-      'chef-onboarding-content',
-      'onboarding-content'
-    );
-
-    STEP_CONFIG.forEach(function(step) {
-      const card =
-        byId(
-          'onboarding-step-' + step.key,
-          'chef-step-' + step.key,
-          step.key + '-step'
-        ) ||
-        document.querySelector(
-          '[data-onboarding-step="' +
-          step.key +
-          '"]'
-        ) ||
-        document.querySelector(
-          '[data-step="' +
-          step.key +
-          '"]'
-        );
-
-      elements[
-        'step_' + step.key
-      ] = card;
-    });
-  }
-
   function cleanText(value) {
-    return String(value || '')
+    return String(value === null || value === undefined ? '' : value)
       .replace(/\s+/g, ' ')
       .trim();
   }
 
+  function normalizeStatus(value) {
+    return cleanText(value).toUpperCase().replace(/\s+/g, '_');
+  }
+
   function booleanValue() {
-    for (
-      let index = 0;
-      index < arguments.length;
-      index++
-    ) {
+    for (let index = 0; index < arguments.length; index++) {
       const value = arguments[index];
 
       if (
@@ -212,332 +83,239 @@
         value === 'FALSE' ||
         value === 0 ||
         value === '0' ||
-        value === 'NO'
+        value === 'NO' ||
+        value === null ||
+        value === undefined ||
+        value === ''
       ) {
-        return false;
+        continue;
       }
+
+      if (typeof value === 'string' && value.trim()) return true;
     }
 
     return false;
   }
 
-  function setHidden(element, hidden) {
-    if (element) {
-      element.hidden = Boolean(hidden);
-    }
-  }
-
   function setText(element, value) {
-    if (element) {
-      element.textContent =
-        cleanText(value);
-    }
+    if (element) element.textContent = cleanText(value);
   }
 
-  function setLoading(loading) {
-    state.loading = Boolean(loading);
-
-    setHidden(
-      elements.loading,
-      !state.loading
+  function getElements() {
+    elements.logoutButton = byId('chef-logout-button', 'logout-button');
+    elements.welcomeTitle = byId('chef-welcome-title');
+    elements.progressText = byId(
+      'chef-progress-text',
+      'chef-progress-value',
+      'onboarding-progress-value'
+    );
+    elements.progressBar = byId(
+      'chef-progress-bar',
+      'onboarding-progress-bar'
+    );
+    elements.progressTrack = elements.progressBar
+      ? elements.progressBar.parentElement
+      : null;
+    elements.statusCard = byId(
+      'chef-status-card',
+      'onboarding-status-card'
+    );
+    elements.statusIcon = byId(
+      'chef-status-icon',
+      'onboarding-status-icon'
+    );
+    elements.statusTitle = byId(
+      'chef-status-title',
+      'onboarding-status-title'
+    );
+    elements.statusMessage = byId(
+      'chef-status-message',
+      'chef-status-text',
+      'onboarding-status-text'
+    );
+    elements.approvalSection = byId(
+      'chef-approval-section',
+      'onboarding-approval-section'
+    );
+    elements.approvalIcon = byId('chef-approval-icon');
+    elements.approvalTitle = byId(
+      'chef-approval-title',
+      'onboarding-approval-title'
+    );
+    elements.approvalMessage = byId(
+      'chef-approval-message',
+      'chef-approval-text',
+      'onboarding-approval-text'
+    );
+    elements.primaryButton = byId(
+      'chef-continue-button',
+      'chef-primary-button',
+      'onboarding-primary-button',
+      'continue-onboarding-button'
     );
 
-    if (elements.content) {
-      elements.content.hidden =
-        state.loading;
-    }
-
-    if (
-      elements.primaryButton &&
-      !state.submitting
-    ) {
-      elements.primaryButton.disabled =
-        state.loading;
-    }
+    STEP_CONFIG.forEach(function(step) {
+      elements['step_' + step.key] =
+        byId('chef-step-' + step.key, 'onboarding-step-' + step.key) ||
+        document.querySelector('[data-step="' + step.key + '"]') ||
+        document.querySelector('[data-onboarding-step="' + step.key + '"]');
+    });
   }
 
   function getResponseData(response) {
-    if (
-      response &&
-      response.data &&
-      typeof response.data === 'object'
-    ) {
-      return response.data;
-    }
-
-    return {};
+    return response && response.data && typeof response.data === 'object'
+      ? response.data
+      : {};
   }
 
   function getLocalUser() {
-    if (
-      !window.ApnaBiteCore ||
-      typeof window.ApnaBiteCore
-        .getCurrentUser !== 'function'
-    ) {
-      return null;
+    if (!window.ApnaBiteCore) return null;
+
+    if (typeof window.ApnaBiteCore.getCurrentUser === 'function') {
+      return window.ApnaBiteCore.getCurrentUser();
     }
 
-    return window.ApnaBiteCore
-      .getCurrentUser();
+    if (typeof window.ApnaBiteCore.getSessionUser === 'function') {
+      return window.ApnaBiteCore.getSessionUser();
+    }
+
+    return null;
   }
 
   function updateChefName(user) {
-    const fullName =
-      cleanText(
-        user &&
-        (
-          user.fullName ||
-          user.name
-        )
-      );
+    const fullName = cleanText(
+      user && (user.fullName || user.name || user.Full_Name)
+    );
+    const firstName = fullName ? fullName.split(/\s+/)[0] : 'Chef';
 
-    const firstName =
-      fullName
-        ? fullName.split(/\s+/)[0]
-        : 'Chef';
-
-    if (elements.chefName) {
-      elements.chefName.textContent =
-        firstName;
+    if (elements.welcomeTitle) {
+      elements.welcomeTitle.textContent = 'Welcome, ' + firstName + '!';
     }
 
-    document
-      .querySelectorAll(
-        '[data-chef-name]'
-      )
-      .forEach(function(element) {
-        element.textContent =
-          firstName;
-      });
-  }
-
-  function normalizeStatus(value) {
-    return cleanText(value)
-      .toUpperCase()
-      .replace(/\s+/g, '_');
+    document.querySelectorAll('[data-chef-name]').forEach(function(element) {
+      element.textContent = firstName;
+    });
   }
 
   function getKitchen(data) {
-    if (
-      data.kitchen &&
-      typeof data.kitchen === 'object'
-    ) {
+    if (data.kitchen && typeof data.kitchen === 'object') {
       return data.kitchen;
     }
 
-    if (
-      data.chefKitchen &&
-      typeof data.chefKitchen === 'object'
-    ) {
+    if (data.chefKitchen && typeof data.chefKitchen === 'object') {
       return data.chefKitchen;
     }
 
     return null;
   }
 
-  function hasKitchenProfile(
-    data,
-    kitchen
-  ) {
+  function hasKitchenProfile(data, kitchen) {
     return booleanValue(
       data.kitchenProfileComplete,
       data.hasKitchenProfile,
-      data.steps &&
-        data.steps.kitchen,
-      kitchen &&
-        (
-          kitchen.kitchenId ||
-          kitchen.Kitchen_ID
-        )
+      data.steps && data.steps.kitchen,
+      kitchen && (kitchen.kitchenId || kitchen.Kitchen_ID)
     );
   }
 
-  function hasKitchenAddress(
-    data,
-    kitchen
-  ) {
+  function hasKitchenAddress(data, kitchen) {
     return booleanValue(
       data.kitchenAddressComplete,
       data.hasKitchenAddress,
       data.addressComplete,
-      data.steps &&
-        data.steps.address,
-      kitchen &&
-        (
-          kitchen.addressId ||
-          kitchen.Address_ID
-        )
+      data.steps && data.steps.address,
+      kitchen && (kitchen.addressId || kitchen.Address_ID)
     );
   }
 
-  function hasKitchenImage(
-    data,
-    kitchen
-  ) {
+  function hasKitchenImage(data, kitchen) {
     return booleanValue(
       data.kitchenImageComplete,
       data.hasKitchenImage,
       data.imageComplete,
-      data.steps &&
-        data.steps.image,
-      kitchen &&
-        (
-          kitchen.thumbnailFileId ||
-          kitchen.kitchenThumbnailFileId ||
-          kitchen.Kitchen_Thumbnail_File_ID
-        )
+      data.steps && data.steps.image,
+      kitchen && (
+        kitchen.thumbnailFileId ||
+        kitchen.kitchenThumbnailFileId ||
+        kitchen.Kitchen_Thumbnail_File_ID
+      )
     );
   }
 
   function hasKyc(data) {
-    const kyc =
-      data.kyc ||
-      data.kycSummary ||
-      {};
-
+    const kyc = data.kyc || data.kycSummary || {};
     const status = normalizeStatus(
-      data.kycStatus ||
-      kyc.overallStatus ||
-      kyc.status
+      data.kycStatus || kyc.overallStatus || kyc.status
     );
 
     return booleanValue(
       data.kycComplete,
       data.hasRequiredKyc,
-      data.steps &&
-        data.steps.kyc,
-      status === 'COMPLETE',
-      status === 'SUBMITTED',
-      status === 'PENDING',
-      status === 'VERIFIED',
-      status === 'APPROVED'
+      data.steps && data.steps.kyc,
+      ['COMPLETE', 'SUBMITTED', 'PENDING', 'VERIFIED', 'APPROVED']
+        .includes(status)
     );
   }
 
   function hasPayout(data) {
-    const payout =
-      data.payout ||
-      data.payoutAccount ||
-      {};
+    const payout = data.payout || data.payoutAccount || {};
 
     return booleanValue(
       data.payoutComplete,
       data.hasPayoutAccount,
-      data.steps &&
-        data.steps.payout,
-      payout &&
-        (
-          payout.payoutAccountId ||
-          payout.Payout_Account_ID
-        )
+      data.steps && data.steps.payout,
+      payout.payoutAccountId || payout.Payout_Account_ID
     );
   }
 
   function buildSteps(data, kitchen) {
-    const kitchenComplete =
-      hasKitchenProfile(
-        data,
-        kitchen
-      );
-
-    const addressComplete =
-      hasKitchenAddress(
-        data,
-        kitchen
-      );
-
-    const imageComplete =
-      hasKitchenImage(
-        data,
-        kitchen
-      );
-
-    const kycComplete =
-      hasKyc(data);
-
-    const payoutComplete =
-      hasPayout(data);
-
-    const requiredComplete =
-      kitchenComplete &&
-      addressComplete &&
-      imageComplete &&
-      kycComplete &&
-      payoutComplete;
-
-    return {
-      kitchen: kitchenComplete,
-      address: addressComplete,
-      image: imageComplete,
-      kyc: kycComplete,
-      payout: payoutComplete,
-      review: requiredComplete
+    const steps = {
+      kitchen: hasKitchenProfile(data, kitchen),
+      address: hasKitchenAddress(data, kitchen),
+      image: hasKitchenImage(data, kitchen),
+      kyc: hasKyc(data),
+      payout: hasPayout(data)
     };
+
+    steps.review = REQUIRED_STEPS.every(function(key) {
+      return steps[key];
+    });
+
+    return steps;
   }
 
-  function getSubmissionStatus(
-    data,
-    kitchen
-  ) {
+  function getSubmissionStatus(data, kitchen) {
     return normalizeStatus(
       data.onboardingStatus ||
       data.submissionStatus ||
       data.adminApprovalStatus ||
-      (
-        kitchen &&
-        (
-          kitchen.adminApprovalStatus ||
-          kitchen.kitchenStatus
-        )
-      )
+      (kitchen && (
+        kitchen.adminApprovalStatus ||
+        kitchen.kitchenStatus ||
+        kitchen.Admin_Approval_Status ||
+        kitchen.Kitchen_Status
+      ))
     );
   }
 
   function normalizeOnboarding(data) {
-    const kitchen =
-      getKitchen(data);
-
-    const steps =
-      buildSteps(
-        data,
-        kitchen
-      );
-
-    const requiredKeys = [
-      'kitchen',
-      'address',
-      'image',
-      'kyc',
-      'payout'
-    ];
-
-    const completedCount =
-      requiredKeys.filter(
-        function(key) {
-          return steps[key];
-        }
-      ).length;
-
-    const status =
-      getSubmissionStatus(
-        data,
-        kitchen
-      );
-
-    const submitted = [
-      'PENDING',
-      'PENDING_APPROVAL',
-      'SUBMITTED',
-      'UNDER_REVIEW',
-      'APPROVED',
-      'VERIFIED',
-      'ACTIVE'
-    ].includes(status);
+    const kitchen = getKitchen(data);
+    const steps = buildSteps(data, kitchen);
+    const completedCount = REQUIRED_STEPS.filter(function(key) {
+      return steps[key];
+    }).length;
+    const status = getSubmissionStatus(data, kitchen);
 
     const approved = [
       'APPROVED',
       'VERIFIED',
       'ACTIVE'
+    ].includes(status);
+
+    const submitted = approved || [
+      'PENDING_APPROVAL',
+      'SUBMITTED',
+      'UNDER_REVIEW'
     ].includes(status);
 
     const rejected = [
@@ -552,40 +330,43 @@
       completedCount: completedCount,
       status: status,
       canSubmit:
-        completedCount ===
-          requiredKeys.length &&
-        !submitted,
+        completedCount === REQUIRED_STEPS.length &&
+        !submitted &&
+        !approved,
       submitted: submitted,
       approved: approved,
       rejected: rejected,
-      rejectionReason:
-        cleanText(
-          data.rejectionReason ||
-          (
-            kitchen &&
-            kitchen.rejectionReason
-          ) ||
-          (
-            kitchen &&
-            kitchen.suspensionReason
-          )
-        )
+      rejectionReason: cleanText(
+        data.rejectionReason ||
+        (kitchen && (
+          kitchen.rejectionReason ||
+          kitchen.suspensionReason ||
+          kitchen.Rejection_Reason
+        ))
+      )
     };
+  }
+
+  function setLoading(loading) {
+    state.loading = Boolean(loading);
+
+    if (elements.primaryButton && !state.submitting) {
+      elements.primaryButton.disabled = state.loading;
+
+      if (state.loading) {
+        elements.primaryButton.textContent = 'LOADING…';
+      }
+    }
   }
 
   function getStepStatusElement(card) {
     if (!card) return null;
 
     return (
-      card.querySelector(
-        '[data-step-status]'
-      ) ||
-      card.querySelector(
-        '.onboarding-step__status'
-      ) ||
-      card.querySelector(
-        '.onboarding-step-card__status'
-      )
+      card.querySelector('[data-step-status]') ||
+      card.querySelector('.chef-step-status') ||
+      card.querySelector('.onboarding-step__status') ||
+      card.querySelector('.onboarding-step-card__status')
     );
   }
 
@@ -593,443 +374,236 @@
     if (!card) return null;
 
     return (
-      card.querySelector(
-        '.onboarding-step__number'
-      ) ||
-      card.querySelector(
-        '.onboarding-step-card__number'
-      ) ||
-      card.querySelector(
-        '.onboarding-step__icon'
-      ) ||
-      card.querySelector(
-        '.onboarding-step-card__icon'
-      )
+      card.querySelector('.chef-step-card__number') ||
+      card.querySelector('.onboarding-step__number') ||
+      card.querySelector('.onboarding-step-card__number') ||
+      card.querySelector('.onboarding-step__icon')
     );
   }
 
-  function updateStepCard(
-    step,
-    complete,
-    isCurrent,
-    locked
-  ) {
-    const card =
-      elements[
-        'step_' + step.key
-      ];
-
+  function updateStepCard(step, complete, current, locked) {
+    const card = elements['step_' + step.key];
     if (!card) return;
 
-    card.classList.toggle(
-      'onboarding-step--complete',
-      complete
-    );
+    card.classList.toggle('chef-step-card--complete', complete);
+    card.classList.toggle('chef-step-card--current', current);
+    card.classList.toggle('chef-step-card--locked', locked);
+    card.classList.toggle('onboarding-step--complete', complete);
+    card.classList.toggle('onboarding-step--current', current);
 
-    card.classList.toggle(
-      'onboarding-step-card--complete',
-      complete
-    );
-
-    card.classList.toggle(
-      'onboarding-step--current',
-      isCurrent
-    );
-
-    card.classList.toggle(
-      'onboarding-step-card--current',
-      isCurrent
-    );
-
-    const statusElement =
-      getStepStatusElement(card);
-
-    const numberElement =
-      getStepNumberElement(card);
+    const statusElement = getStepStatusElement(card);
+    const numberElement = getStepNumberElement(card);
+    const unavailable = state.submitted || state.approved || locked;
 
     if (complete) {
-      setText(
-        statusElement,
-        'COMPLETED'
-      );
-
-      setText(
-        numberElement,
-        '✓'
-      );
+      setText(statusElement, 'Completed');
+      setText(numberElement, '✓');
     } else if (locked) {
-      setText(
-        statusElement,
-        'LOCKED'
-      );
-    } else if (isCurrent) {
-      setText(
-        statusElement,
-        'CONTINUE'
-      );
+      setText(statusElement, 'Locked');
+      setText(numberElement, step.key === 'review' ? '6' : numberElement.textContent);
+    } else if (current) {
+      setText(statusElement, 'Continue');
     } else {
-      setText(
-        statusElement,
-        'PENDING'
-      );
+      setText(statusElement, 'Pending');
     }
 
-    if ('disabled' in card) {
-      card.disabled =
-        state.submitted ||
-        state.approved ||
-        locked;
-    }
+    card.setAttribute('aria-disabled', unavailable ? 'true' : 'false');
 
-    card.setAttribute(
-      'aria-disabled',
-      (
-        state.submitted ||
-        state.approved ||
-        locked
-      )
-        ? 'true'
-        : 'false'
-    );
+    const button = card.querySelector('button');
+    if (button) button.disabled = unavailable;
   }
 
   function renderSteps() {
-    let firstIncompleteFound =
-      false;
+    let firstIncompleteFound = false;
 
-    STEP_CONFIG.forEach(
-      function(step, index) {
-        const complete =
-          Boolean(
-            state.steps[step.key]
-          );
+    STEP_CONFIG.forEach(function(step, index) {
+      const complete = Boolean(state.steps[step.key]);
+      let current = false;
+      let locked = false;
 
-        let current = false;
-        let locked = false;
-
-        if (
-          !complete &&
-          !firstIncompleteFound
-        ) {
-          current = true;
-          firstIncompleteFound = true;
-        }
-
-        if (
-          step.key === 'review' &&
-          !state.steps.review
-        ) {
-          locked = true;
-          current = false;
-        }
-
-        if (
-          index > 0 &&
-          step.key !== 'review' &&
-          !state.steps[
-            STEP_CONFIG[index - 1].key
-          ]
-        ) {
-          locked = true;
-          current = false;
-        }
-
-        updateStepCard(
-          step,
-          complete,
-          current,
-          locked
-        );
+      if (step.key === 'review') {
+        locked = !state.steps.review;
+      } else if (
+        index > 0 &&
+        !state.steps[STEP_CONFIG[index - 1].key]
+      ) {
+        locked = true;
       }
-    );
+
+      if (!complete && !locked && !firstIncompleteFound) {
+        current = true;
+        firstIncompleteFound = true;
+      }
+
+      updateStepCard(step, complete, current, locked);
+    });
   }
 
   function renderProgress() {
     const percentage = Math.round(
-      (
-        state.completedCount /
-        state.totalRequiredSteps
-      ) * 100
+      (state.completedCount / state.totalRequiredSteps) * 100
     );
 
     if (elements.progressBar) {
-      elements.progressBar.style.width =
-        percentage + '%';
+      elements.progressBar.style.width = percentage + '%';
+    }
 
-      elements.progressBar.setAttribute(
+    if (elements.progressTrack) {
+      elements.progressTrack.setAttribute(
         'aria-valuenow',
         String(percentage)
       );
     }
 
-    setText(
-      elements.progressValue,
-      percentage + '%'
-    );
-
-    setText(
-      elements.progressLabel,
-      state.completedCount +
-      ' of ' +
-      state.totalRequiredSteps +
-      ' requirements completed'
-    );
+    setText(elements.progressText, percentage + '%');
   }
 
-  function setStatusCardClass(type) {
+  function setStatusType(type) {
     if (!elements.statusCard) return;
 
     elements.statusCard.classList.remove(
-      'onboarding-status-card--pending',
-      'onboarding-status-card--approved',
-      'onboarding-status-card--rejected'
+      'chef-status-card--loading',
+      'chef-status-card--pending',
+      'chef-status-card--approved',
+      'chef-status-card--rejected'
     );
 
     if (type) {
-      elements.statusCard.classList.add(
-        'onboarding-status-card--' +
-        type
-      );
+      elements.statusCard.classList.add('chef-status-card--' + type);
     }
   }
 
   function renderStatus() {
     if (state.approved) {
-      setStatusCardClass('approved');
-
+      setStatusType('approved');
+      setText(elements.statusIcon, '✓');
+      setText(elements.statusTitle, 'Kitchen approved');
       setText(
-        elements.statusIcon,
-        '✓'
+        elements.statusMessage,
+        'Your Kitchen is approved. You can now manage your menu and availability.'
       );
-
-      setText(
-        elements.statusTitle,
-        'Kitchen approved'
-      );
-
-      setText(
-        elements.statusText,
-        'Your Kitchen onboarding is approved. You can now manage your menu and availability.'
-      );
-
       return;
     }
 
     if (state.rejected) {
-      setStatusCardClass('rejected');
-
+      setStatusType('rejected');
+      setText(elements.statusIcon, '!');
+      setText(elements.statusTitle, 'Changes required');
       setText(
-        elements.statusIcon,
-        '!'
+        elements.statusMessage,
+        state.onboarding.rejectionReason ||
+        'Review the requested changes and submit your Kitchen again.'
       );
-
-      setText(
-        elements.statusTitle,
-        'Changes required'
-      );
-
-      setText(
-        elements.statusText,
-        state.onboarding
-          .rejectionReason ||
-        'Please review the required details and submit your Kitchen again.'
-      );
-
       return;
     }
 
     if (state.submitted) {
-      setStatusCardClass('pending');
-
+      setStatusType('pending');
+      setText(elements.statusIcon, '◷');
+      setText(elements.statusTitle, 'Approval pending');
       setText(
-        elements.statusIcon,
-        '◷'
+        elements.statusMessage,
+        'Your Kitchen details are being reviewed by ApnaBite Admin.'
       );
-
-      setText(
-        elements.statusTitle,
-        'Approval pending'
-      );
-
-      setText(
-        elements.statusText,
-        'Your Kitchen details have been submitted. ApnaBite Admin will review them before activation.'
-      );
-
       return;
     }
 
-    if (
-      state.completedCount ===
-      state.totalRequiredSteps
-    ) {
-      setStatusCardClass('');
+    setStatusType('');
 
+    if (state.completedCount === state.totalRequiredSteps) {
+      setText(elements.statusIcon, '✓');
+      setText(elements.statusTitle, 'Ready to submit');
       setText(
-        elements.statusIcon,
-        '✓'
+        elements.statusMessage,
+        'All required onboarding details are complete.'
       );
-
-      setText(
-        elements.statusTitle'
-      );
-
-      setText(
-        elements.statusTitle,
-        'Ready to submit'
-      );
-
-      setText(
-        elements.statusText,
-        'All required onboarding details are complete. Submit your Kitchen for approval.'
-      );
-
       return;
     }
 
-    setStatusCardClass('');
-
+    setText(elements.statusIcon, '●');
+    setText(elements.statusTitle, 'Complete your onboarding');
     setText(
-      elements.statusIcon,
-      '●'
-    );
-
-    setText(
-      elements.statusTitle,
-      'Complete your onboarding'
-    );
-
-    setText(
-      elements.statusText,
+      elements.statusMessage,
       'Complete the remaining requirements to submit your Kitchen for approval.'
     );
   }
 
   function renderApprovalSection() {
-    if (!elements.approvalSection) {
-      return;
-    }
+    if (!elements.approvalSection) return;
 
-    const visible =
-      state.submitted ||
-      state.approved ||
-      state.rejected;
-
-    elements.approvalSection.hidden =
-      !visible;
+    const visible = state.submitted || state.approved || state.rejected;
+    elements.approvalSection.hidden = !visible;
 
     if (!visible) return;
 
     if (state.approved) {
+      setText(elements.approvalIcon, '✓');
+      setText(elements.approvalTitle, 'Approved by ApnaBite');
       setText(
-        elements.approvalTitle,
-        'Approved by ApnaBite'
-      );
-
-      setText(
-        elements.approvalText,
+        elements.approvalMessage,
         'Your Kitchen can now be activated and shown to nearby Customers.'
       );
     } else if (state.rejected) {
+      setText(elements.approvalIcon, '!');
+      setText(elements.approvalTitle, 'Update required');
       setText(
-        elements.approvalTitle,
-        'Update required'
-      );
-
-      setText(
-        elements.approvalText,
-        state.onboarding
-          .rejectionReason ||
+        elements.approvalMessage,
+        state.onboarding.rejectionReason ||
         'Correct the requested details and submit again.'
       );
     } else {
+      setText(elements.approvalIcon, '⏳');
+      setText(elements.approvalTitle, 'Verification in progress');
       setText(
-        elements.approvalTitle,
-        'Verification in progress'
-      );
-
-      setText(
-        elements.approvalText,
-        'You will be able to start receiving Orders after Admin approval.'
+        elements.approvalMessage,
+        'You can start receiving Orders after Admin approval.'
       );
     }
   }
 
   function getFirstIncompleteStep() {
-    const requiredSteps =
-      STEP_CONFIG.filter(
-        function(step) {
-          return step.key !== 'review';
-        }
-      );
-
-    return requiredSteps.find(
-      function(step) {
-        return !state.steps[step.key];
-      }
-    ) || null;
+    return STEP_CONFIG.find(function(step) {
+      return step.key !== 'review' && !state.steps[step.key];
+    }) || null;
   }
 
   function renderPrimaryButton() {
-    const button =
-      elements.primaryButton;
-
+    const button = elements.primaryButton;
     if (!button) return;
+
+    delete button.dataset.step;
 
     if (state.approved) {
       button.disabled = false;
-      button.textContent =
-        'GO TO CHEF DASHBOARD';
-
-      button.dataset.action =
-        'dashboard';
-
+      button.textContent = 'GO TO CHEF DASHBOARD';
+      button.dataset.action = 'dashboard';
       return;
     }
 
     if (state.submitted) {
       button.disabled = true;
-      button.textContent =
-        'APPROVAL PENDING';
-
-      button.dataset.action =
-        'pending';
-
+      button.textContent = 'APPROVAL PENDING';
+      button.dataset.action = 'pending';
       return;
     }
 
     if (state.canSubmit) {
       button.disabled = false;
-      button.textContent =
-        state.rejected
-          ? 'RESUBMIT FOR APPROVAL'
-          : 'SUBMIT FOR APPROVAL';
-
-      button.dataset.action =
-        'submit';
-
+      button.textContent = state.rejected
+        ? 'RESUBMIT FOR APPROVAL'
+        : 'REVIEW & SUBMIT';
+      button.dataset.action = 'review';
       return;
     }
 
-    const nextStep =
-      getFirstIncompleteStep();
+    const nextStep = getFirstIncompleteStep();
 
-    button.disabled =
-      !nextStep;
-
-    button.textContent =
-      nextStep
-        ? 'CONTINUE: ' +
-          nextStep.label.toUpperCase()
-        : 'CONTINUE ONBOARDING';
-
-    button.dataset.action =
-      'continue';
-
-    button.dataset.step =
-      nextStep
-        ? nextStep.key
-        : '';
+    button.disabled = !nextStep;
+    button.textContent = nextStep
+      ? 'CONTINUE: ' + nextStep.label.toUpperCase()
+      : 'CONTINUE ONBOARDING';
+    button.dataset.action = 'continue';
+    button.dataset.step = nextStep ? nextStep.key : '';
   }
 
   function render() {
@@ -1041,92 +615,45 @@
   }
 
   function openStep(stepKey) {
-    if (
-      state.submitted ||
-      state.approved
-    ) {
-      return;
-    }
+    if (state.submitted || state.approved) return;
 
-    const step =
-      STEP_CONFIG.find(
-        function(item) {
-          return item.key === stepKey;
-        }
-      );
+    const step = STEP_CONFIG.find(function(item) {
+      return item.key === stepKey;
+    });
 
     if (!step) return;
 
+    const card = elements['step_' + step.key];
+
     if (
-      step.key === 'review' &&
-      !state.steps.review
+      card &&
+      card.getAttribute('aria-disabled') === 'true'
     ) {
       window.ApnaBiteUI.showToast(
-        'Complete all required steps first.',
+        'Complete the previous step first.',
         'warning'
       );
-
       return;
     }
 
-    window.location.href =
-      step.page;
-  }
-
-  function bindStepEvents() {
-    STEP_CONFIG.forEach(
-      function(step) {
-        const card =
-          elements[
-            'step_' + step.key
-          ];
-
-        if (!card) return;
-
-        card.addEventListener(
-          'click',
-          function() {
-            if (
-              card.getAttribute(
-                'aria-disabled'
-              ) === 'true'
-            ) {
-              return;
-            }
-
-            openStep(step.key);
-          }
-        );
-      }
-    );
+    window.location.href = step.page;
   }
 
   async function submitForApproval() {
-    if (
-      state.submitting ||
-      !state.canSubmit
-    ) {
-      return;
-    }
+    if (state.submitting || !state.canSubmit) return;
 
-    if (
-      !state.kitchen ||
-      !(
-        state.kitchen.kitchenId ||
-        state.kitchen.Kitchen_ID
-      )
-    ) {
+    const kitchenId = state.kitchen && (
+      state.kitchen.kitchenId ||
+      state.kitchen.Kitchen_ID
+    );
+
+    if (!kitchenId) {
       window.ApnaBiteUI.showToast(
         'Kitchen profile could not be found.',
         'error'
       );
-
       return;
     }
-
-    const kitchenId =
-      state.kitchen.kitchenId ||
-      state.kitchen.Kitchen_ID;
 
     state.submitting = true;
 
@@ -1139,13 +666,8 @@
     try {
       await window.ApnaBiteAPI.request(
         'chef.kitchen.submit',
-        {
-          kitchenId: kitchenId
-        },
-        {
-          retry: false,
-          deduplicate: false
-        }
+        { kitchenId: kitchenId },
+        { retry: false, deduplicate: false }
       );
 
       window.ApnaBiteUI.showToast(
@@ -1157,9 +679,7 @@
     } catch (error) {
       window.ApnaBiteUI.handleApiError(
         error,
-        {
-          redirectToLogin: true
-        }
+        { redirectToLogin: true }
       );
     } finally {
       state.submitting = false;
@@ -1174,38 +694,43 @@
   }
 
   function handlePrimaryAction() {
-    if (!elements.primaryButton) {
-      return;
-    }
+    const button = elements.primaryButton;
+    if (!button || button.disabled) return;
 
-    const action =
-      elements.primaryButton
-        .dataset.action;
+    const action = button.dataset.action;
 
     if (action === 'dashboard') {
-      window.location.href =
-        'dashboard.html';
-
-      return;
-    }
-
-    if (action === 'submit') {
+      window.location.href = 'dashboard.html';
+    } else if (action === 'review') {
+      openStep('review');
+    } else if (action === 'submit') {
       submitForApproval();
-      return;
-    }
-
-    if (action === 'continue') {
-      openStep(
-        elements.primaryButton
-          .dataset.step
-      );
+    } else if (action === 'continue') {
+      openStep(button.dataset.step);
     }
   }
 
+  function bindStepEvents() {
+    STEP_CONFIG.forEach(function(step) {
+      const card = elements['step_' + step.key];
+      if (!card) return;
+
+      card.addEventListener('click', function(event) {
+        if (
+          event.target.closest('button') &&
+          event.target.closest('button').disabled
+        ) {
+          return;
+        }
+
+        if (card.getAttribute('aria-disabled') === 'true') return;
+        openStep(step.key);
+      });
+    });
+  }
+
   async function logout() {
-    if (!elements.logoutButton) {
-      return;
-    }
+    if (!elements.logoutButton) return;
 
     window.ApnaBiteUI.setButtonLoading(
       elements.logoutButton,
@@ -1216,149 +741,91 @@
     try {
       await window.ApnaBiteAPI.logout();
     } catch (error) {
-      window.ApnaBiteAPI
-        .clearSessionToken();
+      window.ApnaBiteAPI.clearSessionToken();
     }
 
-    if (
-      window.ApnaBiteCore &&
-      typeof window.ApnaBiteCore
-        .clearSession === 'function'
-    ) {
-      window.ApnaBiteCore
-        .clearSession();
-    }
-
-    window.location.replace(
-      '../login.html'
-    );
+    window.ApnaBiteCore.clearSession();
+    window.location.replace('../login.html');
   }
 
   async function validateChefSession() {
-    if (
-      !window.ApnaBiteCore
-        .requireLocalSession(
-          ['CHEF']
-        )
-    ) {
+    if (!window.ApnaBiteCore.requireLocalSession(['CHEF'])) {
       return null;
     }
 
     try {
-      const response =
-        await window.ApnaBiteAPI
-          .validateSession();
+      const response = await window.ApnaBiteAPI.validateSession();
+      const user = response && response.data
+        ? response.data.user
+        : null;
 
-      const user =
-        response &&
-        response.data
-          ? response.data.user
-          : null;
-
-      if (
-        !user ||
-        normalizeStatus(user.role) !==
-          'CHEF'
-      ) {
-        window.ApnaBiteCore
-          .redirectToRoleHome(
-            user ? user.role : '',
-            true
-          );
-
+      if (!user || normalizeStatus(user.role) !== 'CHEF') {
+        window.ApnaBiteCore.clearSession();
+        window.ApnaBiteCore.navigate('login.html', true);
         return null;
       }
 
       window.ApnaBiteCore.saveSession({
-        sessionToken:
-          window.ApnaBiteCore
-            .getSessionToken(),
+        sessionToken: window.ApnaBiteCore.getSessionToken(),
         user: user
       });
 
       state.user = user;
       updateChefName(user);
-
       return user;
     } catch (error) {
-      window.ApnaBiteUI
-        .handleApiError(
-          error,
-          {
-            redirectToLogin: true
-          }
-        );
-
+      window.ApnaBiteUI.handleApiError(
+        error,
+        { redirectToLogin: true }
+      );
       return null;
     }
   }
 
   async function loadOnboarding() {
-    if (state.loading) {
-      return;
-    }
+    if (state.loading) return;
 
     setLoading(true);
 
     try {
-      const response =
-        await window.ApnaBiteAPI.request(
-          'chef.onboarding',
-          {},
-          {
-            retry: true,
-            deduplicate: true
-          }
-        );
+      const response = await window.ApnaBiteAPI.request(
+        'chef.onboarding',
+        {},
+        { retry: true, deduplicate: true }
+      );
 
-      const data =
-        getResponseData(response);
+      const normalized = normalizeOnboarding(
+        getResponseData(response)
+      );
 
-      const normalized =
-        normalizeOnboarding(data);
-
-      state.onboarding =
-        normalized;
-
-      state.kitchen =
-        normalized.kitchen;
-
-      state.steps =
-        normalized.steps;
-
-      state.completedCount =
-        normalized.completedCount;
-
-      state.canSubmit =
-        normalized.canSubmit;
-
-      state.submitted =
-        normalized.submitted;
-
-      state.approved =
-        normalized.approved;
-
-      state.rejected =
-        normalized.rejected;
+      state.onboarding = normalized;
+      state.kitchen = normalized.kitchen;
+      state.steps = normalized.steps;
+      state.completedCount = normalized.completedCount;
+      state.canSubmit = normalized.canSubmit;
+      state.submitted = normalized.submitted;
+      state.approved = normalized.approved;
+      state.rejected = normalized.rejected;
 
       render();
     } catch (error) {
-      window.ApnaBiteUI
-        .handleApiError(
-          error,
-          {
-            redirectToLogin: true
-          }
-        );
-
+      setStatusType('rejected');
+      setText(elements.statusIcon, '!');
+      setText(elements.statusTitle, 'Unable to load onboarding');
       setText(
-        elements.statusTitle,
-        'Unable to load onboarding'
+        elements.statusMessage,
+        'Check your internet connection and try again.'
       );
 
-      setText(
-        elements.statusText,
-        'Check your internet connection and reload this page.'
+      if (elements.primaryButton) {
+        elements.primaryButton.disabled = false;
+        elements.primaryButton.textContent = 'RETRY';
+        elements.primaryButton.dataset.action = 'retry';
+      }
+
+      window.ApnaBiteUI.handleApiError(
+        error,
+        { redirectToLogin: true }
       );
     } finally {
       setLoading(false);
@@ -1367,81 +834,55 @@
 
   function bindEvents() {
     if (elements.logoutButton) {
-      elements.logoutButton
-        .addEventListener(
-          'click',
-          logout
-        );
+      elements.logoutButton.addEventListener('click', logout);
     }
 
     if (elements.primaryButton) {
-      elements.primaryButton
-        .addEventListener(
-          'click',
-          handlePrimaryAction
-        );
+      elements.primaryButton.addEventListener('click', function() {
+        if (elements.primaryButton.dataset.action === 'retry') {
+          loadOnboarding();
+          return;
+        }
+
+        handlePrimaryAction();
+      });
     }
 
     bindStepEvents();
 
-    window.addEventListener(
-      'pageshow',
-      function(event) {
-        if (
-          event.persisted &&
-          state.initialized
-        ) {
-          loadOnboarding();
-        }
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted && state.initialized) {
+        loadOnboarding();
       }
-    );
+    });
   }
 
   async function initialize() {
-    if (
-      !document.body.classList
-        .contains('chef-page') &&
-      !document.getElementById(
-        'onboarding-progress-bar'
-      )
-    ) {
+    if (!document.body.classList.contains('chef-onboarding-page')) {
       return;
     }
+
+    if (state.initialized) return;
+    state.initialized = true;
 
     getElements();
 
-    const user =
-      await validateChefSession();
+    const localUser = getLocalUser();
+    if (localUser) updateChefName(localUser);
 
-    if (!user) {
-      return;
-    }
+    const user = await validateChefSession();
+    if (!user) return;
 
     bindEvents();
-
-    state.initialized = true;
-
-    const localUser =
-      getLocalUser();
-
-    updateChefName(
-      localUser || user
-    );
-
     await loadOnboarding();
   }
 
-  window.ApnaBiteChef =
-    Object.freeze({
-      initialize: initialize,
-      loadOnboarding:
-        loadOnboarding,
-      openStep: openStep,
-      submitForApproval:
-        submitForApproval
-    });
+  window.ApnaBiteChef = Object.freeze({
+    initialize: initialize,
+    loadOnboarding: loadOnboarding,
+    openStep: openStep,
+    submitForApproval: submitForApproval
+  });
 
-  window.ApnaBiteCore.ready(
-    initialize
-  );
+  window.ApnaBiteCore.ready(initialize);
 })(window, document);
