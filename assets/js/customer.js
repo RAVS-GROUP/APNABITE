@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * APNABITE V1 — CUSTOMER CONTROLLER
+ * APNABITE V1 — CUSTOMER LOCATION CONTROLLER
  * File: assets/js/customer.js
  * Requires: core.js, api.js, ui.js, Leaflet
  * ============================================================
@@ -15,144 +15,105 @@
     savedAddresses: [],
     searchResults: [],
     reverseTimer: null,
-    locationBusy: false,
+    requestAt: 0,
     searchBusy: false,
-    pendingSource: 'MAP_PIN',
-    externalRequestAt: 0
+    locationBusy: false,
+    skipNextMoveEnd: false,
+    pendingSource: 'MAP_PIN'
   };
 
   const elements = {};
 
   function getElements() {
     elements.backButton =
-      document.getElementById(
-        'location-back-button'
-      );
+      document.getElementById('location-back-button');
 
     elements.searchForm =
-      document.getElementById(
-        'location-search-form'
-      );
+      document.getElementById('location-search-form');
 
     elements.searchInput =
-      document.getElementById(
-        'location-search-input'
-      );
+      document.getElementById('location-search-input');
 
     elements.searchButton =
-      document.getElementById(
-        'location-search-button'
-      );
+      document.getElementById('location-search-button');
 
     elements.searchMessage =
-      document.getElementById(
-        'location-search-message'
-      );
+      document.getElementById('location-search-message');
+
+    elements.searchResults =
+      document.getElementById('location-search-results');
 
     elements.currentLocationButton =
-      document.getElementById(
-        'use-current-location'
-      );
+      document.getElementById('use-current-location');
 
     elements.mapCurrentButton =
-      document.getElementById(
-        'map-current-location'
-      );
+      document.getElementById('map-current-location');
 
     elements.mapLoading =
-      document.getElementById(
-        'map-loading'
-      );
+      document.getElementById('map-loading');
 
     elements.savedAddressSection =
-      document.getElementById(
-        'saved-address-section'
-      );
+      document.getElementById('saved-address-section');
 
     elements.savedAddressList =
-      document.getElementById(
-        'saved-address-list'
-      );
+      document.getElementById('saved-address-list');
+
+    elements.noSavedAddress =
+      document.getElementById('no-saved-address');
 
     elements.selectedName =
-      document.getElementById(
-        'selected-location-name'
-      );
+      document.getElementById('selected-location-name');
 
     elements.selectedAddress =
-      document.getElementById(
-        'selected-location-address'
-      );
+      document.getElementById('selected-location-address');
+
+    elements.receiverSection =
+      document.getElementById('receiver-details-section');
+
+    elements.receiverName =
+      document.getElementById('receiver-name');
+
+    elements.receiverMobile =
+      document.getElementById('receiver-mobile');
+
+    elements.addressFlat =
+      document.getElementById('address-flat');
+
+    elements.addressLandmark =
+      document.getElementById('address-landmark');
+
+    elements.addressArea =
+      document.getElementById('address-area');
+
+    elements.addressCity =
+      document.getElementById('address-city');
+
+    elements.addressDistrict =
+      document.getElementById('address-district');
+
+    elements.addressState =
+      document.getElementById('address-state');
+
+    elements.useOnce =
+      document.getElementById('address-use-once');
+
+    elements.saveFuture =
+      document.getElementById('address-save-future');
+
+    elements.addressLabelGroup =
+      document.getElementById('address-label-group');
+
+    elements.addressLabel =
+      document.getElementById('address-label');
 
     elements.confirmButton =
-      document.getElementById(
-        'confirm-location-button'
-      );
+      document.getElementById('confirm-location-button');
   }
 
-  function setSearchMessage(
-    message,
-    isError
-  ) {
-    if (!elements.searchMessage) {
-      return;
-    }
-
-    elements.searchMessage.textContent =
-      message || '';
-
-    elements.searchMessage.classList
-      .toggle(
-        'location-helper-text--error',
-        Boolean(isError)
-      );
-  }
-
-  function setMapLoading(loading) {
-    if (!elements.mapLoading) {
-      return;
-    }
-
-    elements.mapLoading.hidden =
-      !loading;
-  }
-
-  function setButtonState(
-    button,
-    loading,
-    loadingText,
-    normalText
-  ) {
-    if (!button) return;
-
-    button.disabled = Boolean(loading);
-
-    button.textContent =
-      loading
-        ? loadingText
-        : normalText;
-  }
-
-  function delay(milliseconds) {
-    return new Promise(function(resolve) {
-      window.setTimeout(
-        resolve,
-        milliseconds
-      );
-    });
-  }
-
-  async function waitForExternalRequest() {
-    const elapsed =
-      Date.now() -
-      state.externalRequestAt;
-
-    if (elapsed < 1100) {
-      await delay(1100 - elapsed);
-    }
-
-    state.externalRequestAt =
-      Date.now();
+  function clean(value) {
+    return String(value || '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   function numberOrNull(value) {
@@ -163,17 +124,79 @@
       : null;
   }
 
-  function cleanPart(value) {
+  function digitsOnly(value) {
     return String(value || '')
-      .replace(/\s+/g, ' ')
-      .trim();
+      .replace(/\D/g, '');
   }
 
-  function addUniquePart(
-    parts,
-    value
+  function delay(milliseconds) {
+    return new Promise(function(resolve) {
+      window.setTimeout(resolve, milliseconds);
+    });
+  }
+
+  async function waitForLocationRequest() {
+    const elapsed =
+      Date.now() - state.requestAt;
+
+    if (elapsed < 1100) {
+      await delay(1100 - elapsed);
+    }
+
+    state.requestAt = Date.now();
+  }
+
+  async function fetchLocationJson(url) {
+    await waitForLocationRequest();
+
+    const response =
+      await window.fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Accept-Language': 'en-IN,en'
+        }
+      });
+
+    if (!response.ok) {
+      throw new Error(
+        'Location service unavailable.'
+      );
+    }
+
+    return response.json();
+  }
+
+  function setSearchMessage(message, isError) {
+    elements.searchMessage.textContent =
+      message || '';
+
+    elements.searchMessage.classList.toggle(
+      'location-helper-text--error',
+      Boolean(isError)
+    );
+  }
+
+  function setMapLoading(loading) {
+    elements.mapLoading.hidden =
+      !loading;
+  }
+
+  function setButtonLoading(
+    button,
+    loading,
+    loadingText,
+    normalText
   ) {
-    const part = cleanPart(value);
+    if (!button) return;
+
+    button.disabled = Boolean(loading);
+    button.textContent =
+      loading ? loadingText : normalText;
+  }
+
+  function addUniquePart(parts, value) {
+    const part = clean(value);
 
     if (!part) return;
 
@@ -188,194 +211,186 @@
     }
   }
 
-  function buildCompactName(address) {
+  function parseAddress(address) {
     const data = address || {};
 
-    const primary =
-      cleanPart(
+    return {
+      area: clean(
         data.suburb ||
         data.neighbourhood ||
         data.quarter ||
-        data.city_district ||
+        data.residential ||
         data.village ||
+        data.road
+      ),
+      city: clean(
+        data.city ||
         data.town ||
-        data.city
-      );
-
-    const secondaryParts = [];
-
-    if (
-      data.neighbourhood &&
-      cleanPart(data.neighbourhood)
-        .toLowerCase() !==
-      primary.toLowerCase()
-    ) {
-      addUniquePart(
-        secondaryParts,
-        data.neighbourhood
-      );
-    }
-
-    if (
-      data.quarter &&
-      cleanPart(data.quarter)
-        .toLowerCase() !==
-      primary.toLowerCase()
-    ) {
-      addUniquePart(
-        secondaryParts,
-        data.quarter
-      );
-    }
-
-    addUniquePart(
-      secondaryParts,
-      data.road
-    );
-
-    addUniquePart(
-      secondaryParts,
-      data.city ||
-      data.town ||
-      data.municipality ||
-      data.county
-    );
-
-    if (
-      primary &&
-      secondaryParts.length
-    ) {
-      return (
-        primary +
-        ' • ' +
-        secondaryParts.join(', ')
-      );
-    }
-
-    if (primary) {
-      return primary;
-    }
-
-    return cleanPart(
-      data.state ||
-      'Selected location'
-    );
+        data.municipality ||
+        data.village
+      ),
+      district: clean(
+        data.city_district ||
+        data.state_district ||
+        data.county
+      ),
+      state: clean(data.state),
+      postalCode: clean(data.postcode),
+      country: clean(data.country),
+      countryCode: clean(data.country_code)
+        .toUpperCase()
+    };
   }
 
-  function buildSavedAddressName(address) {
-    const primary =
-      cleanPart(
-        address.area ||
-        address.addressLabel
-      );
+  function buildLocationName(address) {
+    const data = address || {};
 
-    const secondaryParts = [];
+    const primary = clean(
+      data.building ||
+      data.amenity ||
+      data.shop ||
+      data.office ||
+      data.tourism ||
+      data.residential ||
+      data.neighbourhood ||
+      data.suburb ||
+      data.quarter ||
+      data.road ||
+      data.village ||
+      data.town ||
+      data.city
+    );
+
+    const secondary = [];
 
     addUniquePart(
-      secondaryParts,
-      address.addressLine1
+      secondary,
+      data.neighbourhood
     );
 
     addUniquePart(
-      secondaryParts,
-      address.city
+      secondary,
+      data.suburb
     );
 
-    if (
-      primary &&
-      secondaryParts.length
-    ) {
-      return (
-        primary +
+    addUniquePart(
+      secondary,
+      data.city || data.town
+    );
+
+    const filtered =
+      secondary.filter(function(item) {
+        return item.toLowerCase() !==
+          primary.toLowerCase();
+      });
+
+    if (primary && filtered.length) {
+      return primary +
         ' • ' +
-        secondaryParts.join(', ')
-      );
+        filtered.slice(0, 2).join(', ');
     }
 
     return (
       primary ||
-      secondaryParts.join(', ') ||
-      'Saved address'
+      clean(data.state) ||
+      'Selected location'
     );
   }
 
   function buildSavedFullAddress(address) {
     const parts = [];
 
-    addUniquePart(
-      parts,
-      address.addressLine1
-    );
-
-    addUniquePart(
-      parts,
-      address.addressLine2
-    );
-
-    addUniquePart(
-      parts,
-      address.landmark
-    );
-
-    addUniquePart(
-      parts,
-      address.area
-    );
-
-    addUniquePart(
-      parts,
-      address.city
-    );
-
-    addUniquePart(
-      parts,
-      address.state
-    );
-
-    addUniquePart(
-      parts,
-      address.postalCode
-    );
+    addUniquePart(parts, address.flatHouse);
+    addUniquePart(parts, address.addressLine1);
+    addUniquePart(parts, address.addressLine2);
+    addUniquePart(parts, address.landmark);
+    addUniquePart(parts, address.area);
+    addUniquePart(parts, address.city);
+    addUniquePart(parts, address.district);
+    addUniquePart(parts, address.state);
+    addUniquePart(parts, address.postalCode);
 
     return parts.join(', ');
   }
 
+  function fillAddressFields(location) {
+    elements.addressArea.value =
+      clean(location.area);
+
+    elements.addressCity.value =
+      clean(location.city);
+
+    elements.addressDistrict.value =
+      clean(location.district);
+
+    elements.addressState.value =
+      clean(location.state);
+  }
+
+  function fillSavedReceiverDetails(address) {
+    elements.receiverName.value =
+      clean(
+        address.receiverName ||
+        address.fullName
+      );
+
+    elements.receiverMobile.value =
+      digitsOnly(
+        address.receiverMobile ||
+        address.mobile
+      ).slice(-10);
+
+    elements.addressFlat.value =
+      clean(
+        address.flatHouse ||
+        address.addressLine1
+      );
+
+    elements.addressLandmark.value =
+      clean(address.landmark);
+  }
+
   function setSelectedLocation(location) {
+    const latitude =
+      numberOrNull(location.latitude);
+
+    const longitude =
+      numberOrNull(location.longitude);
+
     if (
-      !location ||
-      !Number.isFinite(
-        Number(location.latitude)
-      ) ||
-      !Number.isFinite(
-        Number(location.longitude)
-      )
+      latitude === null ||
+      longitude === null
     ) {
       return;
     }
 
     state.selectedLocation = {
-      latitude:
-        Number(location.latitude),
-      longitude:
-        Number(location.longitude),
+      latitude: latitude,
+      longitude: longitude,
       locationName:
-        cleanPart(
-          location.locationName
-        ) ||
+        clean(location.locationName) ||
         'Selected location',
       fullAddress:
-        cleanPart(
-          location.fullAddress
-        ),
+        clean(location.fullAddress),
+      area:
+        clean(location.area),
+      city:
+        clean(location.city),
+      district:
+        clean(location.district),
+      state:
+        clean(location.state),
+      postalCode:
+        clean(location.postalCode),
+      country:
+        clean(location.country),
+      countryCode:
+        clean(location.countryCode),
       source:
-        cleanPart(
-          location.source
-        ) ||
+        clean(location.source) ||
         'MAP_PIN',
       addressId:
-        cleanPart(
-          location.addressId
-        )
+        clean(location.addressId)
     };
 
     elements.selectedName.textContent =
@@ -385,349 +400,80 @@
       state.selectedLocation.fullAddress ||
       'Location selected on map';
 
+    fillAddressFields(
+      state.selectedLocation
+    );
+
+    elements.receiverSection.hidden =
+      false;
+
     elements.confirmButton.disabled =
       false;
   }
 
-  function createSearchResultsContainer() {
-    let container =
-      document.getElementById(
-        'location-search-results'
-      );
-
-    if (container) {
-      return container;
-    }
-
-    container =
-      document.createElement('div');
-
-    container.id =
-      'location-search-results';
-
-    container.className =
-      'saved-address-list';
-
-    container.style.marginTop =
-      '10px';
-
-    elements.searchMessage
-      .insertAdjacentElement(
-        'afterend',
-        container
-      );
-
-    return container;
-  }
-
   function clearSearchResults() {
-    const container =
-      document.getElementById(
-        'location-search-results'
-      );
-
-    if (container) {
-      container.innerHTML = '';
-    }
-
+    elements.searchResults.innerHTML = '';
     state.searchResults = [];
   }
 
   function renderSearchResults(results) {
-    const container =
-      createSearchResultsContainer();
+    elements.searchResults.innerHTML = '';
 
-    container.innerHTML = '';
+    results.forEach(function(result, index) {
+      const button =
+        document.createElement('button');
 
-    results.forEach(
-      function(result, index) {
-        const button =
-          document.createElement(
-            'button'
-          );
+      button.type = 'button';
+      button.className =
+        'location-result-card';
 
-        button.type = 'button';
+      const icon =
+        document.createElement('span');
 
-        button.className =
-          'saved-address-card';
+      icon.className =
+        'location-result-card__icon';
 
-        const icon =
-          document.createElement(
-            'span'
-          );
+      icon.textContent = '⌖';
 
-        icon.className =
-          'saved-address-card__icon';
+      const content =
+        document.createElement('span');
 
-        icon.textContent = '⌖';
+      content.className =
+        'location-result-card__content';
 
-        const content =
-          document.createElement(
-            'span'
-          );
+      const name =
+        document.createElement('strong');
 
-        content.className =
-          'saved-address-card__content';
+      name.className =
+        'location-result-card__name';
 
-        const label =
-          document.createElement(
-            'strong'
-          );
+      name.textContent =
+        result.locationName;
 
-        label.className =
-          'saved-address-card__label';
+      const address =
+        document.createElement('p');
 
-        label.textContent =
-          result.locationName;
+      address.className =
+        'location-result-card__address';
 
-        const address =
-          document.createElement('p');
+      address.textContent =
+        result.fullAddress;
 
-        address.className =
-          'saved-address-card__address';
+      content.appendChild(name);
+      content.appendChild(address);
+      button.appendChild(icon);
+      button.appendChild(content);
 
-        address.textContent =
-          result.fullAddress;
-
-        content.appendChild(label);
-        content.appendChild(address);
-
-        button.appendChild(icon);
-        button.appendChild(content);
-
-        button.addEventListener(
-          'click',
-          function() {
-            selectSearchResult(index);
-          }
-        );
-
-        container.appendChild(button);
-      }
-    );
-  }
-
-  function initializeMap() {
-    if (!window.L) {
-      setMapLoading(false);
-
-      window.ApnaBiteUI.showToast(
-        'Map could not be loaded.',
-        'error'
-      );
-
-      return false;
-    }
-
-    const savedLocation =
-      window.ApnaBiteCore
-        .getJsonStorage(
-          window.ApnaBiteCore
-            .storageKeys.LOCATION,
-          null
-        );
-
-    const initialLatitude =
-      savedLocation &&
-      numberOrNull(
-        savedLocation.latitude
-      ) !== null
-        ? Number(
-            savedLocation.latitude
-          )
-        : 28.6139;
-
-    const initialLongitude =
-      savedLocation &&
-      numberOrNull(
-        savedLocation.longitude
-      ) !== null
-        ? Number(
-            savedLocation.longitude
-          )
-        : 77.2090;
-
-    state.map = window.L
-      .map(
-        'location-map',
-        {
-          zoomControl: true,
-          attributionControl: true
-        }
-      )
-      .setView(
-        [
-          initialLatitude,
-          initialLongitude
-        ],
-        savedLocation ? 17 : 11
-      );
-
-    window.L
-      .tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          maxZoom: 19,
-          attribution:
-            '&copy; OpenStreetMap contributors'
-        }
-      )
-      .addTo(state.map);
-
-    state.map.on(
-      'dragstart',
-      function() {
-        state.pendingSource =
-          'MAP_PIN';
-      }
-    );
-
-    state.map.on(
-      'moveend',
-      function() {
-        scheduleMapSelection();
-      }
-    );
-
-    setMapLoading(false);
-
-    if (
-      savedLocation &&
-      savedLocation.locationName
-    ) {
-      setSelectedLocation({
-        latitude:
-          initialLatitude,
-        longitude:
-          initialLongitude,
-        locationName:
-          savedLocation.locationName,
-        fullAddress:
-          savedLocation.fullAddress ||
-          savedLocation.locationName,
-        source:
-          savedLocation.source ||
-          'CACHED',
-        addressId:
-          savedLocation.addressId || ''
-      });
-    }
-
-    window.setTimeout(
-      function() {
-        state.map.invalidateSize();
-      },
-      200
-    );
-
-    return true;
-  }
-
-  function scheduleMapSelection() {
-    window.clearTimeout(
-      state.reverseTimer
-    );
-
-    state.reverseTimer =
-      window.setTimeout(
+      button.addEventListener(
+        'click',
         function() {
-          if (!state.map) return;
-
-          const center =
-            state.map.getCenter();
-
-          const source =
-            state.pendingSource ||
-            'MAP_PIN';
-
-          state.pendingSource =
-            'MAP_PIN';
-
-          reverseGeocode(
-            center.lat,
-            center.lng,
-            source
-          );
-        },
-        900
-      );
-  }
-
-  async function fetchJson(url) {
-    await waitForExternalRequest();
-
-    const response =
-      await window.fetch(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Accept-Language': 'en-IN,en'
-          }
+          selectSearchResult(index);
         }
       );
 
-    if (!response.ok) {
-      throw new Error(
-        'Location service unavailable.'
-      );
-    }
-
-    return response.json();
-  }
-
-  async function reverseGeocode(
-    latitude,
-    longitude,
-    source
-  ) {
-    try {
-      const url =
-        'https://nominatim.openstreetmap.org/reverse' +
-        '?format=jsonv2' +
-        '&addressdetails=1' +
-        '&zoom=18' +
-        '&lat=' +
-        encodeURIComponent(latitude) +
-        '&lon=' +
-        encodeURIComponent(longitude);
-
-      const result =
-        await fetchJson(url);
-
-      setSelectedLocation({
-        latitude: latitude,
-        longitude: longitude,
-        locationName:
-          buildCompactName(
-            result.address
-          ),
-        fullAddress:
-          result.display_name ||
-          '',
-        source:
-          source ||
-          'MAP_PIN'
-      });
-    } catch (error) {
-      setSelectedLocation({
-        latitude: latitude,
-        longitude: longitude,
-        locationName:
-          'Selected location',
-        fullAddress:
-          'Location selected on map',
-        source:
-          source ||
-          'MAP_PIN'
-      });
-
-      window.ApnaBiteUI.showToast(
-        'Exact address name could not be loaded.',
-        'warning'
-      );
-    }
+      elements.searchResults
+        .appendChild(button);
+    });
   }
 
   async function searchLocation(event) {
@@ -736,9 +482,7 @@
     if (state.searchBusy) return;
 
     const query =
-      cleanPart(
-        elements.searchInput.value
-      );
+      clean(elements.searchInput.value);
 
     if (query.length < 3) {
       setSearchMessage(
@@ -751,15 +495,15 @@
 
     state.searchBusy = true;
 
-    setButtonState(
+    setButtonLoading(
       elements.searchButton,
       true,
       'SEARCHING…',
-      'Search'
+      'SEARCH'
     );
 
     setSearchMessage(
-      'Searching locations…',
+      'Searching matching locations…',
       false
     );
 
@@ -771,19 +515,20 @@
         '?format=jsonv2' +
         '&addressdetails=1' +
         '&countrycodes=in' +
-        '&limit=5' +
+        '&limit=10' +
+        '&dedupe=1' +
         '&q=' +
         encodeURIComponent(query);
 
       const response =
-        await fetchJson(url);
+        await fetchLocationJson(url);
 
       if (
         !Array.isArray(response) ||
         !response.length
       ) {
         setSearchMessage(
-          'No matching location found. Try adding city or PIN code.',
+          'No matching location found. Add area, city or nearby landmark.',
           true
         );
 
@@ -791,29 +536,56 @@
       }
 
       state.searchResults =
-        response.map(function(result) {
-          return {
-            latitude:
-              Number(result.lat),
-            longitude:
-              Number(result.lon),
-            locationName:
-              buildCompactName(
-                result.address
-              ),
-            fullAddress:
-              result.display_name ||
-              '',
-            source: 'SEARCH'
-          };
-        });
+        response
+          .map(function(result) {
+            const parsed =
+              parseAddress(result.address);
+
+            return {
+              latitude: Number(result.lat),
+              longitude: Number(result.lon),
+              locationName:
+                buildLocationName(
+                  result.address
+                ),
+              fullAddress:
+                clean(result.display_name),
+              area: parsed.area,
+              city: parsed.city,
+              district: parsed.district,
+              state: parsed.state,
+              postalCode:
+                parsed.postalCode,
+              country: parsed.country,
+              countryCode:
+                parsed.countryCode,
+              source: 'SEARCH'
+            };
+          })
+          .filter(function(result) {
+            return (
+              Number.isFinite(
+                result.latitude
+              ) &&
+              Number.isFinite(
+                result.longitude
+              )
+            );
+          });
 
       renderSearchResults(
         state.searchResults
       );
 
       setSearchMessage(
-        'Select the correct location below.',
+        state.searchResults.length +
+        ' matching location' +
+        (
+          state.searchResults.length === 1
+            ? ''
+            : 's'
+        ) +
+        ' found. Select the correct one.',
         false
       );
     } catch (error) {
@@ -829,11 +601,11 @@
     } finally {
       state.searchBusy = false;
 
-      setButtonState(
+      setButtonLoading(
         elements.searchButton,
         false,
         'SEARCHING…',
-        'Search'
+        'SEARCH'
       );
     }
   }
@@ -846,6 +618,7 @@
       return;
     }
 
+    state.skipNextMoveEnd = true;
     state.pendingSource = 'SEARCH';
 
     setSelectedLocation(result);
@@ -855,24 +628,214 @@
         result.latitude,
         result.longitude
       ],
-      17
+      18
     );
 
     clearSearchResults();
 
     setSearchMessage(
-      'Location selected. Move the map for exact position.',
+      'Location selected. Adjust the map pin if required.',
       false
     );
 
     document
-      .getElementById(
-        'location-map'
-      )
+      .getElementById('location-map')
       .scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
+  }
+
+  function initializeMap() {
+    if (!window.L) {
+      setMapLoading(false);
+
+      window.ApnaBiteUI.showToast(
+        'Map could not be loaded.',
+        'error'
+      );
+
+      return false;
+    }
+
+    const cachedLocation =
+      window.ApnaBiteCore.getJsonStorage(
+        window.ApnaBiteCore
+          .storageKeys.LOCATION,
+        null
+      );
+
+    const cachedLatitude =
+      cachedLocation
+        ? numberOrNull(
+            cachedLocation.latitude
+          )
+        : null;
+
+    const cachedLongitude =
+      cachedLocation
+        ? numberOrNull(
+            cachedLocation.longitude
+          )
+        : null;
+
+    const latitude =
+      cachedLatitude !== null
+        ? cachedLatitude
+        : 28.6139;
+
+    const longitude =
+      cachedLongitude !== null
+        ? cachedLongitude
+        : 77.209;
+
+    state.map =
+      window.L.map('location-map', {
+        zoomControl: true,
+        attributionControl: true
+      }).setView(
+        [latitude, longitude],
+        cachedLocation ? 17 : 11
+      );
+
+    const tileLayer =
+      window.L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          attribution:
+            '&copy; OpenStreetMap contributors'
+        }
+      );
+
+    tileLayer.addTo(state.map);
+
+    tileLayer.once('load', function() {
+      setMapLoading(false);
+    });
+
+    window.setTimeout(function() {
+      setMapLoading(false);
+
+      if (state.map) {
+        state.map.invalidateSize();
+      }
+    }, 1200);
+
+    state.map.on('dragstart', function() {
+      state.pendingSource = 'MAP_PIN';
+      elements.confirmButton.disabled = true;
+    });
+
+    state.map.on('moveend', function() {
+      if (state.skipNextMoveEnd) {
+        state.skipNextMoveEnd = false;
+        return;
+      }
+
+      scheduleMapSelection();
+    });
+
+    if (
+      cachedLocation &&
+      cachedLatitude !== null &&
+      cachedLongitude !== null
+    ) {
+      setSelectedLocation(
+        cachedLocation
+      );
+    }
+
+    return true;
+  }
+
+  function scheduleMapSelection() {
+    window.clearTimeout(
+      state.reverseTimer
+    );
+
+    state.reverseTimer =
+      window.setTimeout(function() {
+        if (!state.map) return;
+
+        const center =
+          state.map.getCenter();
+
+        reverseGeocode(
+          center.lat,
+          center.lng,
+          state.pendingSource ||
+          'MAP_PIN'
+        );
+
+        state.pendingSource =
+          'MAP_PIN';
+      }, 850);
+  }
+
+  async function reverseGeocode(
+    latitude,
+    longitude,
+    source
+  ) {
+    elements.selectedName.textContent =
+      'Fetching location…';
+
+    elements.selectedAddress.textContent =
+      'Please wait';
+
+    try {
+      const url =
+        'https://nominatim.openstreetmap.org/reverse' +
+        '?format=jsonv2' +
+        '&addressdetails=1' +
+        '&zoom=18' +
+        '&lat=' +
+        encodeURIComponent(latitude) +
+        '&lon=' +
+        encodeURIComponent(longitude);
+
+      const result =
+        await fetchLocationJson(url);
+
+      const parsed =
+        parseAddress(result.address);
+
+      setSelectedLocation({
+        latitude: latitude,
+        longitude: longitude,
+        locationName:
+          buildLocationName(
+            result.address
+          ),
+        fullAddress:
+          clean(result.display_name),
+        area: parsed.area,
+        city: parsed.city,
+        district: parsed.district,
+        state: parsed.state,
+        postalCode: parsed.postalCode,
+        country: parsed.country,
+        countryCode:
+          parsed.countryCode,
+        source: source || 'MAP_PIN'
+      });
+    } catch (error) {
+      setSelectedLocation({
+        latitude: latitude,
+        longitude: longitude,
+        locationName:
+          'Selected location',
+        fullAddress:
+          'Location selected on map',
+        source: source || 'MAP_PIN'
+      });
+
+      window.ApnaBiteUI.showToast(
+        'Exact address name could not be loaded.',
+        'warning'
+      );
+    }
   }
 
   function useCurrentLocation() {
@@ -880,7 +843,7 @@
 
     if (!navigator.geolocation) {
       window.ApnaBiteUI.showToast(
-        'GPS location is not supported.',
+        'GPS is not supported on this device.',
         'error'
       );
 
@@ -889,168 +852,146 @@
 
     state.locationBusy = true;
 
-    window.ApnaBiteUI.setButtonLoading(
+    setButtonLoading(
       elements.currentLocationButton,
       true,
-      'DETECTING LOCATION…'
+      'DETECTING LOCATION…',
+      'USE MY CURRENT LOCATION'
     );
 
-    navigator.geolocation
-      .getCurrentPosition(
-        function(position) {
-          const latitude =
-            position.coords.latitude;
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const latitude =
+          position.coords.latitude;
 
-          const longitude =
-            position.coords.longitude;
+        const longitude =
+          position.coords.longitude;
 
-          state.pendingSource =
-            'CURRENT_GPS';
+        state.skipNextMoveEnd = true;
+        state.pendingSource =
+          'CURRENT_GPS';
 
-          if (state.map) {
-            state.map.setView(
-              [
-                latitude,
-                longitude
-              ],
-              18
-            );
-          }
+        state.map.setView(
+          [latitude, longitude],
+          18
+        );
 
-          reverseGeocode(
-            latitude,
-            longitude,
-            'CURRENT_GPS'
+        reverseGeocode(
+          latitude,
+          longitude,
+          'CURRENT_GPS'
+        ).finally(function() {
+          state.locationBusy = false;
+
+          setButtonLoading(
+            elements.currentLocationButton,
+            false,
+            'DETECTING LOCATION…',
+            'USE MY CURRENT LOCATION'
           );
+        });
+      },
+      function(error) {
+        state.locationBusy = false;
 
-          state.locationBusy = false;
+        setButtonLoading(
+          elements.currentLocationButton,
+          false,
+          'DETECTING LOCATION…',
+          'USE MY CURRENT LOCATION'
+        );
 
-          window.ApnaBiteUI
-            .setButtonLoading(
-              elements.currentLocationButton,
-              false
-            );
-        },
-        function(error) {
-          state.locationBusy = false;
-
-          window.ApnaBiteUI
-            .setButtonLoading(
-              elements.currentLocationButton,
-              false
-            );
-
-          if (
-            error &&
-            error.code ===
-              error.PERMISSION_DENIED
-          ) {
-            window.ApnaBiteUI.showToast(
-              'Please allow location permission from browser settings.',
-              'warning'
-            );
-
-            return;
-          }
-
+        if (
+          error &&
+          error.code ===
+            error.PERMISSION_DENIED
+        ) {
           window.ApnaBiteUI.showToast(
-            'Unable to detect current location.',
-            'error'
+            'Please allow location permission.',
+            'warning'
           );
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 30000
+
+          return;
         }
-      );
+
+        window.ApnaBiteUI.showToast(
+          'Unable to detect current location.',
+          'error'
+        );
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 300000
+      }
+    );
   }
 
   function renderSavedAddresses() {
     elements.savedAddressList.innerHTML =
       '';
 
-    if (!state.savedAddresses.length) {
-      elements.savedAddressSection.hidden =
-        true;
-
-      return;
-    }
-
-    elements.savedAddressSection.hidden =
-      false;
+    elements.noSavedAddress.hidden =
+      state.savedAddresses.length > 0;
 
     state.savedAddresses.forEach(
       function(address) {
         const button =
-          document.createElement(
-            'button'
-          );
+          document.createElement('button');
 
         button.type = 'button';
-
         button.className =
           'saved-address-card';
 
         const icon =
-          document.createElement(
-            'span'
-          );
+          document.createElement('span');
 
         icon.className =
           'saved-address-card__icon';
 
         icon.textContent =
-          address.addressType === 'WORK'
+          clean(address.addressLabel)
+            .toUpperCase() === 'WORK'
             ? '▣'
             : '⌂';
 
         const content =
-          document.createElement(
-            'span'
-          );
+          document.createElement('span');
 
         content.className =
           'saved-address-card__content';
 
         const label =
-          document.createElement(
-            'strong'
-          );
+          document.createElement('strong');
 
         label.className =
           'saved-address-card__label';
 
         label.textContent =
-          address.addressLabel ||
-          address.addressType ||
+          clean(
+            address.addressLabel ||
+            address.addressType
+          ) ||
           'Saved address';
 
-        const addressText =
+        const text =
           document.createElement('p');
 
-        addressText.className =
+        text.className =
           'saved-address-card__address';
 
-        addressText.textContent =
-          buildSavedFullAddress(
-            address
-          );
+        text.textContent =
+          buildSavedFullAddress(address);
 
         content.appendChild(label);
-        content.appendChild(
-          addressText
-        );
-
+        content.appendChild(text);
         button.appendChild(icon);
         button.appendChild(content);
 
         button.addEventListener(
           'click',
           function() {
-            selectSavedAddress(
-              address
-            );
+            selectSavedAddress(address);
           }
         );
 
@@ -1062,66 +1003,66 @@
 
   function selectSavedAddress(address) {
     const latitude =
-      numberOrNull(
-        address.latitude
-      );
+      numberOrNull(address.latitude);
 
     const longitude =
-      numberOrNull(
-        address.longitude
-      );
+      numberOrNull(address.longitude);
 
     if (
       latitude === null ||
       longitude === null
     ) {
       window.ApnaBiteUI.showToast(
-        'This saved address has no map location.',
+        'Map location is missing for this address.',
         'warning'
       );
 
       return;
     }
 
-    const selected = {
+    state.skipNextMoveEnd = true;
+
+    setSelectedLocation({
       latitude: latitude,
       longitude: longitude,
       locationName:
-        buildSavedAddressName(
-          address
-        ),
+        clean(
+          address.locationName ||
+          address.area ||
+          address.addressLabel
+        ) ||
+        'Saved address',
       fullAddress:
-        buildSavedFullAddress(
-          address
-        ),
-      source:
-        'SAVED_ADDRESS',
-      addressId:
-        address.addressId
-    };
+        buildSavedFullAddress(address),
+      area: address.area,
+      city: address.city,
+      district: address.district,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+      countryCode: address.countryCode,
+      source: 'SAVED_ADDRESS',
+      addressId: address.addressId
+    });
 
-    setSelectedLocation(selected);
+    fillSavedReceiverDetails(address);
 
-    state.pendingSource =
-      'SAVED_ADDRESS';
+    elements.useOnce.checked = true;
+    elements.addressLabelGroup.hidden =
+      true;
 
-    if (state.map) {
-      state.map.setView(
-        [
-          latitude,
-          longitude
-        ],
-        18
-      );
-    }
+    state.map.setView(
+      [latitude, longitude],
+      18
+    );
 
     document
       .getElementById(
-        'location-map'
+        'receiver-details-section'
       )
       .scrollIntoView({
         behavior: 'smooth',
-        block: 'center'
+        block: 'start'
       });
   }
 
@@ -1132,7 +1073,7 @@
           'address.list',
           {},
           {
-            retry: true,
+            retry: false,
             deduplicate: true
           }
         );
@@ -1152,152 +1093,234 @@
       } else {
         state.savedAddresses = [];
       }
-
-      renderSavedAddresses();
     } catch (error) {
       state.savedAddresses = [];
-      renderSavedAddresses();
+    }
+
+    renderSavedAddresses();
+  }
+
+  function handleSaveChoice() {
+    elements.addressLabelGroup.hidden =
+      !elements.saveFuture.checked;
+
+    if (
+      elements.saveFuture.checked &&
+      !clean(elements.addressLabel.value)
+    ) {
+      elements.addressLabel.value =
+        'Home';
     }
   }
 
-  async function confirmLocation() {
+  function validateDeliveryDetails() {
+    const receiverName =
+      clean(elements.receiverName.value);
+
+    const receiverMobile =
+      digitsOnly(
+        elements.receiverMobile.value
+      );
+
+    const flatHouse =
+      clean(elements.addressFlat.value);
+
     if (!state.selectedLocation) {
       window.ApnaBiteUI.showToast(
-        'Please select a delivery location.',
+        'Please select a location.',
         'warning'
       );
 
-      return;
+      return null;
     }
 
-    window.ApnaBiteUI.setButtonLoading(
+    if (receiverName.length < 2) {
+      window.ApnaBiteUI.showToast(
+        'Enter receiver name.',
+        'warning'
+      );
+
+      elements.receiverName.focus();
+      return null;
+    }
+
+    if (
+      receiverMobile.length !== 10 ||
+      !/^[6-9]/.test(receiverMobile)
+    ) {
+      window.ApnaBiteUI.showToast(
+        'Enter a valid 10-digit mobile number.',
+        'warning'
+      );
+
+      elements.receiverMobile.focus();
+      return null;
+    }
+
+    if (flatHouse.length < 1) {
+      window.ApnaBiteUI.showToast(
+        'Enter flat or house details.',
+        'warning'
+      );
+
+      elements.addressFlat.focus();
+      return null;
+    }
+
+    if (
+      elements.saveFuture.checked &&
+      clean(
+        elements.addressLabel.value
+      ).length < 2
+    ) {
+      window.ApnaBiteUI.showToast(
+        'Enter an address label.',
+        'warning'
+      );
+
+      elements.addressLabel.focus();
+      return null;
+    }
+
+    return {
+      addressId:
+        state.selectedLocation.addressId ||
+        '',
+      receiverName: receiverName,
+      receiverMobile: receiverMobile,
+      flatHouse: flatHouse,
+      landmark:
+        clean(
+          elements.addressLandmark.value
+        ),
+      area:
+        state.selectedLocation.area,
+      city:
+        state.selectedLocation.city,
+      district:
+        state.selectedLocation.district,
+      state:
+        state.selectedLocation.state,
+      postalCode:
+        state.selectedLocation.postalCode,
+      country:
+        state.selectedLocation.country,
+      countryCode:
+        state.selectedLocation.countryCode,
+      latitude:
+        state.selectedLocation.latitude,
+      longitude:
+        state.selectedLocation.longitude,
+      locationName:
+        state.selectedLocation.locationName,
+      providerAddress:
+        state.selectedLocation.fullAddress,
+      source:
+        state.selectedLocation.source,
+      saveForFuture:
+        elements.saveFuture.checked,
+      addressLabel:
+        elements.saveFuture.checked
+          ? clean(
+              elements.addressLabel.value
+            )
+          : '',
+      selectedAt:
+        new Date().toISOString()
+    };
+  }
+
+  async function confirmLocation() {
+    const deliveryAddress =
+      validateDeliveryDetails();
+
+    if (!deliveryAddress) return;
+
+    setButtonLoading(
       elements.confirmButton,
       true,
-      'CONFIRMING…'
+      'CONFIRMING…',
+      'CONFIRM LOCATION'
     );
 
     try {
-      const confirmedLocation = {
-        latitude:
-          state.selectedLocation.latitude,
-        longitude:
-          state.selectedLocation.longitude,
-        locationName:
-          state.selectedLocation.locationName,
-        fullAddress:
-          state.selectedLocation.fullAddress,
-        source:
-          state.selectedLocation.source,
-        addressId:
-          state.selectedLocation.addressId ||
-          '',
-        selectedAt:
-          new Date().toISOString()
-      };
-
-      window.ApnaBiteCore
-        .setJsonStorage(
-          window.ApnaBiteCore
-            .storageKeys.LOCATION,
-          confirmedLocation
-        );
-
-      if (
-        confirmedLocation.source ===
-          'CURRENT_GPS'
-      ) {
-        try {
-          const response =
-            await window.ApnaBiteAPI.request(
-              'user.updateLocation',
-              {
-                latitude:
-                  confirmedLocation.latitude,
-                longitude:
-                  confirmedLocation.longitude,
-                locationName:
-                  confirmedLocation.locationName
-              },
-              {
-                retry: false,
-                deduplicate: false
-              }
-            );
-
-          if (
-            response &&
-            response.data &&
-            response.data.locationName
-          ) {
-            confirmedLocation.locationName =
-              response.data.locationName;
-
-            window.ApnaBiteCore
-              .setJsonStorage(
-                window.ApnaBiteCore
-                  .storageKeys.LOCATION,
-                confirmedLocation
-              );
-          }
-        } catch (error) {
-          console.warn(
-            'Current location backend update failed.'
+      if (deliveryAddress.saveForFuture) {
+        const response =
+          await window.ApnaBiteAPI.request(
+            'address.save',
+            deliveryAddress,
+            {
+              retry: false,
+              deduplicate: false
+            }
           );
+
+        if (
+          response &&
+          response.data &&
+          response.data.addressId
+        ) {
+          deliveryAddress.addressId =
+            response.data.addressId;
         }
       }
 
+      window.ApnaBiteCore.setJsonStorage(
+        window.ApnaBiteCore
+          .storageKeys.LOCATION,
+        deliveryAddress
+      );
+
       window.ApnaBiteUI.showToast(
-        'Delivery location selected.',
+        deliveryAddress.saveForFuture
+          ? 'Address saved and selected.'
+          : 'Delivery location selected.',
         'success'
       );
 
-      window.setTimeout(
-        function() {
-          window.location.replace(
-            'home.html'
-          );
-        },
-        250
-      );
+      window.setTimeout(function() {
+        window.location.replace(
+          'home.html?v=9'
+        );
+      }, 250);
     } catch (error) {
       window.ApnaBiteUI.showToast(
-        'Unable to confirm location.',
+        deliveryAddress.saveForFuture
+          ? 'Unable to save address.'
+          : 'Unable to confirm location.',
         'error'
       );
 
-      window.ApnaBiteUI
-        .setButtonLoading(
-          elements.confirmButton,
-          false
-        );
+      setButtonLoading(
+        elements.confirmButton,
+        false,
+        'CONFIRMING…',
+        'CONFIRM LOCATION'
+      );
     }
   }
 
   function goBack() {
-    if (
-      window.history.length > 1
-    ) {
+    if (window.history.length > 1) {
       window.history.back();
       return;
     }
 
     window.location.replace(
-      'home.html'
+      'home.html?v=9'
     );
   }
 
   function bindEvents() {
-    elements.backButton
-      .addEventListener(
-        'click',
-        goBack
-      );
+    elements.backButton.addEventListener(
+      'click',
+      goBack
+    );
 
-    elements.searchForm
-      .addEventListener(
-        'submit',
-        searchLocation
-      );
+    elements.searchForm.addEventListener(
+      'submit',
+      searchLocation
+    );
 
     elements.currentLocationButton
       .addEventListener(
@@ -1311,11 +1334,53 @@
         useCurrentLocation
       );
 
+    elements.useOnce.addEventListener(
+      'change',
+      handleSaveChoice
+    );
+
+    elements.saveFuture.addEventListener(
+      'change',
+      handleSaveChoice
+    );
+
+    elements.receiverMobile
+      .addEventListener(
+        'input',
+        function() {
+          elements.receiverMobile.value =
+            digitsOnly(
+              elements.receiverMobile.value
+            ).slice(0, 10);
+        }
+      );
+
     elements.confirmButton
       .addEventListener(
         'click',
         confirmLocation
       );
+  }
+
+  function prefillCustomerDetails() {
+    const user =
+      window.ApnaBiteCore.getUser
+        ? window.ApnaBiteCore.getUser()
+        : null;
+
+    if (!user) return;
+
+    elements.receiverName.value =
+      clean(
+        user.fullName ||
+        user.name
+      );
+
+    elements.receiverMobile.value =
+      digitsOnly(
+        user.mobile ||
+        user.phone
+      ).slice(-10);
   }
 
   async function initializeLocationPage() {
@@ -1338,27 +1403,25 @@
 
     getElements();
     bindEvents();
-
+    prefillCustomerDetails();
+    renderSavedAddresses();
     setMapLoading(true);
 
     const mapReady =
       initializeMap();
 
-    if (!mapReady) {
-      return;
-    }
+    if (!mapReady) return;
 
     loadSavedAddresses();
 
-    const savedLocation =
-      window.ApnaBiteCore
-        .getJsonStorage(
-          window.ApnaBiteCore
-            .storageKeys.LOCATION,
-          null
-        );
+    const cachedLocation =
+      window.ApnaBiteCore.getJsonStorage(
+        window.ApnaBiteCore
+          .storageKeys.LOCATION,
+        null
+      );
 
-    if (!savedLocation) {
+    if (!cachedLocation) {
       useCurrentLocation();
     }
   }
