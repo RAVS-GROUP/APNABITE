@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Select the exact location of your ApnaBite Kitchen."
+  >
+
+  <title>Kitchen Address | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynhMZjo5EFJpZL6N8F7GfTqjQ1A="
+    crossorigin=""
+  >
+</head>
+
+<body class="chef-page chef-kitchen-address-page">
+  <header class="chef-header">
+    <div class="chef-header__inner">
+      <button
+        id="kitchen-address-back-button"
+        class="chef-header__back"
+        type="button"
+        aria-label="Return to Kitchen Profile"
+      >
+        ‹
+      </button>
+
+      <div class="chef-header__content">
+        <span class="chef-header__label">
+          STEP 2 OF 6
+        </span>
+
+        <h1 class="chef-header__title">
+          Kitchen Address
+        </h1>
+      </div>
+
+      <span
+        id="kitchen-address-save-status"
+        class="chef-header__save-status"
+        aria-live="polite"
+      ></span>
+    </div>
+  </header>
+
+  <main class="chef-main">
+    <section class="chef-page-intro">
+      <span
+        class="chef-page-intro__icon"
+        aria-hidden="true"
+      >
+        📍
+      </span>
+
+      <div>
+        <h2 class="chef-page-intro__title">
+          Select your exact Kitchen location
+        </h2>
+
+        <p class="chef-page-intro__text">
+          This pin is used for nearby discovery and delivery-distance
+          calculation. Customers will not see your exact coordinates.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="kitchen-address-status"
+      class="chef-status-card chef-status-card--loading"
+      aria-live="polite"
+    >
+      <span
+        id="kitchen-address-status-icon"
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        …
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="kitchen-address-status-title">
+          Loading address details
+        </strong>
+
+        <p id="kitchen-address-status-message">
+          Please wait while we check your saved addresses.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="saved-kitchen-address-section"
+      class="chef-form-card"
+      hidden
+    >
+      <div class="chef-form-card__heading">
+        <h2>Choose a saved address</h2>
+
+        <p>
+          Select an existing address or add a new Kitchen address below.
+        </p>
+      </div>
+
+      <div
+        id="saved-kitchen-address-list"
+        class="chef-saved-address-list"
+      ></div>
+
+      <button
+        id="add-new-kitchen-address-button"
+        class="button button--secondary button--block"
+        type="button"
+      >
+        + ADD A NEW ADDRESS
+      </button>
+    </section>
+
+    <section
+      id="new-kitchen-address-section"
+      class="chef-form-card"
+    >
+      <div class="chef-form-card__heading">
+        <h2>Find your Kitchen location</h2>
+
+        <p>
+          Search for an area or use your current GPS location, then adjust
+          the map pin.
+        </p>
+      </div>
+
+      <div class="chef-location-search">
+        <label
+          class="form-label"
+          for="kitchen-location-search"
+        >
+          Search location
+        </label>
+
+        <div class="chef-location-search__controls">
+          <input
+            id="kitchen-location-search"
+            class="form-input"
+            type="search"
+            maxlength="250"
+            autocomplete="off"
+            placeholder="Search area, landmark or locality"
+          >
+
+          <button
+            id="kitchen-location-search-button"
+            class="button button--primary"
+            type="button"
+          >
+            SEARCH
+          </button>
+        </div>
+
+        <p
+          id="kitchen-location-search-error"
+          class="form-error"
+          role="alert"
+          hidden
+        ></p>
+
+        <div
+          id="kitchen-location-results"
+          class="chef-location-results"
+          role="listbox"
+          hidden
+        ></div>
+      </div>
+
+      <div class="chef-location-divider">
+        <span>OR</span>
+      </div>
+
+      <button
+        id="kitchen-use-current-location-button"
+        class="button button--secondary button--block"
+        type="button"
+      >
+        ◎ USE MY CURRENT LOCATION
+      </button>
+
+      <div class="chef-map-section">
+        <div class="chef-map-section__heading">
+          <div>
+            <strong>Adjust exact pin</strong>
+
+            <p>
+              Move the map or drag the marker to your Kitchen entrance.
+            </p>
+          </div>
+
+          <button
+            id="kitchen-recenter-map-button"
+            class="chef-map-recenter"
+            type="button"
+            aria-label="Recenter map"
+          >
+            ◎
+          </button>
+        </div>
+
+        <div
+          id="kitchen-address-map"
+          class="chef-address-map"
+          aria-label="Kitchen location map"
+        ></div>
+
+        <div
+          id="kitchen-selected-location"
+          class="chef-selected-location"
+          aria-live="polite"
+        >
+          <span
+            class="chef-selected-location__icon"
+            aria-hidden="true"
+          >
+            📍
+          </span>
+
+          <div>
+            <strong id="kitchen-selected-location-name">
+              No location selected
+            </strong>
+
+            <p id="kitchen-selected-location-address">
+              Search or use GPS to position the map pin.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <form
+      id="kitchen-address-form"
+      class="chef-form"
+      novalidate
+    >
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>Complete address</h2>
+
+          <p>
+            Verify these details before saving the Kitchen address.
+          </p>
+        </div>
+
+        <input
+          id="kitchen-address-id"
+          name="addressId"
+          type="hidden"
+        >
+
+        <input
+          id="kitchen-address-latitude"
+          name="latitude"
+          type="hidden"
+        >
+
+        <input
+          id="kitchen-address-longitude"
+          name="longitude"
+          type="hidden"
+        >
+
+        <div class="chef-form-grid">
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-label"
+            >
+              Address label
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-address-label"
+              class="form-input"
+              name="addressLabel"
+              type="text"
+              maxlength="50"
+              value="Kitchen"
+              placeholder="Example: Kitchen"
+              required
+            >
+
+            <p
+              id="kitchen-address-label-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-receiver-name"
+            >
+              Contact person
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-receiver-name"
+              class="form-input"
+              name="receiverName"
+              type="text"
+              minlength="2"
+              maxlength="120"
+              autocomplete="name"
+              placeholder="Full name"
+              required
+            >
+
+            <p
+              id="kitchen-receiver-name-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-receiver-mobile"
+            >
+              Contact mobile
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-receiver-mobile"
+              class="form-input"
+              name="receiverMobile"
+              type="tel"
+              maxlength="10"
+              inputmode="numeric"
+              autocomplete="tel"
+              placeholder="10-digit mobile number"
+              required
+            >
+
+            <p
+              id="kitchen-receiver-mobile-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="kitchen-address-line-1"
+            >
+              House/flat/building
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-address-line-1"
+              class="form-input"
+              name="addressLine1"
+              type="text"
+              maxlength="250"
+              autocomplete="address-line1"
+              placeholder="House number, floor or building name"
+              required
+            >
+
+            <p
+              id="kitchen-address-line-1-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="kitchen-address-line-2"
+            >
+              Street/locality
+              <span class="form-label__optional">
+                Optional
+              </span>
+            </label>
+
+            <input
+              id="kitchen-address-line-2"
+              class="form-input"
+              name="addressLine2"
+              type="text"
+              maxlength="250"
+              autocomplete="address-line2"
+              placeholder="Street, block or locality"
+            >
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-area"
+            >
+              Area
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-address-area"
+              class="form-input"
+              name="area"
+              type="text"
+              maxlength="120"
+              placeholder="Area or locality"
+              required
+            >
+
+            <p
+              id="kitchen-address-area-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-city"
+            >
+              City
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-address-city"
+              class="form-input"
+              name="city"
+              type="text"
+              maxlength="120"
+              autocomplete="address-level2"
+              placeholder="City"
+              required
+            >
+
+            <p
+              id="kitchen-address-city-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-district"
+            >
+              District
+              <span class="form-label__optional">
+                Optional
+              </span>
+            </label>
+
+            <input
+              id="kitchen-address-district"
+              class="form-input"
+              name="district"
+              type="text"
+              maxlength="120"
+              placeholder="District"
+            >
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-state"
+            >
+              State
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="kitchen-address-state"
+              class="form-input"
+              name="state"
+              type="text"
+              maxlength="120"
+              autocomplete="address-level1"
+              placeholder="State"
+              required
+            >
+
+            <p
+              id="kitchen-address-state-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-postal-code"
+            >
+              PIN code
+              <span class="form-label__optional">
+                Optional
+              </span>
+            </label>
+
+            <input
+              id="kitchen-address-postal-code"
+              class="form-input"
+              name="postalCode"
+              type="text"
+              maxlength="6"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              placeholder="6-digit PIN code"
+            >
+
+            <p
+              id="kitchen-address-postal-code-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-address-landmark"
+            >
+              Landmark
+              <span class="form-label__optional">
+                Optional
+              </span>
+            </label>
+
+            <input
+              id="kitchen-address-landmark"
+              class="form-input"
+              name="landmark"
+              type="text"
+              maxlength="150"
+              placeholder="Nearby landmark"
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="chef-information-card">
+        <span
+          class="chef-information-card__icon"
+          aria-hidden="true"
+        >
+          i
+        </span>
+
+        <p>
+          Your exact Kitchen address is used internally for verification,
+          discovery and delivery. Customers receive only necessary order
+          information.
+        </p>
+      </section>
+
+      <div class="chef-form-bottom-space"></div>
+    </form>
+  </main>
+
+  <div class="chef-onboarding-action-bar">
+    <button
+      id="kitchen-address-save-button"
+      class="button button--primary button--block button--large"
+      type="submit"
+      form="kitchen-address-form"
+      disabled
+    >
+      LOADING…
+    </button>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-kitchen-address.js"></script>
+</body>
+</html>
