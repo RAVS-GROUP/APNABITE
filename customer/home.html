@@ -2,277 +2,568 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f97316">
-  <meta name="description" content="Discover nearby homemade-food Kitchens on ApnaBite.">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+  <meta
+    name="description"
+    content="Discover nearby homemade-food Kitchens on ApnaBite."
+  >
   <title>Home | ApnaBite</title>
-  <link rel="manifest" href="../manifest.webmanifest">
-  <link rel="stylesheet" href="../assets/css/core.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
-  <link rel="stylesheet" href="../assets/css/customer.css">
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/customer.css"
+  >
 </head>
+
 <body class="customer-page">
   <header class="customer-header">
     <div class="customer-header__inner">
-      <button id="location-button" class="customer-location" type="button" aria-label="Change delivery location">
-        <span class="customer-location__label">DELIVERING TO</span>
-        <span id="header-location" class="customer-location__value">Detecting your location…</span>
+      <div
+        class="customer-location"
+        aria-label="Selected delivery location"
+      >
+        <span class="customer-location__label">
+          DELIVERING TO
+        </span>
+
+        <span
+          id="header-location"
+          class="customer-location__value"
+        >
+          Detecting your location…
+        </span>
+      </div>
+
+      <button
+        id="change-location-button"
+        class="button button--secondary button--small"
+        type="button"
+      >
+        CHANGE
       </button>
-      <button id="logout-button" class="icon-button" type="button" aria-label="Logout" title="Logout">↪</button>
     </div>
   </header>
 
   <main class="customer-main">
     <section class="customer-greeting">
-      <h1 id="customer-greeting" class="customer-greeting__title">Hello!</h1>
-      <p class="customer-greeting__text">What homemade food would you like today?</p>
-    </section>
+      <h1
+        id="customer-greeting"
+        class="customer-greeting__title"
+      >
+        Hello!
+      </h1>
 
-    <section id="location-card" class="location-permission-card">
-      <div class="location-permission-card__icon" aria-hidden="true">◎</div>
-      <div class="location-permission-card__content">
-        <h2 class="location-permission-card__title">Delivery location</h2>
-        <p id="location-status" class="location-permission-card__text">Detecting your current location…</p>
-      </div>
-      <button id="allow-location-button" class="button button--primary button--small" type="button">USE LOCATION</button>
+      <p class="customer-greeting__text">
+        What homemade food would you like today?
+      </p>
     </section>
 
     <section class="search-box">
-      <label class="visually-hidden" for="kitchen-search">Search Kitchens</label>
-      <input id="kitchen-search" class="search-box__input" type="search" placeholder="Search Kitchens or food" autocomplete="off" disabled>
-      <span class="search-box__icon" aria-hidden="true">⌕</span>
+      <label
+        class="visually-hidden"
+        for="kitchen-search"
+      >
+        Search Kitchens
+      </label>
+
+      <input
+        id="kitchen-search"
+        class="search-box__input"
+        type="search"
+        placeholder="Search Kitchens or food"
+        autocomplete="off"
+        disabled
+      >
+
+      <span
+        class="search-box__icon"
+        aria-hidden="true"
+      >
+        ⌕
+      </span>
     </section>
 
     <section class="customer-section">
       <div class="horizontal-scroll">
-        <button class="chip chip--active" type="button" disabled>All</button>
-        <button class="chip" type="button" disabled>Veg</button>
-        <button class="chip" type="button" disabled>Non-Veg</button>
-        <button class="chip" type="button" disabled>Breakfast</button>
-        <button class="chip" type="button" disabled>Lunch</button>
-        <button class="chip" type="button" disabled>Dinner</button>
+        <button
+          class="chip chip--active"
+          type="button"
+          disabled
+        >
+          All
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          disabled
+        >
+          Veg
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          disabled
+        >
+          Non-Veg
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          disabled
+        >
+          Breakfast
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          disabled
+        >
+          Lunch
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          disabled
+        >
+          Dinner
+        </button>
       </div>
     </section>
 
     <section class="customer-section">
       <div class="customer-section__header">
-        <h2 class="customer-section__title">Nearby Kitchens</h2>
-        <span id="backend-status" class="badge badge--warning">Connecting</span>
+        <h2 class="customer-section__title">
+          Nearby Kitchens
+        </h2>
+
+        <span
+          id="backend-status"
+          class="badge badge--warning"
+        >
+          Connecting
+        </span>
       </div>
-      <div id="kitchen-list" class="kitchen-list" aria-live="polite"></div>
+
+      <div
+        id="kitchen-list"
+        class="kitchen-list"
+        aria-live="polite"
+      ></div>
     </section>
   </main>
 
-  <nav class="customer-bottom-nav" aria-label="Customer navigation">
+  <nav
+    class="customer-bottom-nav"
+    aria-label="Customer navigation"
+  >
     <div class="customer-bottom-nav__inner">
-      <a class="customer-bottom-nav__item customer-bottom-nav__item--active" href="home.html" aria-current="page">
-        <span class="customer-bottom-nav__icon" aria-hidden="true">⌂</span><span>Home</span>
+      <a
+        class="customer-bottom-nav__item customer-bottom-nav__item--active"
+        href="home.html"
+        aria-current="page"
+      >
+        <span
+          class="customer-bottom-nav__icon"
+          aria-hidden="true"
+        >
+          ⌂
+        </span>
+        <span>Home</span>
       </a>
-      <a class="customer-bottom-nav__item" href="orders.html">
-        <span class="customer-bottom-nav__icon" aria-hidden="true">◫</span><span>Orders</span>
+
+      <a
+        class="customer-bottom-nav__item"
+        href="orders.html"
+      >
+        <span
+          class="customer-bottom-nav__icon"
+          aria-hidden="true"
+        >
+          ◫
+        </span>
+        <span>Orders</span>
       </a>
-      <a class="customer-bottom-nav__item" href="account.html#rewards">
-        <span class="customer-bottom-nav__icon" aria-hidden="true">☆</span><span>Rewards</span>
+
+      <a
+        class="customer-bottom-nav__item"
+        href="account.html#rewards"
+      >
+        <span
+          class="customer-bottom-nav__icon"
+          aria-hidden="true"
+        >
+          ☆
+        </span>
+        <span>Rewards</span>
       </a>
-      <a class="customer-bottom-nav__item" href="account.html">
-        <span class="customer-bottom-nav__icon" aria-hidden="true">○</span><span>Account</span>
+
+      <a
+        class="customer-bottom-nav__item"
+        href="account.html"
+      >
+        <span
+          class="customer-bottom-nav__icon"
+          aria-hidden="true"
+        >
+          ○
+        </span>
+        <span>Account</span>
       </a>
     </div>
   </nav>
 
-  <script src="../assets/js/core.js?v=5"></script>
-  <script src="../assets/js/api.js?v=5"></script>
-  <script src="../assets/js/ui.js?v=5"></script>
+  <script src="../assets/js/core.js?v=6"></script>
+  <script src="../assets/js/api.js?v=6"></script>
+  <script src="../assets/js/ui.js?v=6"></script>
+
   <script>
     (function() {
       'use strict';
 
-      const greeting = document.getElementById('customer-greeting');
-      const backendStatus = document.getElementById('backend-status');
-      const kitchenList = document.getElementById('kitchen-list');
-      const locationStatus = document.getElementById('location-status');
-      const headerLocation = document.getElementById('header-location');
-      const locationButton = document.getElementById('allow-location-button');
-      const headerLocationButton = document.getElementById('location-button');
-      const logoutButton = document.getElementById('logout-button');
+      const greeting =
+        document.getElementById(
+          'customer-greeting'
+        );
+
+      const backendStatus =
+        document.getElementById(
+          'backend-status'
+        );
+
+      const kitchenList =
+        document.getElementById(
+          'kitchen-list'
+        );
+
+      const headerLocation =
+        document.getElementById(
+          'header-location'
+        );
+
+      const changeLocationButton =
+        document.getElementById(
+          'change-location-button'
+        );
+
       let locationRequestRunning = false;
 
       function showInitialKitchenState() {
-        window.ApnaBiteUI.showEmptyState(kitchenList, {
-          icon: '⌂',
-          title: 'No Kitchens available yet',
-          message: 'No ApnaBite Kitchen is currently available near you. We’re expanding soon.'
-        });
+        window.ApnaBiteUI.showEmptyState(
+          kitchenList,
+          {
+            icon: '⌂',
+            title: 'No Kitchens available yet',
+            message:
+              'No ApnaBite Kitchen is currently available near you. We’re expanding soon.'
+          }
+        );
       }
 
       function updateGreeting(user) {
-        const fullName = user && user.fullName ? user.fullName.trim() : '';
-        const firstName = fullName ? fullName.split(/\s+/)[0] : '';
-        greeting.textContent = firstName ? 'Hello, ' + firstName + '!' : 'Hello!';
+        const fullName =
+          user && user.fullName
+            ? user.fullName.trim()
+            : '';
+
+        const firstName =
+          fullName
+            ? fullName.split(/\s+/)[0]
+            : '';
+
+        greeting.textContent =
+          firstName
+            ? 'Hello, ' + firstName + '!'
+            : 'Hello!';
       }
 
       function displayLocation(locationData) {
-        const name = locationData && locationData.locationName
-          ? String(locationData.locationName).trim()
-          : '';
+        const name =
+          locationData &&
+          locationData.locationName
+            ? String(
+                locationData.locationName
+              ).trim()
+            : '';
 
-        headerLocation.textContent = name || 'Select delivery location';
-        if (name) {
-          locationStatus.textContent = 'Current location confirmed. Tap to refresh or change it.';
-          locationButton.textContent = 'REFRESH';
-        }
+        headerLocation.textContent =
+          name ||
+          'Select delivery location';
       }
 
       async function validateCustomerSession() {
-        if (!window.ApnaBiteCore.requireLocalSession(['CUSTOMER'])) return null;
+        if (
+          !window.ApnaBiteCore
+            .requireLocalSession(
+              ['CUSTOMER']
+            )
+        ) {
+          return null;
+        }
 
         try {
-          const response = await window.ApnaBiteAPI.validateSession();
-          const user = response.data.user;
+          const response =
+            await window.ApnaBiteAPI
+              .validateSession();
 
-          if (!user || user.role !== 'CUSTOMER') {
-            window.ApnaBiteCore.redirectToRoleHome(user ? user.role : '', true);
+          const user =
+            response.data.user;
+
+          if (
+            !user ||
+            user.role !== 'CUSTOMER'
+          ) {
+            window.ApnaBiteCore
+              .redirectToRoleHome(
+                user ? user.role : '',
+                true
+              );
+
             return null;
           }
 
           window.ApnaBiteCore.saveSession({
-            sessionToken: window.ApnaBiteCore.getSessionToken(),
+            sessionToken:
+              window.ApnaBiteCore
+                .getSessionToken(),
             user: user
           });
+
           updateGreeting(user);
-          backendStatus.textContent = 'Connected';
-          backendStatus.className = 'badge badge--success';
+
+          backendStatus.textContent =
+            'Connected';
+
+          backendStatus.className =
+            'badge badge--success';
+
           return user;
         } catch (error) {
-          window.ApnaBiteUI.handleApiError(error);
+          window.ApnaBiteUI
+            .handleApiError(error);
+
           return null;
         }
       }
 
       function requestLocation() {
-        if (locationRequestRunning) return;
+        if (locationRequestRunning) {
+          return;
+        }
 
         if (!navigator.geolocation) {
-          locationStatus.textContent = 'Location is not supported on this device.';
-          headerLocation.textContent = 'Add delivery address';
+          headerLocation.textContent =
+            'Add delivery address';
+
+          window.ApnaBiteUI.showToast(
+            'Location is not supported on this device.',
+            'warning'
+          );
+
           return;
         }
 
         locationRequestRunning = true;
-        window.ApnaBiteUI.setButtonLoading(locationButton, true, 'LOCATING…');
-        locationStatus.textContent = 'Detecting your current location…';
 
-        navigator.geolocation.getCurrentPosition(
-          handleLocationSuccess,
-          handleLocationError,
-          {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 60000
-          }
+        window.ApnaBiteUI.setButtonLoading(
+          changeLocationButton,
+          true,
+          'LOCATING…'
         );
-      }
 
-      async function handleLocationSuccess(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        try {
-          const response = await window.ApnaBiteAPI.request(
-            'user.updateLocation',
+        navigator.geolocation
+          .getCurrentPosition(
+            handleLocationSuccess,
+            handleLocationError,
             {
-              latitude: latitude,
-              longitude: longitude
-            },
-            {
-              retry: false,
-              deduplicate: false
+              enableHighAccuracy: true,
+              timeout: 15000,
+              maximumAge: 60000
             }
           );
+      }
 
-          const serverData = response && response.data ? response.data : {};
+      async function handleLocationSuccess(
+        position
+      ) {
+        const latitude =
+          position.coords.latitude;
+
+        const longitude =
+          position.coords.longitude;
+
+        try {
+          const response =
+            await window.ApnaBiteAPI.request(
+              'user.updateLocation',
+              {
+                latitude: latitude,
+                longitude: longitude
+              },
+              {
+                retry: false,
+                deduplicate: false
+              }
+            );
+
+          const serverData =
+            response && response.data
+              ? response.data
+              : {};
+
           const locationData = {
             latitude: latitude,
             longitude: longitude,
-            locationName: serverData.locationName || 'Current location',
-            accuracyMeters: position.coords.accuracy,
-            capturedAt: new Date().toISOString(),
+            locationName:
+              serverData.locationName ||
+              'Current location',
+            accuracyMeters:
+              position.coords.accuracy,
+            capturedAt:
+              new Date().toISOString(),
             source: 'CURRENT_GPS'
           };
 
-          window.ApnaBiteCore.setJsonStorage(
-            window.ApnaBiteCore.storageKeys.LOCATION,
-            locationData
-          );
+          window.ApnaBiteCore
+            .setJsonStorage(
+              window.ApnaBiteCore
+                .storageKeys.LOCATION,
+              locationData
+            );
+
           displayLocation(locationData);
-          window.ApnaBiteUI.showToast('Location updated successfully.', 'success');
+
+          window.ApnaBiteUI.showToast(
+            'Location updated successfully.',
+            'success'
+          );
         } catch (error) {
-          headerLocation.textContent = 'Current location';
-          locationStatus.textContent = 'Location detected, but its name could not be loaded.';
-          window.ApnaBiteUI.handleApiError(error, { redirectToLogin: true });
+          headerLocation.textContent =
+            'Current location';
+
+          window.ApnaBiteUI.handleApiError(
+            error,
+            {
+              redirectToLogin: true
+            }
+          );
         } finally {
           locationRequestRunning = false;
-          window.ApnaBiteUI.setButtonLoading(locationButton, false);
-          locationButton.textContent = 'REFRESH';
+
+          window.ApnaBiteUI
+            .setButtonLoading(
+              changeLocationButton,
+              false
+            );
+
+          changeLocationButton.textContent =
+            'CHANGE';
         }
       }
 
       function handleLocationError(error) {
         locationRequestRunning = false;
-        window.ApnaBiteUI.setButtonLoading(locationButton, false);
-        headerLocation.textContent = 'Select delivery location';
 
-        if (error && error.code === error.PERMISSION_DENIED) {
-          locationStatus.textContent = 'Location permission was denied. Allow it from browser settings or select another location.';
-          window.ApnaBiteUI.showToast('Allow location access to find nearby Kitchens.', 'warning');
+        window.ApnaBiteUI.setButtonLoading(
+          changeLocationButton,
+          false
+        );
+
+        changeLocationButton.textContent =
+          'CHANGE';
+
+        headerLocation.textContent =
+          'Select delivery location';
+
+        if (
+          error &&
+          error.code ===
+            error.PERMISSION_DENIED
+        ) {
+          window.ApnaBiteUI.showToast(
+            'Allow location access to find nearby Kitchens.',
+            'warning'
+          );
+
           return;
         }
 
-        locationStatus.textContent = 'Unable to detect location. Please try again.';
-        window.ApnaBiteUI.showToast('Unable to detect your location.', 'error');
-      }
-
-      async function logout() {
-        const confirmed = await window.ApnaBiteUI.confirmAction({
-          title: 'Logout?',
-          message: 'Do you want to logout from ApnaBite?',
-          confirmText: 'LOGOUT',
-          cancelText: 'CANCEL'
-        });
-        if (!confirmed) return;
-
-        try {
-          await window.ApnaBiteAPI.logout();
-        } catch (error) {
-          window.ApnaBiteCore.clearSession();
-        }
-        window.ApnaBiteCore.navigate('login.html', true);
+        window.ApnaBiteUI.showToast(
+          'Unable to detect your location.',
+          'error'
+        );
       }
 
       async function initialize() {
-        window.ApnaBiteUI.showSkeletons(kitchenList, 3);
-        const user = await validateCustomerSession();
-        if (!user) return;
-
-        showInitialKitchenState();
-        const savedLocation = window.ApnaBiteCore.getJsonStorage(
-          window.ApnaBiteCore.storageKeys.LOCATION,
-          null
+        window.ApnaBiteUI.showSkeletons(
+          kitchenList,
+          3
         );
 
-        if (savedLocation && savedLocation.locationName) {
-          displayLocation(savedLocation);
+        const user =
+          await validateCustomerSession();
+
+        if (!user) {
+          return;
+        }
+
+        showInitialKitchenState();
+
+        const savedLocation =
+          window.ApnaBiteCore
+            .getJsonStorage(
+              window.ApnaBiteCore
+                .storageKeys.LOCATION,
+              null
+            );
+
+        if (
+          savedLocation &&
+          savedLocation.locationName
+        ) {
+          displayLocation(
+            savedLocation
+          );
         } else {
-          headerLocation.textContent = 'Detecting your location…';
+          headerLocation.textContent =
+            'Detecting your location…';
         }
 
         requestLocation();
       }
 
-      locationButton.addEventListener('click', requestLocation);
-      headerLocationButton.addEventListener('click', requestLocation);
-      logoutButton.addEventListener('click', logout);
-      window.ApnaBiteCore.ready(initialize);
+      changeLocationButton
+        .addEventListener(
+          'click',
+          requestLocation
+        );
+
+      window.ApnaBiteCore.ready(
+        initialize
+      );
     })();
   </script>
 </body>
