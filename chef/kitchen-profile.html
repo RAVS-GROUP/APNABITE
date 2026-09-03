@@ -87,6 +87,7 @@
 
         <p class="chef-page-intro__text">
           Add accurate information about the homemade food you prepare.
+          You can edit these details later.
         </p>
       </div>
     </section>
@@ -125,7 +126,8 @@
           <h2>Basic information</h2>
 
           <p>
-            This information will be visible to Customers after approval.
+            These details will be visible to Customers only after Admin
+            approval.
           </p>
         </div>
 
@@ -144,7 +146,8 @@
               class="form-input"
               name="kitchenName"
               type="text"
-              maxlength="80"
+              minlength="2"
+              maxlength="150"
               autocomplete="organization"
               placeholder="Example: Menka's Home Kitchen"
               required
@@ -176,14 +179,15 @@
               class="form-input chef-textarea"
               name="description"
               rows="4"
+              minlength="10"
               maxlength="500"
-              placeholder="Briefly describe your homemade food, speciality and cooking style."
+              placeholder="Describe your homemade food and cooking style."
               required
             ></textarea>
 
             <div class="chef-field-footer">
               <small class="form-help">
-                Do not add a mobile number or external contact details.
+                Do not include mobile numbers or external contact details.
               </small>
 
               <small
@@ -254,10 +258,11 @@
             <input
               id="kitchen-daily-capacity"
               class="form-input"
-              name="dailyCapacity"
+              name="capacityPerDay"
               type="number"
               min="1"
-              max="500"
+              max="1000"
+              step="1"
               inputmode="numeric"
               placeholder="Example: 25"
               required
@@ -287,11 +292,15 @@
             <select
               id="kitchen-preparation-time"
               class="form-input"
-              name="preparationTimeMinutes"
+              name="averagePreparationMinutes"
               required
             >
               <option value="">
                 Select preparation time
+              </option>
+
+              <option value="10">
+                10 minutes
               </option>
 
               <option value="15">
@@ -321,6 +330,14 @@
               <option value="120">
                 120 minutes
               </option>
+
+              <option value="180">
+                180 minutes
+              </option>
+
+              <option value="240">
+                240 minutes
+              </option>
             </select>
 
             <p
@@ -334,123 +351,86 @@
           <div class="form-group">
             <label
               class="form-label"
-              for="kitchen-speciality"
+              for="kitchen-minimum-order"
             >
-              Kitchen speciality
-              <span class="form-label__optional">
-                Optional
-              </span>
+              Minimum order value
+              <span aria-hidden="true">*</span>
             </label>
 
-            <input
-              id="kitchen-speciality"
-              class="form-input"
-              name="speciality"
-              type="text"
-              maxlength="120"
-              placeholder="Example: North Indian home meals"
-            >
+            <div class="chef-input-prefix">
+              <span
+                class="chef-input-prefix__symbol"
+                aria-hidden="true"
+              >
+                ₹
+              </span>
+
+              <input
+                id="kitchen-minimum-order"
+                class="form-input chef-input-prefix__input"
+                name="minimumOrderValue"
+                type="number"
+                min="0"
+                max="100000"
+                step="1"
+                inputmode="decimal"
+                placeholder="Example: 99"
+                required
+              >
+            </div>
+
+            <small class="form-help">
+              Enter 0 if there is no minimum order value.
+            </small>
 
             <p
-              id="kitchen-speciality-error"
+              id="kitchen-minimum-order-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="kitchen-service-radius"
+            >
+              Requested service radius
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <div class="chef-input-suffix">
+              <input
+                id="kitchen-service-radius"
+                class="form-input chef-input-suffix__input"
+                name="requestedServiceRadiusKm"
+                type="number"
+                min="0.5"
+                max="50"
+                step="0.5"
+                inputmode="decimal"
+                value="3"
+                required
+              >
+
+              <span class="chef-input-suffix__symbol">
+                KM
+              </span>
+            </div>
+
+            <small class="form-help">
+              Admin may approve a different radius. Current default is 3 KM.
+            </small>
+
+            <p
+              id="kitchen-service-radius-error"
               class="form-error"
               role="alert"
               hidden
             ></p>
           </div>
         </div>
-      </section>
-
-      <section class="chef-form-card">
-        <div class="chef-form-card__heading">
-          <h2>Meal availability</h2>
-
-          <p>
-            Select the meal types your Kitchen generally provides.
-          </p>
-        </div>
-
-        <fieldset class="chef-choice-fieldset">
-          <legend class="form-label">
-            Available meal types
-            <span aria-hidden="true">*</span>
-          </legend>
-
-          <div class="chef-choice-grid">
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-breakfast"
-                name="mealTypes"
-                type="checkbox"
-                value="BREAKFAST"
-              >
-
-              <span>Breakfast</span>
-            </label>
-
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-lunch"
-                name="mealTypes"
-                type="checkbox"
-                value="LUNCH"
-              >
-
-              <span>Lunch</span>
-            </label>
-
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-dinner"
-                name="mealTypes"
-                type="checkbox"
-                value="DINNER"
-              >
-
-              <span>Dinner</span>
-            </label>
-
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-snacks"
-                name="mealTypes"
-                type="checkbox"
-                value="SNACKS"
-              >
-
-              <span>Snacks</span>
-            </label>
-
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-meal-plan"
-                name="mealTypes"
-                type="checkbox"
-                value="MEAL_PLAN"
-              >
-
-              <span>Meal Plans</span>
-            </label>
-
-            <label class="chef-choice-card">
-              <input
-                id="meal-type-small-party"
-                name="mealTypes"
-                type="checkbox"
-                value="SMALL_PARTY"
-              >
-
-              <span>Small Party Orders</span>
-            </label>
-          </div>
-
-          <p
-            id="kitchen-meal-types-error"
-            class="form-error"
-            role="alert"
-            hidden
-          ></p>
-        </fieldset>
       </section>
 
       <section class="chef-information-card">
@@ -462,8 +442,8 @@
         </span>
 
         <p>
-          Your Kitchen will not appear to Customers until all onboarding
-          steps are completed and approved by ApnaBite Admin.
+          Your Kitchen remains in Draft status until the remaining
+          onboarding steps are completed and submitted for approval.
         </p>
       </section>
 
