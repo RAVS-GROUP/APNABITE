@@ -541,26 +541,34 @@
             );
 
         if (
-          savedLocation &&
-          savedLocation.locationName
-        ) {
-          displayLocation(
-            savedLocation
-          );
-        } else {
-          headerLocation.textContent =
-            'Detecting your location…';
-        }
+  savedLocation &&
+  savedLocation.locationName
+) {
+  displayLocation(
+    savedLocation
+  );
 
-        requestLocation();
-      }
+  if (
+    savedLocation.source ===
+      'CURRENT_GPS'
+  ) {
+    requestLocation();
+  }
+} else {
+  headerLocation.textContent =
+    'Detecting your location…';
+
+  requestLocation();
+}
 
       changeLocationButton
-        .addEventListener(
-          'click',
-          requestLocation
-        );
-
+  .addEventListener(
+    'click',
+    function() {
+      window.location.href =
+        'location.html?v=1';
+    }
+  );
       window.ApnaBiteCore.ready(
         initialize
       );
