@@ -6,10 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
-  <meta
-    name="theme-color"
-    content="#f97316"
-  >
+  <meta name="theme-color" content="#f97316">
   <meta
     name="description"
     content="Select your ApnaBite delivery location."
@@ -23,19 +20,19 @@
   >
   <link
     rel="stylesheet"
-    href="../assets/css/core.css"
-  >
-  <link
-    rel="stylesheet"
-    href="../assets/css/components.css"
-  >
-  <link
-    rel="stylesheet"
-    href="../assets/css/customer.css"
-  >
-  <link
-    rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css?v=9"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css?v=9"
+  >
+  <link
+    rel="stylesheet"
+    href="../assets/css/customer.css?v=9"
   >
 </head>
 
@@ -44,27 +41,56 @@
     <div class="page-header__inner">
       <button
         id="location-back-button"
-        class="icon-button"
+        class="page-header__back"
         type="button"
         aria-label="Go back"
       >
-        ←
+        ‹
       </button>
 
-      <div class="page-header__content">
+      <div>
         <h1 class="page-header__title">
-          Select delivery location
+          Select Delivery Location
         </h1>
 
         <p class="page-header__subtitle">
-          Choose where you want your food delivered
+          Search or adjust the pin for exact delivery.
         </p>
       </div>
     </div>
   </header>
 
   <main class="location-main">
-    <section class="location-search-section">
+    <section
+      id="saved-address-section"
+      class="location-section"
+    >
+      <div class="location-section__header">
+        <h2 class="location-section__title">
+          Saved Addresses
+        </h2>
+      </div>
+
+      <div
+        id="saved-address-list"
+        class="saved-address-list"
+      ></div>
+
+      <div
+        id="no-saved-address"
+        class="location-empty-message"
+      >
+        No saved addresses
+      </div>
+    </section>
+
+    <section class="location-section">
+      <div class="location-section__header">
+        <h2 class="location-section__title">
+          Search Location
+        </h2>
+      </div>
+
       <form
         id="location-search-form"
         class="location-search"
@@ -74,25 +100,25 @@
           class="visually-hidden"
           for="location-search-input"
         >
-          Search location
+          Search area, society or landmark
         </label>
 
         <input
           id="location-search-input"
           class="location-search__input"
           type="search"
-          placeholder="Search area, block or landmark"
+          placeholder="Search society, area or landmark"
           minlength="3"
-          maxlength="150"
+          enterkeyhint="search"
+          required
         >
 
         <button
           id="location-search-button"
-          class="location-search__button"
+          class="button button--primary location-search__button"
           type="submit"
-          aria-label="Search location"
         >
-          Search
+          SEARCH
         </button>
       </form>
 
@@ -100,78 +126,49 @@
         id="location-search-message"
         class="location-helper-text"
         aria-live="polite"
-      ></p>
-    </section>
-
-    <section class="location-action-section">
-      <button
-        id="use-current-location"
-        class="location-action"
-        type="button"
       >
-        <span
-          class="location-action__icon"
-          aria-hidden="true"
-        >
-          ◎
-        </span>
-
-        <span class="location-action__content">
-          <strong>Use current location</strong>
-          <small>Use your phone’s GPS location</small>
-        </span>
-
-        <span
-          class="location-action__arrow"
-          aria-hidden="true"
-        >
-          ›
-        </span>
-      </button>
-    </section>
-
-    <section
-      id="saved-address-section"
-      class="location-section"
-      hidden
-    >
-      <div class="location-section__header">
-        <h2 class="location-section__title">
-          Saved addresses
-        </h2>
-      </div>
+        Example: Royal Avenue, Sector 73, Noida
+      </p>
 
       <div
-        id="saved-address-list"
-        class="saved-address-list"
+        id="location-search-results"
+        class="location-search-results"
+        aria-live="polite"
       ></div>
+    </section>
+
+    <section class="location-section">
+      <button
+        id="use-current-location"
+        class="button button--secondary button--full"
+        type="button"
+      >
+        USE MY CURRENT LOCATION
+      </button>
     </section>
 
     <section class="location-section">
       <div class="location-section__header">
         <h2 class="location-section__title">
-          Set location on map
+          Adjust Exact Location
         </h2>
-
-        <span class="location-section__hint">
-          Move the map under the pin
-        </span>
       </div>
+
+      <p class="location-helper-text">
+        Move the map to place the pin at the exact building or gate.
+      </p>
 
       <div class="location-map-wrapper">
         <div
           id="location-map"
           class="location-map"
-          role="application"
-          aria-label="Delivery location map"
+          aria-label="Location map"
         ></div>
 
         <div
           class="location-map-pin"
           aria-hidden="true"
-        >
-          ●
-        </div>
+        ></div>
 
         <button
           id="map-current-location"
@@ -191,39 +188,259 @@
       </div>
     </section>
 
-    <section class="selected-location-card">
-      <span
-        class="selected-location-card__icon"
-        aria-hidden="true"
-      >
-        ⌖
-      </span>
-
-      <div class="selected-location-card__content">
-        <span class="selected-location-card__label">
-          SELECTED LOCATION
+    <section class="location-section">
+      <div class="selected-location-card">
+        <span
+          class="selected-location-card__icon"
+          aria-hidden="true"
+        >
+          ●
         </span>
 
-        <strong
-          id="selected-location-name"
-          class="selected-location-card__name"
-        >
-          Select a location
-        </strong>
+        <div class="selected-location-card__content">
+          <span class="selected-location-card__label">
+            SELECTED LOCATION
+          </span>
 
-        <p
-          id="selected-location-address"
-          class="selected-location-card__address"
+          <strong
+            id="selected-location-name"
+            class="selected-location-card__name"
+          >
+            Select a location
+          </strong>
+
+          <p
+            id="selected-location-address"
+            class="selected-location-card__address"
+          >
+            Search a location or use your current location.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="receiver-details-section"
+      class="location-section receiver-details-section"
+      hidden
+    >
+      <div class="location-section__header">
+        <h2 class="location-section__title">
+          Delivery Details
+        </h2>
+      </div>
+
+      <p class="location-helper-text">
+        Enter the details required for correct delivery.
+      </p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="receiver-name"
+          >
+            Receiver Name
+          </label>
+
+          <input
+            id="receiver-name"
+            class="form-input"
+            type="text"
+            maxlength="80"
+            placeholder="Enter receiver name"
+            autocomplete="name"
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="receiver-mobile"
+          >
+            Mobile Number
+          </label>
+
+          <input
+            id="receiver-mobile"
+            class="form-input"
+            type="tel"
+            maxlength="10"
+            inputmode="numeric"
+            placeholder="10-digit mobile number"
+            autocomplete="tel"
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-flat"
+          >
+            Flat / House / Floor
+          </label>
+
+          <input
+            id="address-flat"
+            class="form-input"
+            type="text"
+            maxlength="120"
+            placeholder="Flat number, house or floor"
+            autocomplete="address-line1"
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-landmark"
+          >
+            Landmark
+            <span class="form-label__optional">
+              (Optional)
+            </span>
+          </label>
+
+          <input
+            id="address-landmark"
+            class="form-input"
+            type="text"
+            maxlength="120"
+            placeholder="Nearby landmark"
+            autocomplete="address-line2"
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-area"
+          >
+            Area
+          </label>
+
+          <input
+            id="address-area"
+            class="form-input form-input--readonly"
+            type="text"
+            readonly
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-city"
+          >
+            City
+          </label>
+
+          <input
+            id="address-city"
+            class="form-input form-input--readonly"
+            type="text"
+            readonly
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-district"
+          >
+            District
+          </label>
+
+          <input
+            id="address-district"
+            class="form-input form-input--readonly"
+            type="text"
+            readonly
+          >
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="address-state"
+          >
+            State
+          </label>
+
+          <input
+            id="address-state"
+            class="form-input form-input--readonly"
+            type="text"
+            readonly
+          >
+        </div>
+      </div>
+
+      <fieldset class="address-use-options">
+        <legend class="form-label">
+          Use this address
+        </legend>
+
+        <label class="address-use-option">
+          <input
+            id="address-use-once"
+            type="radio"
+            name="address-use-type"
+            value="ONE_TIME"
+            checked
+          >
+
+          <span>
+            <strong>Use for this order only</strong>
+            <small>
+              This address will not appear in Saved Addresses.
+            </small>
+          </span>
+        </label>
+
+        <label class="address-use-option">
+          <input
+            id="address-save-future"
+            type="radio"
+            name="address-use-type"
+            value="SAVE"
+          >
+
+          <span>
+            <strong>Save for future</strong>
+            <small>
+              Use this address quickly for future orders.
+            </small>
+          </span>
+        </label>
+      </fieldset>
+
+      <div
+        id="address-label-group"
+        class="form-group"
+        hidden
+      >
+        <label
+          class="form-label"
+          for="address-label"
         >
-          Search, use GPS or move the map pin.
-        </p>
+          Address Label
+        </label>
+
+        <input
+          id="address-label"
+          class="form-input"
+          type="text"
+          maxlength="30"
+          placeholder="Home, Work or Other"
+        >
       </div>
     </section>
 
     <div class="location-confirm-space"></div>
   </main>
 
-  <footer class="location-confirm-bar">
+  <div class="location-confirm-bar">
     <button
       id="confirm-location-button"
       class="button button--primary button--full"
@@ -232,14 +449,14 @@
     >
       CONFIRM LOCATION
     </button>
-  </footer>
+  </div>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   ></script>
-  <script src="../assets/js/core.js?v=7"></script>
-  <script src="../assets/js/api.js?v=7"></script>
-  <script src="../assets/js/ui.js?v=7"></script>
-  <script src="../assets/js/customer.js?v=1"></script>
+  <script src="../assets/js/core.js?v=9"></script>
+  <script src="../assets/js/api.js?v=9"></script>
+  <script src="../assets/js/ui.js?v=9"></script>
+  <script src="../assets/js/customer.js?v=9"></script>
 </body>
 </html>
