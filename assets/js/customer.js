@@ -19,7 +19,8 @@
     searchBusy: false,
     locationBusy: false,
     skipNextMoveEnd: false,
-    pendingSource: 'MAP_PIN'
+    pendingSource: 'MAP_PIN',
+    locationConfirmed: false
   };
 
   const elements = {};
@@ -51,9 +52,6 @@
 
     elements.mapLoading =
       document.getElementById('map-loading');
-
-    elements.savedAddressSection =
-      document.getElementById('saved-address-section');
 
     elements.savedAddressList =
       document.getElementById('saved-address-list');
@@ -168,6 +166,8 @@
   }
 
   function setSearchMessage(message, isError) {
+    if (!elements.searchMessage) return;
+
     elements.searchMessage.textContent =
       message || '';
 
@@ -178,6 +178,8 @@
   }
 
   function setMapLoading(loading) {
+    if (!elements.mapLoading) return;
+
     elements.mapLoading.hidden =
       !loading;
   }
@@ -191,8 +193,11 @@
     if (!button) return;
 
     button.disabled = Boolean(loading);
+
     button.textContent =
-      loading ? loadingText : normalText;
+      loading
+        ? loadingText
+        : normalText;
   }
 
   function addUniquePart(parts, value) {
@@ -237,8 +242,9 @@
       state: clean(data.state),
       postalCode: clean(data.postcode),
       country: clean(data.country),
-      countryCode: clean(data.country_code)
-        .toUpperCase()
+      countryCode:
+        clean(data.country_code)
+          .toUpperCase()
     };
   }
 
@@ -280,14 +286,18 @@
 
     const filtered =
       secondary.filter(function(item) {
-        return item.toLowerCase() !==
-          primary.toLowerCase();
+        return (
+          item.toLowerCase() !==
+          primary.toLowerCase()
+        );
       });
 
     if (primary && filtered.length) {
-      return primary +
+      return (
+        primary +
         ' • ' +
-        filtered.slice(0, 2).join(', ');
+        filtered.slice(0, 2).join(', ')
+      );
     }
 
     return (
@@ -350,6 +360,19 @@
       clean(address.landmark);
   }
 
+  function resetLocationConfirmation() {
+    state.locationConfirmed = false;
+
+    elements.receiverSection.hidden =
+      true;
+
+    elements.confirmButton.disabled =
+      false;
+
+    elements.confirmButton.textContent =
+      'CONFIRM PIN LOCATION';
+  }
+
   function setSelectedLocation(location) {
     const latitude =
       numberOrNull(location.latitude);
@@ -404,11 +427,7 @@
       state.selectedLocation
     );
 
-    elements.receiverSection.hidden =
-      false;
-
-    elements.confirmButton.disabled =
-      false;
+    resetLocationConfirmation();
   }
 
   function clearSearchResults() {
@@ -476,237 +495,235 @@
     });
   }
 
-async function searchLocation(event) {
-  event.preventDefault();
+  async function requestLocationSearch(query) {
+    const mapCenter =
+      state.map
+        ? state.map.getCenter()
+        : null;
 
-  if (state.searchBusy) return;
+    let url =
+      'https://nominatim.openstreetmap.org/search' +
+      '?format=jsonv2' +
+      '&addressdetails=1' +
+      '&countrycodes=in' +
+      '&limit=10' +
+      '&dedupe=1' +
+      '&accept-language=en' +
+      '&q=' +
+      encodeURIComponent(query);
 
-  const query =
-    clean(elements.searchInput.value);
+    if (mapCenter) {
+      const longitudeSpan = 0.75;
+      const latitudeSpan = 0.55;
 
-  if (query.length < 3) {
-    setSearchMessage(
-      'Enter at least 3 characters.',
-      true
-    );
-    return;
-  }
-
-  state.searchBusy = true;
-
-  setButtonLoading(
-    elements.searchButton,
-    true,
-    'SEARCHING…',
-    'SEARCH'
-  );
-
-  setSearchMessage(
-    'Searching matching locations…',
-    false
-  );
-
-  clearSearchResults();
-
-  try {
-    let response =
-      await requestLocationSearch(query);
-
-    let fallbackUsed = false;
-
-    if (!response.length) {
-      const fallbackQuery =
-        buildFallbackSearchQuery(query);
-
-      if (
-        fallbackQuery &&
-        fallbackQuery.toLowerCase() !==
-          query.toLowerCase()
-      ) {
-        response =
-          await requestLocationSearch(
-            fallbackQuery
-          );
-
-        fallbackUsed = true;
-      }
+      url +=
+        '&viewbox=' +
+        encodeURIComponent(
+          (mapCenter.lng - longitudeSpan) +
+          ',' +
+          (mapCenter.lat + latitudeSpan) +
+          ',' +
+          (mapCenter.lng + longitudeSpan) +
+          ',' +
+          (mapCenter.lat - latitudeSpan)
+        );
     }
 
-    if (!response.length) {
+    const result =
+      await fetchLocationJson(url);
+
+    return Array.isArray(result)
+      ? result
+      : [];
+  }
+
+  function buildFallbackSearchQuery(query) {
+    const parts =
+      clean(query)
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (parts.length <= 2) {
+      return query;
+    }
+
+    const locationWords = [];
+
+    parts.forEach(function(part, index) {
+      if (
+        part.toLowerCase() === 'sector' &&
+        parts[index + 1]
+      ) {
+        locationWords.push(part);
+        locationWords.push(
+          parts[index + 1]
+        );
+      }
+    });
+
+    parts.slice(-2).forEach(function(part) {
+      const exists =
+        locationWords.some(
+          function(existing) {
+            return (
+              existing.toLowerCase() ===
+              part.toLowerCase()
+            );
+          }
+        );
+
+      if (!exists) {
+        locationWords.push(part);
+      }
+    });
+
+    return locationWords.join(' ');
+  }
+
+  async function searchLocation(event) {
+    event.preventDefault();
+
+    if (state.searchBusy) return;
+
+    const query =
+      clean(elements.searchInput.value);
+
+    if (query.length < 3) {
       setSearchMessage(
-        'Location not found. Search using area, sector, city or PIN code.',
+        'Enter at least 3 characters.',
         true
       );
       return;
     }
 
-    state.searchResults =
-      response
-        .map(function(result) {
-          const parsed =
-            parseAddress(result.address);
-
-          return {
-            latitude:
-              Number(result.lat),
-            longitude:
-              Number(result.lon),
-            locationName:
-              buildLocationName(
-                result.address
-              ),
-            fullAddress:
-              clean(result.display_name),
-            area: parsed.area,
-            city: parsed.city,
-            district:
-              parsed.district,
-            state: parsed.state,
-            postalCode:
-              parsed.postalCode,
-            country: parsed.country,
-            countryCode:
-              parsed.countryCode,
-            source: 'SEARCH'
-          };
-        })
-        .filter(function(result) {
-          return (
-            Number.isFinite(
-              result.latitude
-            ) &&
-            Number.isFinite(
-              result.longitude
-            )
-          );
-        });
-
-    renderSearchResults(
-      state.searchResults
-    );
-
-    setSearchMessage(
-      fallbackUsed
-        ? 'Exact listing was not found. Select a nearby matching location and adjust the map pin.'
-        : state.searchResults.length +
-          ' matching location' +
-          (
-            state.searchResults.length === 1
-              ? ''
-              : 's'
-          ) +
-          ' found.',
-      false
-    );
-  } catch (error) {
-    setSearchMessage(
-      'Location search is temporarily unavailable. Please try again.',
-      true
-    );
-
-    window.ApnaBiteUI.showToast(
-      'Unable to search location.',
-      'error'
-    );
-  } finally {
-    state.searchBusy = false;
+    state.searchBusy = true;
 
     setButtonLoading(
       elements.searchButton,
-      false,
+      true,
       'SEARCHING…',
       'SEARCH'
     );
-  }
-}
-  
-  async function requestLocationSearch(query) {
-  const mapCenter =
-    state.map
-      ? state.map.getCenter()
-      : null;
 
-  let url =
-    'https://nominatim.openstreetmap.org/search' +
-    '?format=jsonv2' +
-    '&addressdetails=1' +
-    '&countrycodes=in' +
-    '&limit=10' +
-    '&dedupe=1' +
-    '&accept-language=en' +
-    '&q=' +
-    encodeURIComponent(query);
+    setSearchMessage(
+      'Searching matching locations…',
+      false
+    );
 
-  if (mapCenter) {
-    const longitudeSpan = 0.75;
-    const latitudeSpan = 0.55;
+    clearSearchResults();
 
-    url +=
-      '&viewbox=' +
-      encodeURIComponent(
-        (mapCenter.lng - longitudeSpan) +
-        ',' +
-        (mapCenter.lat + latitudeSpan) +
-        ',' +
-        (mapCenter.lng + longitudeSpan) +
-        ',' +
-        (mapCenter.lat - latitudeSpan)
-      );
-  }
+    try {
+      let response =
+        await requestLocationSearch(query);
 
-  const result =
-    await fetchLocationJson(url);
+      let fallbackUsed = false;
 
-  return Array.isArray(result)
-    ? result
-    : [];
-}
+      if (!response.length) {
+        const fallbackQuery =
+          buildFallbackSearchQuery(query);
 
-function buildFallbackSearchQuery(query) {
-  const originalParts =
-    clean(query)
-      .split(/\s+/)
-      .filter(Boolean);
+        if (
+          fallbackQuery &&
+          fallbackQuery.toLowerCase() !==
+            query.toLowerCase()
+        ) {
+          response =
+            await requestLocationSearch(
+              fallbackQuery
+            );
 
-  if (originalParts.length <= 2) {
-    return query;
-  }
-
-  const locationWords = [];
-
-  originalParts.forEach(function(part, index) {
-    const word =
-      part.toLowerCase();
-
-    if (
-      word === 'sector' &&
-      originalParts[index + 1]
-    ) {
-      locationWords.push(part);
-      locationWords.push(
-        originalParts[index + 1]
-      );
-    }
-  });
-
-  const lastWords =
-    originalParts.slice(-2);
-
-  lastWords.forEach(function(part) {
-    if (
-      !locationWords.some(
-        function(existing) {
-          return existing.toLowerCase() ===
-            part.toLowerCase();
+          fallbackUsed = true;
         }
-      )
-    ) {
-      locationWords.push(part);
-    }
-  });
+      }
 
-  return locationWords.join(' ');
-}
+      if (!response.length) {
+        setSearchMessage(
+          'Location not found. Search using area, sector, city or nearby landmark.',
+          true
+        );
+        return;
+      }
+
+      state.searchResults =
+        response
+          .map(function(result) {
+            const parsed =
+              parseAddress(result.address);
+
+            return {
+              latitude:
+                Number(result.lat),
+              longitude:
+                Number(result.lon),
+              locationName:
+                buildLocationName(
+                  result.address
+                ),
+              fullAddress:
+                clean(result.display_name),
+              area: parsed.area,
+              city: parsed.city,
+              district:
+                parsed.district,
+              state: parsed.state,
+              postalCode:
+                parsed.postalCode,
+              country: parsed.country,
+              countryCode:
+                parsed.countryCode,
+              source: 'SEARCH'
+            };
+          })
+          .filter(function(result) {
+            return (
+              Number.isFinite(
+                result.latitude
+              ) &&
+              Number.isFinite(
+                result.longitude
+              )
+            );
+          })
+          .slice(0, 10);
+
+      renderSearchResults(
+        state.searchResults
+      );
+
+      setSearchMessage(
+        fallbackUsed
+          ? 'Exact listing was not found. Select a nearby location and adjust the map pin.'
+          : state.searchResults.length +
+            ' matching location' +
+            (
+              state.searchResults.length === 1
+                ? ''
+                : 's'
+            ) +
+            ' found.',
+        false
+      );
+    } catch (error) {
+      setSearchMessage(
+        'Location search is temporarily unavailable. Please try again.',
+        true
+      );
+
+      window.ApnaBiteUI.showToast(
+        'Unable to search location.',
+        'error'
+      );
+    } finally {
+      state.searchBusy = false;
+
+      setButtonLoading(
+        elements.searchButton,
+        false,
+        'SEARCHING…',
+        'SEARCH'
+      );
+    }
+  }
 
   function selectSearchResult(index) {
     const result =
@@ -822,7 +839,11 @@ function buildFallbackSearchQuery(query) {
 
     state.map.on('dragstart', function() {
       state.pendingSource = 'MAP_PIN';
+      state.locationConfirmed = false;
+      elements.receiverSection.hidden = true;
       elements.confirmButton.disabled = true;
+      elements.confirmButton.textContent =
+        'FETCHING LOCATION…';
     });
 
     state.map.on('moveend', function() {
@@ -888,6 +909,7 @@ function buildFallbackSearchQuery(query) {
         '?format=jsonv2' +
         '&addressdetails=1' +
         '&zoom=18' +
+        '&accept-language=en' +
         '&lat=' +
         encodeURIComponent(latitude) +
         '&lon=' +
@@ -912,7 +934,8 @@ function buildFallbackSearchQuery(query) {
         city: parsed.city,
         district: parsed.district,
         state: parsed.state,
-        postalCode: parsed.postalCode,
+        postalCode:
+          parsed.postalCode,
         country: parsed.country,
         countryCode:
           parsed.countryCode,
@@ -944,7 +967,6 @@ function buildFallbackSearchQuery(query) {
         'GPS is not supported on this device.',
         'error'
       );
-
       return;
     }
 
@@ -1008,7 +1030,6 @@ function buildFallbackSearchQuery(query) {
             'Please allow location permission.',
             'warning'
           );
-
           return;
         }
 
@@ -1018,9 +1039,9 @@ function buildFallbackSearchQuery(query) {
         );
       },
       {
-        enableHighAccuracy: false,
-        timeout: 8000,
-        maximumAge: 300000
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 120000
       }
     );
   }
@@ -1114,7 +1135,6 @@ function buildFallbackSearchQuery(query) {
         'Map location is missing for this address.',
         'warning'
       );
-
       return;
     }
 
@@ -1136,28 +1156,30 @@ function buildFallbackSearchQuery(query) {
       city: address.city,
       district: address.district,
       state: address.state,
-      postalCode: address.postalCode,
+      postalCode:
+        address.postalCode,
       country: address.country,
-      countryCode: address.countryCode,
+      countryCode:
+        address.countryCode,
       source: 'SAVED_ADDRESS',
       addressId: address.addressId
     });
 
     fillSavedReceiverDetails(address);
 
+    state.locationConfirmed = true;
+    elements.receiverSection.hidden = false;
     elements.useOnce.checked = true;
-    elements.addressLabelGroup.hidden =
-      true;
+    elements.addressLabelGroup.hidden = true;
+    elements.confirmButton.textContent =
+      'SAVE & CONTINUE';
 
     state.map.setView(
       [latitude, longitude],
       18
     );
 
-    document
-      .getElementById(
-        'receiver-details-section'
-      )
+    elements.receiverSection
       .scrollIntoView({
         behavior: 'smooth',
         block: 'start'
@@ -1228,7 +1250,6 @@ function buildFallbackSearchQuery(query) {
         'Please select a location.',
         'warning'
       );
-
       return null;
     }
 
@@ -1255,7 +1276,7 @@ function buildFallbackSearchQuery(query) {
       return null;
     }
 
-    if (flatHouse.length < 1) {
+    if (!flatHouse) {
       window.ApnaBiteUI.showToast(
         'Enter flat or house details.',
         'warning'
@@ -1329,6 +1350,41 @@ function buildFallbackSearchQuery(query) {
   }
 
   async function confirmLocation() {
+    if (!state.selectedLocation) {
+      window.ApnaBiteUI.showToast(
+        'Please select a delivery location.',
+        'warning'
+      );
+      return;
+    }
+
+    if (!state.locationConfirmed) {
+      state.locationConfirmed = true;
+      elements.receiverSection.hidden = false;
+      elements.confirmButton.textContent =
+        'SAVE & CONTINUE';
+
+      window.setTimeout(function() {
+        elements.receiverSection
+          .scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+
+        if (
+          !clean(
+            elements.receiverName.value
+          )
+        ) {
+          elements.receiverName.focus();
+        } else {
+          elements.addressFlat.focus();
+        }
+      }, 100);
+
+      return;
+    }
+
     const deliveryAddress =
       validateDeliveryDetails();
 
@@ -1337,8 +1393,8 @@ function buildFallbackSearchQuery(query) {
     setButtonLoading(
       elements.confirmButton,
       true,
-      'CONFIRMING…',
-      'CONFIRM LOCATION'
+      'SAVING…',
+      'SAVE & CONTINUE'
     );
 
     try {
@@ -1369,31 +1425,22 @@ function buildFallbackSearchQuery(query) {
         deliveryAddress
       );
 
-      window.ApnaBiteUI.showToast(
-        deliveryAddress.saveForFuture
-          ? 'Address saved and selected.'
-          : 'Delivery location selected.',
-        'success'
+      window.location.replace(
+        'home.html?v=12'
       );
-
-      window.setTimeout(function() {
-        window.location.replace(
-          'home.html?v=9'
-        );
-      }, 250);
     } catch (error) {
       window.ApnaBiteUI.showToast(
         deliveryAddress.saveForFuture
-          ? 'Unable to save address.'
-          : 'Unable to confirm location.',
+          ? 'Saved-address service is not ready. Select “Use for this order only”.'
+          : 'Unable to continue. Please try again.',
         'error'
       );
 
       setButtonLoading(
         elements.confirmButton,
         false,
-        'CONFIRMING…',
-        'CONFIRM LOCATION'
+        'SAVING…',
+        'SAVE & CONTINUE'
       );
     }
   }
@@ -1405,7 +1452,7 @@ function buildFallbackSearchQuery(query) {
     }
 
     window.location.replace(
-      'home.html?v=9'
+      'home.html?v=12'
     );
   }
 
@@ -1460,11 +1507,13 @@ function buildFallbackSearchQuery(query) {
       );
   }
 
-  function prefillCustomerDetails() {
+  function prefillReceiverDetails() {
     const user =
-      window.ApnaBiteCore.getUser
-        ? window.ApnaBiteCore.getUser()
-        : null;
+      window.ApnaBiteCore.getJsonStorage(
+        window.ApnaBiteCore
+          .storageKeys.USER,
+        null
+      );
 
     if (!user) return;
 
@@ -1501,8 +1550,11 @@ function buildFallbackSearchQuery(query) {
 
     getElements();
     bindEvents();
-    prefillCustomerDetails();
+    prefillReceiverDetails();
+
+    state.savedAddresses = [];
     renderSavedAddresses();
+
     setMapLoading(true);
 
     const mapReady =
