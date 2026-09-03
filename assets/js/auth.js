@@ -166,8 +166,14 @@
       state.countdownTimer
     );
 
-    let remaining =
-      Number(seconds || 300);
+    const receivedSeconds =
+  Number(seconds);
+
+let remaining =
+  Number.isFinite(receivedSeconds) &&
+  receivedSeconds > 0
+    ? receivedSeconds
+    : 60;
 
     button.disabled = true;
 
