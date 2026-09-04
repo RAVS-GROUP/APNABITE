@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — CHEF STYLES
  * File: assets/css/chef.css
- * Used by: Chef onboarding and future Chef pages
+ * Complete replacement — Part 1 of 2
  * ============================================================
  */
 
@@ -18,6 +18,7 @@
   min-height: 100vh;
   margin: 0;
   padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
   color: #0f172a;
   background: #f8fafc;
 }
@@ -29,7 +30,7 @@
   top: 0;
   z-index: 700;
   padding-top: env(safe-area-inset-top);
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
   backdrop-filter: blur(12px);
@@ -42,8 +43,7 @@
   padding: 10px 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
 }
 
 .chef-header__content {
@@ -74,15 +74,50 @@
   white-space: nowrap;
 }
 
+.chef-header__back {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  color: #334155;
+  font-family: inherit;
+  font-size: 25px;
+  line-height: 1;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chef-header__back:hover {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fb923c;
+}
+
+.chef-header__back:active {
+  transform: scale(0.97);
+}
+
+.chef-header__save-status {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 #chef-logout-button {
   min-width: 78px;
   min-height: 38px;
   padding: 8px 13px;
   flex: 0 0 auto;
   color: #c2410c;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 800;
-  line-height: 1;
   background: #fff7ed;
   border: 1px solid #fed7aa;
   border-radius: 10px;
@@ -112,17 +147,49 @@
   padding: 22px 18px 30px;
 }
 
-/* WELCOME AND PROGRESS */
+/* PAGE INTRO */
+
+.chef-page-intro {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.chef-page-intro__icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+  line-height: 1;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+}
+
+.chef-page-intro__title {
+  margin: 0 0 4px;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.chef-page-intro__text {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ONBOARDING WELCOME */
 
 .chef-welcome-card {
   margin-bottom: 16px;
   padding: 18px;
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff 0%,
-      #fff7ed 100%
-    );
+  background: linear-gradient(135deg, #ffffff, #fff7ed);
   border: 1px solid #fed7aa;
   border-radius: 18px;
   box-shadow: 0 5px 18px rgba(249, 115, 22, 0.08);
@@ -142,7 +209,6 @@
   display: grid;
   place-items: center;
   font-size: 24px;
-  line-height: 1;
   background: #ffffff;
   border: 1px solid #fed7aa;
   border-radius: 14px;
@@ -166,7 +232,6 @@
 .chef-progress__header {
   margin-bottom: 8px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 12px;
   color: #475569;
@@ -176,7 +241,6 @@
 
 .chef-progress__header strong {
   color: #ea580c;
-  font-size: 12px;
   font-weight: 800;
 }
 
@@ -275,6 +339,241 @@
   color: #dc2626;
 }
 
+/* FORM LAYOUT */
+
+.chef-form {
+  width: 100%;
+}
+
+.chef-form-card {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 17px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.045);
+}
+
+.chef-form-card__heading {
+  margin-bottom: 17px;
+}
+
+.chef-form-card__heading h2 {
+  margin: 0 0 4px;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.chef-form-card__heading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.chef-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.chef-form-grid__full {
+  grid-column: 1 / -1;
+}
+
+.chef-form .form-group {
+  min-width: 0;
+  margin: 0;
+}
+
+.chef-form .form-label {
+  margin-bottom: 7px;
+  display: block;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.chef-form .form-label > span[aria-hidden="true"] {
+  color: #dc2626;
+}
+
+.form-label__optional {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.chef-form .form-input,
+.chef-location-search .form-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  color: #0f172a;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 11px;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.chef-form textarea.form-input {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.chef-form .form-input:hover,
+.chef-location-search .form-input:hover {
+  border-color: #94a3b8;
+}
+
+.chef-form .form-input:focus,
+.chef-location-search .form-input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.chef-form .form-input::placeholder,
+.chef-location-search .form-input::placeholder {
+  color: #94a3b8;
+}
+
+.chef-form .form-input:disabled {
+  color: #64748b;
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.chef-form .form-input--error,
+.chef-location-search .form-input--error {
+  border-color: #dc2626;
+  background: #fffafa;
+}
+
+.chef-form .form-input--error:focus,
+.chef-location-search .form-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.chef-form .form-help {
+  margin-top: 6px;
+  display: block;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.chef-form .form-error,
+.chef-location-search .form-error {
+  margin: 6px 0 0;
+  color: #b91c1c;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.chef-form .form-error[hidden],
+.chef-location-search .form-error[hidden] {
+  display: none;
+}
+
+.chef-field-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chef-character-count {
+  margin-top: 6px;
+  flex: 0 0 auto;
+  color: #94a3b8;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.chef-input-prefix,
+.chef-input-suffix {
+  position: relative;
+}
+
+.chef-input-prefix__symbol,
+.chef-input-suffix__symbol {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.chef-input-prefix__symbol {
+  left: 14px;
+}
+
+.chef-input-prefix__input {
+  padding-left: 32px !important;
+}
+
+.chef-input-suffix__symbol {
+  right: 14px;
+}
+
+.chef-input-suffix__input {
+  padding-right: 48px !important;
+}
+
+/* INFORMATION CARD */
+
+.chef-information-card {
+  margin-bottom: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+}
+
+.chef-information-card__icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: grid;
+  place-items: center;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.chef-information-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.chef-form-bottom-space,
+.chef-onboarding-bottom-space {
+  height: 10px;
+}
+
 /* SECTION HEADING */
 
 .chef-onboarding-section {
@@ -299,8 +598,7 @@
   font-size: 12px;
   line-height: 1.5;
 }
-
-/* ONBOARDING STEPS */
+/* ONBOARDING STEP CARDS */
 
 .chef-step-list {
   display: grid;
@@ -458,6 +756,268 @@
   cursor: not-allowed;
 }
 
+/* SAVED ADDRESSES */
+
+.chef-saved-address-list {
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chef-saved-address-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 96px;
+  padding: 13px 72px 13px 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  color: #0f172a;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 13px;
+  cursor: pointer;
+}
+
+.chef-saved-address-card:hover {
+  background: #fff7ed;
+  border-color: #fb923c;
+}
+
+.chef-saved-address-card strong {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.chef-saved-address-card > span {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.chef-saved-address-card small {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 7px;
+  color: #64748b;
+  font-size: 8px;
+  font-weight: 800;
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.chef-saved-address-card--selected {
+  background: #fff7ed;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.chef-saved-address-card--selected small {
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+/* LOCATION SEARCH */
+
+.chef-location-search {
+  width: 100%;
+}
+
+.chef-location-search__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 9px;
+}
+
+.chef-location-search__controls .button {
+  min-width: 104px;
+}
+
+.chef-location-results {
+  max-height: 280px;
+  margin-top: 8px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+}
+
+.chef-location-results[hidden] {
+  display: none;
+}
+
+.chef-location-result {
+  width: 100%;
+  padding: 12px 13px;
+  display: block;
+  color: #0f172a;
+  text-align: left;
+  background: #ffffff;
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.chef-location-result:last-child {
+  border-bottom: 0;
+}
+
+.chef-location-result:hover,
+.chef-location-result:focus {
+  background: #fff7ed;
+  outline: none;
+}
+
+.chef-location-result strong,
+.chef-location-result span {
+  display: block;
+}
+
+.chef-location-result strong {
+  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chef-location-result span {
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.chef-location-divider {
+  margin: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.chef-location-divider::before,
+.chef-location-divider::after {
+  height: 1px;
+  flex: 1;
+  content: "";
+  background: #e2e8f0;
+}
+
+/* MAP */
+
+.chef-map-section {
+  margin-top: 18px;
+}
+
+.chef-map-section__heading {
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chef-map-section__heading strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.chef-map-section__heading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.chef-map-recenter {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  color: #c2410c;
+  font-size: 17px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chef-map-recenter:hover {
+  background: #ffedd5;
+  border-color: #fb923c;
+}
+
+.chef-address-map {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 340px;
+  overflow: hidden;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  border-radius: 15px;
+}
+
+.chef-address-map .leaflet-control-attribution {
+  font-size: 8px;
+}
+
+.chef-address-map .leaflet-control-zoom a {
+  color: #0f172a;
+}
+
+.chef-selected-location {
+  margin-top: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 13px;
+}
+
+.chef-selected-location__icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.chef-selected-location strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chef-selected-location p {
+  margin: 0;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
 /* APPROVAL CARD */
 
 .chef-approval-card {
@@ -491,7 +1051,6 @@
   color: #9a3412;
   font-size: 15px;
   font-weight: 800;
-  line-height: 1.4;
 }
 
 .chef-approval-card p {
@@ -499,10 +1058,6 @@
   color: #64748b;
   font-size: 12px;
   line-height: 1.55;
-}
-
-.chef-onboarding-bottom-space {
-  height: 12px;
 }
 
 /* FIXED ACTION BAR */
@@ -523,7 +1078,7 @@
   backdrop-filter: blur(12px);
 }
 
-#chef-continue-button {
+.chef-onboarding-action-bar > .button {
   width: min(100%, 884px);
   min-height: 48px;
   margin: 0 auto;
@@ -542,22 +1097,22 @@
   cursor: pointer;
 }
 
-#chef-continue-button:hover:not(:disabled) {
+.chef-onboarding-action-bar > .button:hover:not(:disabled) {
   background: linear-gradient(135deg, #ea580c, #c2410c);
 }
 
-#chef-continue-button:active:not(:disabled) {
+.chef-onboarding-action-bar > .button:active:not(:disabled) {
   transform: scale(0.995);
 }
 
-#chef-continue-button:disabled {
+.chef-onboarding-action-bar > .button:disabled {
   color: #94a3b8;
   background: #e2e8f0;
   box-shadow: none;
   cursor: not-allowed;
 }
 
-/* ERROR AND EMPTY STATES */
+/* ERROR, EMPTY AND TOAST */
 
 .chef-error-card {
   padding: 15px;
@@ -579,8 +1134,6 @@
   border: 1px dashed #cbd5e1;
   border-radius: 14px;
 }
-
-/* TOAST POSITION */
 
 .toast-container,
 .toast-wrapper,
@@ -610,8 +1163,6 @@
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2) !important;
 }
 
-/* ANIMATION */
-
 @keyframes chefPulse {
   0%,
   100% {
@@ -625,26 +1176,56 @@
   }
 }
 
-/* TABLET AND MOBILE */
+/* RESPONSIVE */
 
 @media (max-width: 720px) {
-  .chef-step-list {
+  .chef-step-list,
+  .chef-saved-address-list,
+  .chef-form-grid {
     grid-template-columns: 1fr;
   }
 
+  .chef-form-grid__full {
+    grid-column: auto;
+  }
+
   .chef-step-card {
-    min-height: 112px;
+    min-height: 110px;
+  }
+
+  .chef-address-map {
+    height: 310px;
   }
 }
 
 @media (max-width: 480px) {
+  .chef-page {
+    padding-bottom:
+      calc(74px + env(safe-area-inset-bottom));
+  }
+
   .chef-header__inner {
     min-height: 60px;
-    padding: 9px 12px;
+    padding: 9px 11px;
+    gap: 10px;
   }
 
   .chef-header__title {
     font-size: 15px;
+  }
+
+  .chef-header__back {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    font-size: 23px;
+  }
+
+  .chef-header__save-status {
+    max-width: 76px;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
   }
 
   #chef-logout-button {
@@ -659,30 +1240,33 @@
     padding: 14px 11px 22px;
   }
 
-  .chef-welcome-card {
-    padding: 14px;
-    border-radius: 15px;
-  }
-
-  .chef-welcome-card__content {
-    margin-bottom: 14px;
+  .chef-page-intro {
+    align-items: flex-start;
     gap: 10px;
   }
 
-  .chef-welcome-card__icon {
+  .chef-page-intro__icon {
     width: 40px;
     height: 40px;
     flex-basis: 40px;
-    font-size: 21px;
+    font-size: 20px;
     border-radius: 12px;
   }
 
+  .chef-page-intro__title,
   .chef-welcome-card__title {
-    font-size: 19px;
+    font-size: 18px;
   }
 
+  .chef-page-intro__text,
   .chef-welcome-card__text {
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .chef-welcome-card,
+  .chef-form-card {
+    padding: 14px;
+    border-radius: 15px;
   }
 
   .chef-status-card {
@@ -697,8 +1281,8 @@
     font-size: 16px;
   }
 
-  .chef-section-heading__title {
-    font-size: 16px;
+  .chef-form-grid {
+    gap: 14px;
   }
 
   .chef-step-list {
@@ -742,6 +1326,19 @@
     font-size: 21px;
   }
 
+  .chef-location-search__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .chef-location-search__controls .button {
+    width: 100%;
+  }
+
+  .chef-address-map {
+    height: 280px;
+    border-radius: 13px;
+  }
+
   .chef-onboarding-action-bar {
     padding:
       9px
@@ -749,7 +1346,7 @@
       calc(9px + env(safe-area-inset-bottom));
   }
 
-  #chef-continue-button {
+  .chef-onboarding-action-bar > .button {
     min-height: 46px;
     padding: 11px 14px;
     font-size: 11px;
