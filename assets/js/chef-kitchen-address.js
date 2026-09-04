@@ -2,6 +2,7 @@
  * ============================================================
  * APNABITE V1 — CHEF KITCHEN ADDRESS CONTROLLER
  * File: assets/js/chef-kitchen-address.js
+ * Complete replacement — Part 1 of 2
  * Requires: Leaflet, core.js, api.js, ui.js
  * ============================================================
  */
@@ -9,11 +10,16 @@
 (function(window, document) {
   'use strict';
 
-  const PROFILE_DRAFT_KEY = 'chef_kitchen_profile_draft';
-  const DEFAULT_LOCATION = {
+  const DEFAULT_LOCATION = Object.freeze({
     latitude: 28.6139,
     longitude: 77.2090
-  };
+  });
+
+  const GPS_CONFIG = Object.freeze({
+    TARGET_ACCURACY_METERS: 80,
+    ACCEPTABLE_ACCURACY_METERS: 250,
+    MAX_WAIT_MS: 12000
+  });
 
   const state = {
     initialized: false,
@@ -25,9 +31,11 @@
     selectedLocation: null,
     addresses: [],
     kitchen: null,
-    profileDraft: null,
     searchSequence: 0,
-    reverseTimer: null
+    reverseTimer: null,
+    gpsWatchId: null,
+    gpsTimer: null,
+    bestGpsPosition: null
   };
 
   const elements = {};
@@ -38,18 +46,29 @@
 
   function cleanText(value) {
     return String(
-      value === null || value === undefined ? '' : value
+      value === null ||
+      value === undefined
+        ? ''
+        : value
     ).replace(/\s+/g, ' ').trim();
   }
 
   function normalizeMobile(value) {
-    let digits = String(value || '').replace(/\D/g, '');
+    let digits = String(
+      value || ''
+    ).replace(/\D/g, '');
 
-    if (digits.length === 12 && digits.indexOf('91') === 0) {
+    if (
+      digits.length === 12 &&
+      digits.indexOf('91') === 0
+    ) {
       digits = digits.substring(2);
     }
 
-    if (digits.length === 11 && digits.charAt(0) === '0') {
+    if (
+      digits.length === 11 &&
+      digits.charAt(0) === '0'
+    ) {
       digits = digits.substring(1);
     }
 
@@ -57,49 +76,126 @@
   }
 
   function getElements() {
-    elements.form = byId('kitchen-address-form');
-    elements.backButton = byId('kitchen-address-back-button');
-    elements.saveButton = byId('kitchen-address-save-button');
-    elements.saveStatus = byId('kitchen-address-save-status');
-    elements.statusCard = byId('kitchen-address-status');
-    elements.statusIcon = byId('kitchen-address-status-icon');
-    elements.statusTitle = byId('kitchen-address-status-title');
-    elements.statusMessage = byId('kitchen-address-status-message');
-    elements.savedSection = byId('saved-kitchen-address-section');
-    elements.savedList = byId('saved-kitchen-address-list');
-    elements.addNewButton = byId('add-new-kitchen-address-button');
-    elements.newSection = byId('new-kitchen-address-section');
-    elements.searchInput = byId('kitchen-location-search');
-    elements.searchButton = byId('kitchen-location-search-button');
-    elements.searchError = byId('kitchen-location-search-error');
-    elements.searchResults = byId('kitchen-location-results');
-    elements.currentLocationButton = byId(
-      'kitchen-use-current-location-button'
-    );
-    elements.recenterButton = byId('kitchen-recenter-map-button');
-    elements.locationName = byId('kitchen-selected-location-name');
-    elements.locationAddress = byId('kitchen-selected-location-address');
-    elements.addressId = byId('kitchen-address-id');
-    elements.latitude = byId('kitchen-address-latitude');
-    elements.longitude = byId('kitchen-address-longitude');
-    elements.addressLabel = byId('kitchen-address-label');
-    elements.receiverName = byId('kitchen-receiver-name');
-    elements.receiverMobile = byId('kitchen-receiver-mobile');
-    elements.addressLine1 = byId('kitchen-address-line-1');
-    elements.addressLine2 = byId('kitchen-address-line-2');
-    elements.area = byId('kitchen-address-area');
-    elements.city = byId('kitchen-address-city');
-    elements.district = byId('kitchen-address-district');
-    elements.state = byId('kitchen-address-state');
-    elements.postalCode = byId('kitchen-address-postal-code');
-    elements.landmark = byId('kitchen-address-landmark');
+    elements.form =
+      byId('kitchen-address-form');
+
+    elements.backButton =
+      byId('kitchen-address-back-button');
+
+    elements.saveButton =
+      byId('kitchen-address-save-button');
+
+    elements.saveStatus =
+      byId('kitchen-address-save-status');
+
+    elements.statusCard =
+      byId('kitchen-address-status');
+
+    elements.statusIcon =
+      byId('kitchen-address-status-icon');
+
+    elements.statusTitle =
+      byId('kitchen-address-status-title');
+
+    elements.statusMessage =
+      byId('kitchen-address-status-message');
+
+    elements.savedSection =
+      byId('saved-kitchen-address-section');
+
+    elements.savedList =
+      byId('saved-kitchen-address-list');
+
+    elements.addNewButton =
+      byId('add-new-kitchen-address-button');
+
+    elements.newSection =
+      byId('new-kitchen-address-section');
+
+    elements.searchInput =
+      byId('kitchen-location-search');
+
+    elements.searchButton =
+      byId('kitchen-location-search-button');
+
+    elements.searchError =
+      byId('kitchen-location-search-error');
+
+    elements.searchResults =
+      byId('kitchen-location-results');
+
+    elements.currentLocationButton =
+      byId(
+        'kitchen-use-current-location-button'
+      );
+
+    elements.recenterButton =
+      byId('kitchen-recenter-map-button');
+
+    elements.locationName =
+      byId('kitchen-selected-location-name');
+
+    elements.locationAddress =
+      byId(
+        'kitchen-selected-location-address'
+      );
+
+    elements.addressId =
+      byId('kitchen-address-id');
+
+    elements.latitude =
+      byId('kitchen-address-latitude');
+
+    elements.longitude =
+      byId('kitchen-address-longitude');
+
+    elements.addressLabel =
+      byId('kitchen-address-label');
+
+    elements.receiverName =
+      byId('kitchen-receiver-name');
+
+    elements.receiverMobile =
+      byId('kitchen-receiver-mobile');
+
+    elements.addressLine1 =
+      byId('kitchen-address-line-1');
+
+    elements.addressLine2 =
+      byId('kitchen-address-line-2');
+
+    elements.area =
+      byId('kitchen-address-area');
+
+    elements.city =
+      byId('kitchen-address-city');
+
+    elements.district =
+      byId('kitchen-address-district');
+
+    elements.state =
+      byId('kitchen-address-state');
+
+    elements.postalCode =
+      byId('kitchen-address-postal-code');
+
+    elements.landmark =
+      byId('kitchen-address-landmark');
   }
 
   function setText(element, value) {
-    if (element) element.textContent = cleanText(value);
+    if (element) {
+      element.textContent =
+        cleanText(value);
+    }
   }
 
-  function setStatus(type, icon, title, message) {
+  function setStatus(
+    type,
+    icon,
+    title,
+    message
+  ) {
     if (elements.statusCard) {
       elements.statusCard.classList.remove(
         'chef-status-card--loading',
@@ -123,33 +219,55 @@
   function setLoading(loading) {
     state.loading = Boolean(loading);
 
-    if (!elements.saveButton || state.submitting) return;
+    if (
+      !elements.saveButton ||
+      state.submitting
+    ) {
+      return;
+    }
 
-    elements.saveButton.disabled = state.loading;
-    elements.saveButton.textContent = state.loading
-      ? 'LOADING…'
-      : 'SAVE ADDRESS & CONTINUE';
+    elements.saveButton.disabled =
+      state.loading;
+
+    elements.saveButton.textContent =
+      state.loading
+        ? 'LOADING…'
+        : state.selectedAddress
+          ? 'USE THIS ADDRESS & CONTINUE'
+          : 'SAVE ADDRESS & CONTINUE';
   }
 
-  function setSubmitting(submitting, text) {
-    state.submitting = Boolean(submitting);
+  function setSubmitting(
+    submitting,
+    loadingText
+  ) {
+    state.submitting =
+      Boolean(submitting);
 
     window.ApnaBiteUI.setButtonLoading(
       elements.saveButton,
       state.submitting,
-      text || 'SAVING…'
+      loadingText || 'SAVING…'
     );
 
     if (!state.submitting) {
       elements.saveButton.disabled = false;
+
       elements.saveButton.textContent =
-        'SAVE ADDRESS & CONTINUE';
+        state.selectedAddress
+          ? 'USE THIS ADDRESS & CONTINUE'
+          : 'SAVE ADDRESS & CONTINUE';
     }
   }
 
-  function setFieldError(fieldId, message) {
+  function setFieldError(
+    fieldId,
+    message
+  ) {
     const field = byId(fieldId);
-    const error = byId(fieldId + '-error');
+    const error = byId(
+      fieldId + '-error'
+    );
 
     if (field) {
       field.classList.toggle(
@@ -164,17 +282,29 @@
     }
 
     if (error) {
-      error.textContent = message || '';
+      error.textContent =
+        message || '';
+
       error.hidden = !message;
     }
   }
 
   function clearErrors() {
+    if (!elements.form) return;
+
     elements.form
-      .querySelectorAll('.form-input--error')
+      .querySelectorAll(
+        '.form-input--error'
+      )
       .forEach(function(field) {
-        field.classList.remove('form-input--error');
-        field.setAttribute('aria-invalid', 'false');
+        field.classList.remove(
+          'form-input--error'
+        );
+
+        field.setAttribute(
+          'aria-invalid',
+          'false'
+        );
       });
 
     elements.form
@@ -190,27 +320,32 @@
     }
   }
 
-  function getProfileDraft() {
-    const draft = window.ApnaBiteCore.getCache(
-      PROFILE_DRAFT_KEY
-    );
-
-    return draft && typeof draft === 'object'
-      ? draft
-      : null;
-  }
-
   function getLocalUser() {
-    return window.ApnaBiteCore.getSessionUser() || {};
+    return (
+      window.ApnaBiteCore
+        .getSessionUser() ||
+      {}
+    );
   }
 
   function prefillContact() {
     const user = getLocalUser();
-    const name = cleanText(user.fullName || user.name);
-    const mobile = normalizeMobile(user.mobile);
 
-    if (elements.receiverName && !elements.receiverName.value) {
-      elements.receiverName.value = name;
+    const name = cleanText(
+      user.fullName ||
+      user.name
+    );
+
+    const mobile = normalizeMobile(
+      user.mobile
+    );
+
+    if (
+      elements.receiverName &&
+      !elements.receiverName.value
+    ) {
+      elements.receiverName.value =
+        name;
     }
 
     if (
@@ -218,7 +353,8 @@
       !elements.receiverMobile.value &&
       /^[6-9]\d{9}$/.test(mobile)
     ) {
-      elements.receiverMobile.value = mobile;
+      elements.receiverMobile.value =
+        mobile;
     }
   }
 
@@ -248,7 +384,10 @@
     window.L.tileLayer(
       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
+        minZoom: 3,
         maxZoom: 19,
+        updateWhenIdle: true,
+        keepBuffer: 3,
         attribution:
           '&copy; OpenStreetMap contributors'
       }
@@ -260,68 +399,119 @@
         DEFAULT_LOCATION.longitude
       ],
       {
-        draggable: true
+        draggable: true,
+        autoPan: true
       }
     ).addTo(state.map);
 
-    state.marker.on('dragend', function() {
-      const coordinates = state.marker.getLatLng();
+    state.marker.on(
+      'dragend',
+      function() {
+        const coordinates =
+          state.marker.getLatLng();
 
-      selectCoordinates(
-        coordinates.lat,
-        coordinates.lng,
-        null,
-        true
-      );
-    });
+        selectCoordinates(
+          coordinates.lat,
+          coordinates.lng,
+          null,
+          true,
+          null
+        );
+      }
+    );
 
     window.setTimeout(function() {
-      state.map.invalidateSize();
-    }, 100);
+      if (state.map) {
+        state.map.invalidateSize(true);
+      }
+    }, 150);
   }
 
-  function setMapPosition(latitude, longitude, zoom) {
+  function setMapPosition(
+    latitude,
+    longitude,
+    zoom
+  ) {
     initializeMap();
 
-    if (!state.map || !state.marker) return;
+    if (
+      !state.map ||
+      !state.marker
+    ) {
+      return;
+    }
 
-    const position = [latitude, longitude];
+    const position = [
+      Number(latitude),
+      Number(longitude)
+    ];
 
     state.marker.setLatLng(position);
-    state.map.setView(position, zoom || 17);
+
+    state.map.setView(
+      position,
+      zoom || 17,
+      {
+        animate: false
+      }
+    );
 
     window.setTimeout(function() {
-      state.map.invalidateSize();
-    }, 50);
+      if (state.map) {
+        state.map.invalidateSize(true);
+      }
+    }, 80);
   }
 
   function applyLocationDetails(location) {
     if (!location) return;
 
-    if (elements.area && location.area) {
-      elements.area.value = location.area;
+    if (
+      elements.area &&
+      location.area
+    ) {
+      elements.area.value =
+        location.area;
     }
 
-    if (elements.city && location.city) {
-      elements.city.value = location.city;
+    if (
+      elements.city &&
+      location.city
+    ) {
+      elements.city.value =
+        location.city;
     }
 
-    if (elements.district && location.district) {
-      elements.district.value = location.district;
+    if (
+      elements.district &&
+      location.district
+    ) {
+      elements.district.value =
+        location.district;
     }
 
-    if (elements.state && location.state) {
-      elements.state.value = location.state;
+    if (
+      elements.state &&
+      location.state
+    ) {
+      elements.state.value =
+        location.state;
     }
 
-    if (elements.postalCode && location.postalCode) {
-      elements.postalCode.value = location.postalCode;
+    if (
+      elements.postalCode &&
+      location.postalCode
+    ) {
+      elements.postalCode.value =
+        location.postalCode;
     }
 
     setText(
       elements.locationName,
-      location.locationName || location.area ||
-      location.city || 'Selected location'
+      location.locationName ||
+      location.area ||
+      location.city ||
+      'Selected location'
     );
 
     setText(
@@ -335,7 +525,10 @@
     );
   }
 
-  function getReverseCacheKey(latitude, longitude) {
+  function getReverseCacheKey(
+    latitude,
+    longitude
+  ) {
     return (
       'chef_reverse_' +
       Number(latitude).toFixed(5) +
@@ -344,28 +537,41 @@
     );
   }
 
-  async function reverseCoordinates(latitude, longitude) {
-    const cacheKey = getReverseCacheKey(latitude, longitude);
-    const cached = window.ApnaBiteCore.getCache(cacheKey);
+  async function reverseCoordinates(
+    latitude,
+    longitude
+  ) {
+    const cacheKey =
+      getReverseCacheKey(
+        latitude,
+        longitude
+      );
+
+    const cached =
+      window.ApnaBiteCore.getCache(
+        cacheKey
+      );
 
     if (cached) {
       applyLocationDetails(cached);
       return cached;
     }
 
-    const response = await window.ApnaBiteAPI.request(
-      'location.reverse',
-      {
-        latitude: latitude,
-        longitude: longitude
-      },
-      {
-        retry: true,
-        deduplicate: true
-      }
-    );
+    const response =
+      await window.ApnaBiteAPI.request(
+        'location.reverse',
+        {
+          latitude: latitude,
+          longitude: longitude
+        },
+        {
+          retry: true,
+          deduplicate: true
+        }
+      );
 
-    const location = response.data || {};
+    const location =
+      response.data || {};
 
     window.ApnaBiteCore.setCache(
       cacheKey,
@@ -374,6 +580,7 @@
     );
 
     applyLocationDetails(location);
+
     return location;
   }
 
@@ -381,7 +588,8 @@
     latitude,
     longitude,
     location,
-    reverse
+    reverse,
+    accuracy
   ) {
     const lat = Number(latitude);
     const lng = Number(longitude);
@@ -394,74 +602,467 @@
     }
 
     state.selectedAddress = null;
+
     state.selectedLocation = {
       latitude: lat,
-      longitude: lng
+      longitude: lng,
+      accuracy:
+        Number.isFinite(
+          Number(accuracy)
+        )
+          ? Number(accuracy)
+          : null
     };
 
     elements.addressId.value = '';
-    elements.latitude.value = String(lat);
-    elements.longitude.value = String(lng);
+    elements.latitude.value =
+      String(lat);
+    elements.longitude.value =
+      String(lng);
 
-    setMapPosition(lat, lng, 17);
+    setMapPosition(
+      lat,
+      lng,
+      accuracy &&
+      accuracy >
+        GPS_CONFIG.ACCEPTABLE_ACCURACY_METERS
+        ? 15
+        : 17
+    );
 
     if (location) {
       applyLocationDetails(location);
     } else {
-      setText(elements.locationName, 'Selected location');
+      setText(
+        elements.locationName,
+        accuracy
+          ? 'Current location'
+          : 'Selected location'
+      );
+
       setText(
         elements.locationAddress,
-        lat.toFixed(6) + ', ' + lng.toFixed(6)
+        accuracy
+          ? 'Location accuracy: approximately ' +
+            Math.round(accuracy) +
+            ' metres. Adjust the pin if required.'
+          : lat.toFixed(6) +
+            ', ' +
+            lng.toFixed(6)
       );
     }
 
     if (reverse) {
-      window.clearTimeout(state.reverseTimer);
+      window.clearTimeout(
+        state.reverseTimer
+      );
 
-      state.reverseTimer = window.setTimeout(function() {
-        reverseCoordinates(lat, lng).catch(function(error) {
-          window.ApnaBiteUI.handleApiError(
+      state.reverseTimer =
+        window.setTimeout(
+          function() {
+            reverseCoordinates(
+              lat,
+              lng
+            ).catch(function(error) {
+              window.ApnaBiteUI
+                .handleApiError(
+                  error,
+                  {
+                    redirectToLogin:
+                      true
+                  }
+                );
+            });
+          },
+          400
+        );
+    }
+  }
+
+  function stopGpsWatch() {
+    if (
+      state.gpsWatchId !== null &&
+      navigator.geolocation
+    ) {
+      navigator.geolocation.clearWatch(
+        state.gpsWatchId
+      );
+    }
+
+    state.gpsWatchId = null;
+
+    window.clearTimeout(
+      state.gpsTimer
+    );
+
+    state.gpsTimer = null;
+
+    window.ApnaBiteUI.setButtonLoading(
+      elements.currentLocationButton,
+      false
+    );
+  }
+
+  function finishGpsSelection() {
+    const position =
+      state.bestGpsPosition;
+
+    stopGpsWatch();
+
+    if (!position) {
+      window.ApnaBiteUI.showToast(
+        'Current location could not be detected. Search your area and adjust the pin.',
+        'warning'
+      );
+
+      return;
+    }
+
+    const accuracy = Number(
+      position.coords.accuracy
+    );
+
+    selectCoordinates(
+      position.coords.latitude,
+      position.coords.longitude,
+      null,
+      true,
+      accuracy
+    );
+
+    if (
+      accuracy >
+      GPS_CONFIG.ACCEPTABLE_ACCURACY_METERS
+    ) {
+      window.ApnaBiteUI.showToast(
+        'Only an approximate location was available. Please verify and adjust the map pin.',
+        'warning'
+      );
+    } else {
+      window.ApnaBiteUI.showToast(
+        'Current location detected. Verify the pin before saving.',
+        'success'
+      );
+    }
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      window.ApnaBiteUI.showToast(
+        'GPS is not supported on this device.',
+        'error'
+      );
+
+      return;
+    }
+
+    if (state.gpsWatchId !== null) {
+      return;
+    }
+
+    state.bestGpsPosition = null;
+
+    window.ApnaBiteUI.setButtonLoading(
+      elements.currentLocationButton,
+      true,
+      'FINDING BEST LOCATION…'
+    );
+
+    state.gpsWatchId =
+      navigator.geolocation.watchPosition(
+        function(position) {
+          const accuracy = Number(
+            position.coords.accuracy
+          );
+
+          if (
+            !state.bestGpsPosition ||
+            accuracy <
+              Number(
+                state.bestGpsPosition
+                  .coords.accuracy
+              )
+          ) {
+            state.bestGpsPosition =
+              position;
+          }
+
+          if (
+            accuracy <=
+            GPS_CONFIG
+              .TARGET_ACCURACY_METERS
+          ) {
+            finishGpsSelection();
+          }
+        },
+        function(error) {
+          stopGpsWatch();
+
+          let message =
+            'Current location is unavailable. Search your area instead.';
+
+          if (error && error.code === 1) {
+            message =
+              'Location permission is blocked. Allow location access in browser settings and try again.';
+          }
+
+          window.ApnaBiteUI.showToast(
+            message,
+            'warning'
+          );
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout:
+            GPS_CONFIG.MAX_WAIT_MS
+        }
+      );
+
+    state.gpsTimer =
+      window.setTimeout(
+        finishGpsSelection,
+        GPS_CONFIG.MAX_WAIT_MS
+      );
+  }
+
+  function renderSearchResults(
+    locations
+  ) {
+    elements.searchResults.textContent =
+      '';
+
+    if (!locations.length) {
+      elements.searchResults.hidden =
+        true;
+
+      elements.searchError.textContent =
+        'No matching locations were found.';
+
+      elements.searchError.hidden =
+        false;
+
+      return;
+    }
+
+    const fragment =
+      document.createDocumentFragment();
+
+    locations.forEach(
+      function(location) {
+        const button =
+          document.createElement(
+            'button'
+          );
+
+        const title =
+          document.createElement(
+            'strong'
+          );
+
+        const address =
+          document.createElement(
+            'span'
+          );
+
+        button.type = 'button';
+
+        button.className =
+          'chef-location-result';
+
+        button.setAttribute(
+          'role',
+          'option'
+        );
+
+        title.textContent =
+          location.locationName ||
+          'Location';
+
+        address.textContent =
+          location.fullAddress ||
+          [
+            location.area,
+            location.city,
+            location.state
+          ].filter(Boolean).join(', ');
+
+        button.appendChild(title);
+        button.appendChild(address);
+
+        button.addEventListener(
+          'click',
+          function() {
+            elements.searchResults.hidden =
+              true;
+
+            elements.searchInput.value =
+              location.locationName ||
+              '';
+
+            selectCoordinates(
+              location.latitude,
+              location.longitude,
+              location,
+              false,
+              null
+            );
+          }
+        );
+
+        fragment.appendChild(button);
+      }
+    );
+
+    elements.searchResults.appendChild(
+      fragment
+    );
+
+    elements.searchResults.hidden =
+      false;
+  }
+
+  async function searchLocation() {
+    const query = cleanText(
+      elements.searchInput.value
+    );
+
+    elements.searchError.textContent =
+      '';
+
+    elements.searchError.hidden = true;
+
+    if (query.length < 3) {
+      elements.searchError.textContent =
+        'Enter at least 3 characters.';
+
+      elements.searchError.hidden =
+        false;
+
+      return;
+    }
+
+    const sequence =
+      ++state.searchSequence;
+
+    window.ApnaBiteUI.setButtonLoading(
+      elements.searchButton,
+      true,
+      'SEARCHING…'
+    );
+
+    try {
+      const response =
+        await window.ApnaBiteAPI.request(
+          'location.search',
+          {
+            query: query,
+            latitude:
+              state.selectedLocation &&
+              state.selectedLocation
+                .latitude,
+            longitude:
+              state.selectedLocation &&
+              state.selectedLocation
+                .longitude
+          },
+          {
+            retry: true,
+            deduplicate: true
+          }
+        );
+
+      if (
+        sequence !==
+        state.searchSequence
+      ) {
+        return;
+      }
+
+      const locations =
+        response.data &&
+        Array.isArray(
+          response.data.locations
+        )
+          ? response.data.locations
+          : [];
+
+      renderSearchResults(locations);
+    } catch (error) {
+      if (
+        sequence ===
+        state.searchSequence
+      ) {
+        window.ApnaBiteUI
+          .handleApiError(
             error,
             {
               redirectToLogin: true
             }
           );
-        });
-      }, 450);
+      }
+    } finally {
+      if (
+        sequence ===
+        state.searchSequence
+      ) {
+        window.ApnaBiteUI
+          .setButtonLoading(
+            elements.searchButton,
+            false
+          );
+      }
     }
   }
 
-  function createAddressCard(address) {
-    const button = document.createElement('button');
-    const title = document.createElement('strong');
-    const text = document.createElement('span');
-    const badge = document.createElement('small');
+   function createAddressCard(address) {
+    const button =
+      document.createElement('button');
+
+    const title =
+      document.createElement('strong');
+
+    const text =
+      document.createElement('span');
+
+    const badge =
+      document.createElement('small');
 
     button.type = 'button';
-    button.className = 'chef-saved-address-card';
-    button.dataset.addressId = address.addressId;
+
+    button.className =
+      'chef-saved-address-card';
+
+    button.dataset.addressId =
+      address.addressId;
 
     title.textContent =
-      address.addressLabel || 'Saved address';
+      address.addressLabel ||
+      'Saved address';
 
     text.textContent = [
       address.addressLine1,
+      address.addressLine2,
       address.area,
       address.city,
       address.state
     ].filter(Boolean).join(', ');
 
-    badge.textContent = address.isDefault
-      ? 'DEFAULT'
-      : 'SELECT';
+    badge.textContent =
+      address.isDefault
+        ? 'DEFAULT'
+        : 'SELECT';
 
     button.appendChild(title);
     button.appendChild(text);
     button.appendChild(badge);
 
-    button.addEventListener('click', function() {
-      selectSavedAddress(address);
-    });
+    button.addEventListener(
+      'click',
+      function() {
+        selectSavedAddress(address);
+      }
+    );
 
     return button;
   }
@@ -470,38 +1071,63 @@
     elements.savedList.textContent = '';
 
     if (!state.addresses.length) {
-      elements.savedSection.hidden = true;
-      elements.newSection.hidden = false;
+      elements.savedSection.hidden =
+        true;
+
+      elements.newSection.hidden =
+        false;
+
       return;
     }
 
-    const fragment = document.createDocumentFragment();
+    const fragment =
+      document.createDocumentFragment();
 
-    state.addresses.forEach(function(address) {
-      fragment.appendChild(createAddressCard(address));
-    });
+    state.addresses.forEach(
+      function(address) {
+        fragment.appendChild(
+          createAddressCard(address)
+        );
+      }
+    );
 
-    elements.savedList.appendChild(fragment);
-    elements.savedSection.hidden = false;
+    elements.savedList.appendChild(
+      fragment
+    );
+
+    elements.savedSection.hidden =
+      false;
   }
 
   function selectSavedAddress(address) {
     state.selectedAddress = address;
+
     state.selectedLocation = {
-      latitude: Number(address.latitude),
-      longitude: Number(address.longitude)
+      latitude:
+        Number(address.latitude),
+      longitude:
+        Number(address.longitude),
+      accuracy: null
     };
 
-    elements.addressId.value = address.addressId;
-    elements.latitude.value = address.latitude;
-    elements.longitude.value = address.longitude;
+    elements.addressId.value =
+      address.addressId;
+
+    elements.latitude.value =
+      address.latitude;
+
+    elements.longitude.value =
+      address.longitude;
 
     elements.savedList
-      .querySelectorAll('.chef-saved-address-card')
+      .querySelectorAll(
+        '.chef-saved-address-card'
+      )
       .forEach(function(card) {
         card.classList.toggle(
           'chef-saved-address-card--selected',
-          card.dataset.addressId === address.addressId
+          card.dataset.addressId ===
+            address.addressId
         );
       });
 
@@ -512,7 +1138,8 @@
     );
 
     applyLocationDetails({
-      locationName: address.addressLabel,
+      locationName:
+        address.addressLabel,
       fullAddress: [
         address.addressLine1,
         address.addressLine2,
@@ -525,11 +1152,15 @@
       city: address.city,
       district: address.district,
       state: address.state,
-      postalCode: address.postalCode
+      postalCode:
+        address.postalCode
     });
 
     elements.newSection.hidden = true;
-    elements.saveButton.disabled = false;
+
+    elements.saveButton.disabled =
+      false;
+
     elements.saveButton.textContent =
       'USE THIS ADDRESS & CONTINUE';
 
@@ -543,15 +1174,21 @@
 
   function showNewAddress() {
     state.selectedAddress = null;
+
     elements.addressId.value = '';
-    elements.newSection.hidden = false;
+
+    elements.newSection.hidden =
+      false;
+
     elements.saveButton.textContent =
       'SAVE ADDRESS & CONTINUE';
 
     initializeMap();
 
     window.setTimeout(function() {
-      if (state.map) state.map.invalidateSize();
+      if (state.map) {
+        state.map.invalidateSize(true);
+      }
     }, 100);
 
     elements.newSection.scrollIntoView({
@@ -560,252 +1197,194 @@
     });
   }
 
-  function renderSearchResults(locations) {
-    elements.searchResults.textContent = '';
-
-    if (!locations.length) {
-      elements.searchResults.hidden = true;
-      elements.searchError.textContent =
-        'No matching locations were found.';
-      elements.searchError.hidden = false;
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-
-    locations.forEach(function(location) {
-      const button = document.createElement('button');
-      const title = document.createElement('strong');
-      const address = document.createElement('span');
-
-      button.type = 'button';
-      button.className = 'chef-location-result';
-      button.setAttribute('role', 'option');
-
-      title.textContent =
-        location.locationName || 'Location';
-
-      address.textContent =
-        location.fullAddress ||
-        [
-          location.area,
-          location.city,
-          location.state
-        ].filter(Boolean).join(', ');
-
-      button.appendChild(title);
-      button.appendChild(address);
-
-      button.addEventListener('click', function() {
-        elements.searchResults.hidden = true;
-        elements.searchInput.value =
-          location.locationName || '';
-
-        selectCoordinates(
-          location.latitude,
-          location.longitude,
-          location,
-          false
-        );
-      });
-
-      fragment.appendChild(button);
-    });
-
-    elements.searchResults.appendChild(fragment);
-    elements.searchResults.hidden = false;
-  }
-
-  async function searchLocation() {
-    const query = cleanText(elements.searchInput.value);
-
-    elements.searchError.textContent = '';
-    elements.searchError.hidden = true;
-
-    if (query.length < 3) {
-      elements.searchError.textContent =
-        'Enter at least 3 characters.';
-      elements.searchError.hidden = false;
-      return;
-    }
-
-    const sequence = ++state.searchSequence;
-
-    window.ApnaBiteUI.setButtonLoading(
-      elements.searchButton,
-      true,
-      'SEARCHING…'
-    );
-
-    try {
-      const response = await window.ApnaBiteAPI.request(
-        'location.search',
-        {
-          query: query,
-          latitude:
-            state.selectedLocation &&
-            state.selectedLocation.latitude,
-          longitude:
-            state.selectedLocation &&
-            state.selectedLocation.longitude
-        },
-        {
-          retry: true,
-          deduplicate: true
-        }
-      );
-
-      if (sequence !== state.searchSequence) return;
-
-      const locations =
-        response.data &&
-        Array.isArray(response.data.locations)
-          ? response.data.locations
-          : [];
-
-      renderSearchResults(locations);
-    } catch (error) {
-      if (sequence !== state.searchSequence) return;
-
-      window.ApnaBiteUI.handleApiError(
-        error,
-        {
-          redirectToLogin: true
-        }
-      );
-    } finally {
-      if (sequence === state.searchSequence) {
-        window.ApnaBiteUI.setButtonLoading(
-          elements.searchButton,
-          false
-        );
-      }
-    }
-  }
-
-  function useCurrentLocation() {
-    if (!navigator.geolocation) {
-      window.ApnaBiteUI.showToast(
-        'GPS is not supported on this device.',
-        'error'
-      );
-      return;
-    }
-
-    window.ApnaBiteUI.setButtonLoading(
-      elements.currentLocationButton,
-      true,
-      'LOCATING…'
-    );
-
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        window.ApnaBiteUI.setButtonLoading(
-          elements.currentLocationButton,
-          false
-        );
-
-        selectCoordinates(
-          position.coords.latitude,
-          position.coords.longitude,
-          null,
-          true
-        );
-      },
-      function() {
-        window.ApnaBiteUI.setButtonLoading(
-          elements.currentLocationButton,
-          false
-        );
-
-        window.ApnaBiteUI.showToast(
-          'Location permission was unavailable. Search your area instead.',
-          'warning'
-        );
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      }
-    );
-  }
-
   function getNewAddressData() {
     return {
-      addressLabel: cleanText(elements.addressLabel.value),
+      addressLabel:
+        cleanText(
+          elements.addressLabel.value
+        ),
       addressType: 'OTHER',
-      receiverName: cleanText(elements.receiverName.value),
-      receiverMobile: normalizeMobile(elements.receiverMobile.value),
-      addressLine1: cleanText(elements.addressLine1.value),
-      addressLine2: cleanText(elements.addressLine2.value),
-      landmark: cleanText(elements.landmark.value),
-      area: cleanText(elements.area.value),
-      city: cleanText(elements.city.value),
-      district: cleanText(elements.district.value),
-      state: cleanText(elements.state.value),
-      postalCode: cleanText(elements.postalCode.value),
-      latitude: Number(elements.latitude.value),
-      longitude: Number(elements.longitude.value),
-      isDefault: state.addresses.length === 0
+      receiverName:
+        cleanText(
+          elements.receiverName.value
+        ),
+      receiverMobile:
+        normalizeMobile(
+          elements.receiverMobile.value
+        ),
+      addressLine1:
+        cleanText(
+          elements.addressLine1.value
+        ),
+      addressLine2:
+        cleanText(
+          elements.addressLine2.value
+        ),
+      landmark:
+        cleanText(
+          elements.landmark.value
+        ),
+      area:
+        cleanText(
+          elements.area.value
+        ),
+      city:
+        cleanText(
+          elements.city.value
+        ),
+      district:
+        cleanText(
+          elements.district.value
+        ),
+      state:
+        cleanText(
+          elements.state.value
+        ),
+      postalCode:
+        cleanText(
+          elements.postalCode.value
+        ),
+      latitude:
+        Number(
+          elements.latitude.value
+        ),
+      longitude:
+        Number(
+          elements.longitude.value
+        ),
+      isDefault:
+        state.addresses.length === 0
     };
   }
 
   function validateNewAddress(data) {
     clearErrors();
+
     let valid = true;
 
-    const required = [
-      ['kitchen-address-label', data.addressLabel, 'Enter an address label.'],
-      ['kitchen-receiver-name', data.receiverName, 'Enter the contact person name.'],
-      ['kitchen-address-line-1', data.addressLine1, 'Enter the house, flat or building.'],
-      ['kitchen-address-area', data.area, 'Enter the area or locality.'],
-      ['kitchen-address-city', data.city, 'Enter the city.'],
-      ['kitchen-address-state', data.state, 'Enter the state.']
+    const requiredFields = [
+      {
+        id: 'kitchen-address-label',
+        value: data.addressLabel,
+        message:
+          'Enter an address label.'
+      },
+      {
+        id: 'kitchen-receiver-name',
+        value: data.receiverName,
+        message:
+          'Enter the contact person name.'
+      },
+      {
+        id: 'kitchen-address-line-1',
+        value: data.addressLine1,
+        message:
+          'Enter the house, flat or building.'
+      },
+      {
+        id: 'kitchen-address-area',
+        value: data.area,
+        message:
+          'Enter the area or locality.'
+      },
+      {
+        id: 'kitchen-address-city',
+        value: data.city,
+        message:
+          'Enter the city.'
+      },
+      {
+        id: 'kitchen-address-state',
+        value: data.state,
+        message:
+          'Enter the state.'
+      }
     ];
 
-    required.forEach(function(item) {
-      if (!item[1]) {
-        setFieldError(item[0], item[2]);
-        valid = false;
-      }
-    });
+    requiredFields.forEach(
+      function(field) {
+        if (!field.value) {
+          setFieldError(
+            field.id,
+            field.message
+          );
 
-    if (!/^[6-9]\d{9}$/.test(data.receiverMobile)) {
+          valid = false;
+        }
+      }
+    );
+
+    if (
+      !/^[6-9]\d{9}$/.test(
+        data.receiverMobile
+      )
+    ) {
       setFieldError(
         'kitchen-receiver-mobile',
         'Enter a valid 10-digit mobile number.'
       );
+
       valid = false;
     }
 
     if (
-      !Number.isFinite(data.latitude) ||
-      !Number.isFinite(data.longitude)
+      !Number.isFinite(
+        data.latitude
+      ) ||
+      !Number.isFinite(
+        data.longitude
+      ) ||
+      !state.selectedLocation
     ) {
       window.ApnaBiteUI.showToast(
-        'Select the exact Kitchen location on the map.',
+        'Select and verify the exact Kitchen location on the map.',
         'warning'
       );
+
       valid = false;
     }
 
     if (
       data.postalCode &&
-      !/^\d{6}$/.test(data.postalCode)
+      !/^\d{6}$/.test(
+        data.postalCode
+      )
     ) {
       setFieldError(
         'kitchen-address-postal-code',
         'Enter a valid 6-digit PIN code.'
       );
+
       valid = false;
+    }
+
+    if (!valid) {
+      const firstError =
+        elements.form.querySelector(
+          '.form-input--error'
+        );
+
+      if (firstError) {
+        firstError.focus();
+      }
     }
 
     return valid;
   }
 
-  async function connectKitchen(addressId) {
-    if (state.kitchen) {
+  async function attachAddressToKitchen(
+    addressId
+  ) {
+    if (
+      !state.kitchen ||
+      !state.kitchen.kitchenId
+    ) {
+      throw new Error(
+        'KITCHEN_PROFILE_REQUIRED'
+      );
+    }
+
+    const response =
       await window.ApnaBiteAPI.request(
         'chef.kitchen.update',
         {
@@ -817,94 +1396,129 @@
         }
       );
 
-      return;
+    if (
+      response &&
+      response.data &&
+      response.data.kitchen
+    ) {
+      state.kitchen =
+        response.data.kitchen;
     }
 
-    if (!state.profileDraft) {
-      throw new Error(
-        'Kitchen profile draft is missing.'
-      );
-    }
-
-    const payload = Object.assign(
-      {},
-      state.profileDraft,
-      {
-        addressId: addressId
-      }
-    );
-
-    await window.ApnaBiteAPI.request(
-      'chef.kitchen.create',
-      payload,
-      {
-        retry: false,
-        deduplicate: false
-      }
+    window.ApnaBiteCore.removeCache(
+      'chef_kitchen_profile'
     );
 
     window.ApnaBiteCore.removeCache(
-      PROFILE_DRAFT_KEY
+      'chef_onboarding'
     );
   }
 
   async function submitAddress(event) {
     event.preventDefault();
 
-    if (state.loading || state.submitting) return;
+    if (
+      state.loading ||
+      state.submitting
+    ) {
+      return;
+    }
 
-    setSubmitting(true, 'SAVING…');
+    if (
+      !state.kitchen ||
+      !state.kitchen.kitchenId
+    ) {
+      window.ApnaBiteUI.showToast(
+        'Complete the Kitchen Profile step first.',
+        'warning'
+      );
+
+      window.setTimeout(function() {
+        window.location.href =
+          'kitchen-profile.html';
+      }, 500);
+
+      return;
+    }
+
+    setSubmitting(
+      true,
+      state.selectedAddress
+        ? 'CONNECTING ADDRESS…'
+        : 'SAVING ADDRESS…'
+    );
 
     try {
-      let addressId;
+      let addressId = '';
 
       if (state.selectedAddress) {
-        addressId = state.selectedAddress.addressId;
+        addressId =
+          state.selectedAddress.addressId;
       } else {
-        const addressData = getNewAddressData();
+        const addressData =
+          getNewAddressData();
 
-        if (!validateNewAddress(addressData)) {
-          setSubmitting(false);
+        if (
+          !validateNewAddress(
+            addressData
+          )
+        ) {
           return;
         }
 
-        const response = await window.ApnaBiteAPI.request(
-          'address.create',
-          addressData,
-          {
-            retry: false,
-            deduplicate: false
-          }
-        );
+        const response =
+          await window.ApnaBiteAPI.request(
+            'address.create',
+            addressData,
+            {
+              retry: false,
+              deduplicate: false
+            }
+          );
 
-        addressId = response.data.addressId;
+        addressId =
+          response &&
+          response.data
+            ? response.data.addressId
+            : '';
       }
 
       if (!addressId) {
         throw new Error(
-          'Saved address ID was not returned.'
+          'ADDRESS_ID_MISSING'
         );
       }
 
-      await connectKitchen(addressId);
+      await attachAddressToKitchen(
+        addressId
+      );
 
       window.ApnaBiteUI.showToast(
-        state.kitchen
-          ? 'Kitchen address updated successfully.'
-          : 'Kitchen profile created successfully.',
+        'Kitchen address saved successfully.',
         'success'
       );
 
-      setText(elements.saveStatus, 'Saved');
+      setText(
+        elements.saveStatus,
+        'Saved'
+      );
+
+      setStatus(
+        'approved',
+        '✓',
+        'Kitchen address saved',
+        'Your exact location is securely connected to your Kitchen.'
+      );
 
       window.setTimeout(function() {
-        window.location.href = 'onboarding.html';
-      }, 350);
+        window.location.href =
+          'onboarding.html';
+      }, 450);
     } catch (error) {
       if (
         error &&
         error.message ===
-        'Kitchen profile draft is missing.'
+          'KITCHEN_PROFILE_REQUIRED'
       ) {
         window.ApnaBiteUI.showToast(
           'Complete the Kitchen Profile step first.',
@@ -915,6 +1529,15 @@
           window.location.href =
             'kitchen-profile.html';
         }, 500);
+      } else if (
+        error &&
+        error.message ===
+          'ADDRESS_ID_MISSING'
+      ) {
+        window.ApnaBiteUI.showToast(
+          'Address was not saved correctly. Please try again.',
+          'error'
+        );
       } else {
         window.ApnaBiteUI.handleApiError(
           error,
@@ -924,7 +1547,10 @@
         );
       }
 
-      setText(elements.saveStatus, 'Not saved');
+      setText(
+        elements.saveStatus,
+        'Not saved'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -934,32 +1560,35 @@
     if (state.loading) return;
 
     setLoading(true);
-    renderSavedAddresses();
     initializeMap();
 
     try {
-      const results = await Promise.all([
-        window.ApnaBiteAPI.request(
-          'address.list',
-          {},
-          {
-            retry: true,
-            deduplicate: true
-          }
-        ),
-        window.ApnaBiteAPI.request(
-          'chef.kitchen.get',
-          {},
-          {
-            retry: true,
-            deduplicate: true
-          }
-        )
-      ]);
+      const results =
+        await Promise.all([
+          window.ApnaBiteAPI.request(
+            'address.list',
+            {},
+            {
+              retry: true,
+              deduplicate: true
+            }
+          ),
+          window.ApnaBiteAPI.request(
+            'chef.kitchen.get',
+            {},
+            {
+              retry: true,
+              deduplicate: true
+            }
+          )
+        ]);
 
-      state.addresses = Array.isArray(results[0].data)
-        ? results[0].data
-        : [];
+      state.addresses =
+        Array.isArray(
+          results[0].data
+        )
+          ? results[0].data
+          : [];
 
       state.kitchen =
         results[1].data &&
@@ -967,30 +1596,13 @@
           ? results[1].data.kitchen
           : null;
 
-      state.profileDraft = getProfileDraft();
-
       renderSavedAddresses();
       prefillContact();
 
       if (
-        state.kitchen &&
-        state.kitchen.addressId
+        !state.kitchen ||
+        !state.kitchen.kitchenId
       ) {
-        const currentAddress = state.addresses.find(
-          function(address) {
-            return (
-              address.addressId ===
-              state.kitchen.addressId
-            );
-          }
-        );
-
-        if (currentAddress) {
-          selectSavedAddress(currentAddress);
-        }
-      }
-
-      if (!state.kitchen && !state.profileDraft) {
         setStatus(
           'pending',
           '!',
@@ -998,21 +1610,47 @@
           'Complete Step 1 before saving the Kitchen address.'
         );
 
-        elements.saveButton.disabled = true;
+        elements.saveButton.disabled =
+          true;
+
         elements.saveButton.textContent =
           'COMPLETE KITCHEN PROFILE FIRST';
-      } else {
-        setStatus(
-          '',
-          '2',
-          'Choose the exact Kitchen address',
-          'Select a saved address or add a new location.'
-        );
 
-        elements.saveButton.disabled = false;
-        elements.saveButton.textContent =
-          'SAVE ADDRESS & CONTINUE';
+        return;
       }
+
+      if (state.kitchen.addressId) {
+        const currentAddress =
+          state.addresses.find(
+            function(address) {
+              return (
+                address.addressId ===
+                state.kitchen.addressId
+              );
+            }
+          );
+
+        if (currentAddress) {
+          selectSavedAddress(
+            currentAddress
+          );
+
+          return;
+        }
+      }
+
+      setStatus(
+        '',
+        '2',
+        'Choose the exact Kitchen address',
+        'Select a saved address or add a new location.'
+      );
+
+      elements.saveButton.disabled =
+        false;
+
+      elements.saveButton.textContent =
+        'SAVE ADDRESS & CONTINUE';
     } catch (error) {
       setStatus(
         'rejected',
@@ -1029,6 +1667,12 @@
       );
     } finally {
       setLoading(false);
+
+      window.setTimeout(function() {
+        if (state.map) {
+          state.map.invalidateSize(true);
+        }
+      }, 100);
     }
   }
 
@@ -1066,10 +1710,11 @@
       }
     );
 
-    elements.currentLocationButton.addEventListener(
-      'click',
-      useCurrentLocation
-    );
+    elements.currentLocationButton
+      .addEventListener(
+        'click',
+        useCurrentLocation
+      );
 
     elements.recenterButton.addEventListener(
       'click',
@@ -1099,11 +1744,22 @@
             'form-input--error'
           )
         ) {
-          setFieldError(field.id, '');
+          setFieldError(
+            field.id,
+            ''
+          );
         }
 
-        setText(elements.saveStatus, 'Unsaved');
+        setText(
+          elements.saveStatus,
+          'Unsaved'
+        );
       }
+    );
+
+    window.addEventListener(
+      'pagehide',
+      stopGpsWatch
     );
   }
 
@@ -1117,6 +1773,7 @@
     }
 
     if (state.initialized) return;
+
     state.initialized = true;
 
     getElements();
@@ -1129,9 +1786,10 @@
     }
 
     if (
-      !window.ApnaBiteCore.requireLocalSession(
-        ['CHEF']
-      )
+      !window.ApnaBiteCore
+        .requireLocalSession(
+          ['CHEF']
+        )
     ) {
       return;
     }
@@ -1143,8 +1801,12 @@
   window.ApnaBiteChefKitchenAddress =
     Object.freeze({
       initialize: initialize,
-      loadPageData: loadPageData
+      loadPageData: loadPageData,
+      useCurrentLocation:
+        useCurrentLocation
     });
 
-  window.ApnaBiteCore.ready(initialize);
+  window.ApnaBiteCore.ready(
+    initialize
+  );
 })(window, document);
