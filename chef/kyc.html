@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Upload Chef KYC documents for ApnaBite verification."
+  >
+
+  <title>KYC Documents | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+</head>
+
+<body class="chef-page chef-kyc-page">
+  <header class="chef-header">
+    <div class="chef-header__inner">
+      <button
+        id="chef-kyc-back-button"
+        class="chef-back-button"
+        type="button"
+        aria-label="Go back"
+      >
+        ‹
+      </button>
+
+      <div class="chef-header__content">
+        <span class="chef-header__eyebrow">
+          STEP 4 OF 6
+        </span>
+
+        <h1 class="chef-header__title">
+          KYC Documents
+        </h1>
+      </div>
+
+      <span
+        id="chef-kyc-save-status"
+        class="chef-page-save-status"
+        aria-live="polite"
+      >
+        Checking…
+      </span>
+    </div>
+  </header>
+
+  <main class="chef-onboarding-main">
+    <section class="chef-form-intro">
+      <span
+        class="chef-form-intro__icon"
+        aria-hidden="true"
+      >
+        🛡️
+      </span>
+
+      <div>
+        <h2 class="chef-form-intro__title">
+          Verify your Chef account
+        </h2>
+
+        <p class="chef-form-intro__text">
+          Upload Aadhaar, PAN and FSSAI documents. Your documents remain private and are used only for verification.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-kyc-status-card"
+      class="chef-status-card chef-status-card--loading"
+      aria-live="polite"
+    >
+      <span
+        id="chef-kyc-status-icon"
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        …
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="chef-kyc-status-title">
+          Checking KYC status
+        </strong>
+
+        <p id="chef-kyc-status-message">
+          Please wait while we load your submitted documents.
+        </p>
+      </div>
+    </section>
+
+    <section
+      class="chef-onboarding-section"
+      aria-labelledby="chef-kyc-documents-title"
+    >
+      <div class="chef-section-heading">
+        <div>
+          <h2
+            id="chef-kyc-documents-title"
+            class="chef-section-heading__title"
+          >
+            Required Documents
+          </h2>
+
+          <p class="chef-section-heading__text">
+            Upload a clear image or PDF. Maximum file size is 5 MB.
+          </p>
+        </div>
+
+        <strong
+          id="chef-kyc-progress-text"
+          class="chef-section-heading__value"
+        >
+          0 of 3
+        </strong>
+      </div>
+
+      <div class="chef-kyc-list">
+        <article
+          id="chef-kyc-aadhaar-card"
+          class="chef-kyc-card"
+          data-document-type="AADHAAR"
+        >
+          <div class="chef-kyc-card__header">
+            <span
+              class="chef-kyc-card__number"
+              aria-hidden="true"
+            >
+              1
+            </span>
+
+            <div class="chef-kyc-card__heading">
+              <h3>
+                Aadhaar Card
+              </h3>
+
+              <p>
+                Enter your 12-digit Aadhaar number.
+              </p>
+            </div>
+
+            <span
+              id="chef-kyc-aadhaar-status"
+              class="chef-step-status"
+            >
+              Pending
+            </span>
+          </div>
+
+          <div class="chef-kyc-card__body">
+            <label
+              class="form-label"
+              for="chef-kyc-aadhaar-number"
+            >
+              Aadhaar number
+            </label>
+
+            <input
+              id="chef-kyc-aadhaar-number"
+              class="form-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="14"
+              placeholder="XXXX XXXX XXXX"
+            >
+
+            <label
+              id="chef-kyc-aadhaar-upload-label"
+              class="chef-document-upload"
+              for="chef-kyc-aadhaar-file"
+            >
+              <input
+                id="chef-kyc-aadhaar-file"
+                class="chef-document-upload__input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+              >
+
+              <span
+                class="chef-document-upload__icon"
+                aria-hidden="true"
+              >
+                ↑
+              </span>
+
+              <span class="chef-document-upload__content">
+                <strong id="chef-kyc-aadhaar-file-name">
+                  Select Aadhaar file
+                </strong>
+
+                <small>
+                  JPG, PNG, WebP or PDF
+                </small>
+              </span>
+            </label>
+
+            <div
+              id="chef-kyc-aadhaar-existing"
+              class="chef-document-existing"
+              hidden
+            >
+              <span aria-hidden="true">
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  Aadhaar submitted
+                </strong>
+
+                <small id="chef-kyc-aadhaar-masked"></small>
+              </div>
+            </div>
+
+            <p
+              id="chef-kyc-aadhaar-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+
+            <button
+              id="chef-kyc-aadhaar-submit"
+              class="button button--secondary button--block"
+              type="button"
+            >
+              UPLOAD AADHAAR
+            </button>
+          </div>
+        </article>
+
+        <article
+          id="chef-kyc-pan-card"
+          class="chef-kyc-card"
+          data-document-type="PAN"
+        >
+          <div class="chef-kyc-card__header">
+            <span
+              class="chef-kyc-card__number"
+              aria-hidden="true"
+            >
+              2
+            </span>
+
+            <div class="chef-kyc-card__heading">
+              <h3>
+                PAN Card
+              </h3>
+
+              <p>
+                Enter your 10-character PAN number.
+              </p>
+            </div>
+
+            <span
+              id="chef-kyc-pan-status"
+              class="chef-step-status"
+            >
+              Pending
+            </span>
+          </div>
+
+          <div class="chef-kyc-card__body">
+            <label
+              class="form-label"
+              for="chef-kyc-pan-number"
+            >
+              PAN number
+            </label>
+
+            <input
+              id="chef-kyc-pan-number"
+              class="form-input"
+              type="text"
+              autocomplete="off"
+              maxlength="10"
+              placeholder="ABCDE1234F"
+            >
+
+            <label
+              id="chef-kyc-pan-upload-label"
+              class="chef-document-upload"
+              for="chef-kyc-pan-file"
+            >
+              <input
+                id="chef-kyc-pan-file"
+                class="chef-document-upload__input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+              >
+
+              <span
+                class="chef-document-upload__icon"
+                aria-hidden="true"
+              >
+                ↑
+              </span>
+
+              <span class="chef-document-upload__content">
+                <strong id="chef-kyc-pan-file-name">
+                  Select PAN file
+                </strong>
+
+                <small>
+                  JPG, PNG, WebP or PDF
+                </small>
+              </span>
+            </label>
+
+            <div
+              id="chef-kyc-pan-existing"
+              class="chef-document-existing"
+              hidden
+            >
+              <span aria-hidden="true">
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  PAN submitted
+                </strong>
+
+                <small id="chef-kyc-pan-masked"></small>
+              </div>
+            </div>
+
+            <p
+              id="chef-kyc-pan-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+
+            <button
+              id="chef-kyc-pan-submit"
+              class="button button--secondary button--block"
+              type="button"
+            >
+              UPLOAD PAN
+            </button>
+          </div>
+        </article>
+
+        <article
+          id="chef-kyc-fssai-card"
+          class="chef-kyc-card"
+          data-document-type="FSSAI"
+        >
+          <div class="chef-kyc-card__header">
+            <span
+              class="chef-kyc-card__number"
+              aria-hidden="true"
+            >
+              3
+            </span>
+
+            <div class="chef-kyc-card__heading">
+              <h3>
+                FSSAI Registration
+              </h3>
+
+              <p>
+                Enter your 14-digit FSSAI registration or licence number.
+              </p>
+            </div>
+
+            <span
+              id="chef-kyc-fssai-status"
+              class="chef-step-status"
+            >
+              Pending
+            </span>
+          </div>
+
+          <div class="chef-kyc-card__body">
+            <label
+              class="form-label"
+              for="chef-kyc-fssai-number"
+            >
+              FSSAI number
+            </label>
+
+            <input
+              id="chef-kyc-fssai-number"
+              class="form-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="14"
+              placeholder="14-digit FSSAI number"
+            >
+
+            <div class="chef-form-grid chef-form-grid--two">
+              <div>
+                <label
+                  class="form-label"
+                  for="chef-kyc-fssai-issue-date"
+                >
+                  Issue date
+                  <span class="form-label__optional">
+                    Optional
+                  </span>
+                </label>
+
+                <input
+                  id="chef-kyc-fssai-issue-date"
+                  class="form-input"
+                  type="date"
+                >
+              </div>
+
+              <div>
+                <label
+                  class="form-label"
+                  for="chef-kyc-fssai-expiry-date"
+                >
+                  Expiry date
+                  <span class="form-label__optional">
+                    Optional
+                  </span>
+                </label>
+
+                <input
+                  id="chef-kyc-fssai-expiry-date"
+                  class="form-input"
+                  type="date"
+                >
+              </div>
+            </div>
+
+            <label
+              id="chef-kyc-fssai-upload-label"
+              class="chef-document-upload"
+              for="chef-kyc-fssai-file"
+            >
+              <input
+                id="chef-kyc-fssai-file"
+                class="chef-document-upload__input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+              >
+
+              <span
+                class="chef-document-upload__icon"
+                aria-hidden="true"
+              >
+                ↑
+              </span>
+
+              <span class="chef-document-upload__content">
+                <strong id="chef-kyc-fssai-file-name">
+                  Select FSSAI file
+                </strong>
+
+                <small>
+                  JPG, PNG, WebP or PDF
+                </small>
+              </span>
+            </label>
+
+            <div
+              id="chef-kyc-fssai-existing"
+              class="chef-document-existing"
+              hidden
+            >
+              <span aria-hidden="true">
+                ✓
+              </span>
+
+              <div>
+                <strong>
+                  FSSAI submitted
+                </strong>
+
+                <small id="chef-kyc-fssai-masked"></small>
+              </div>
+            </div>
+
+            <p
+              id="chef-kyc-fssai-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+
+            <button
+              id="chef-kyc-fssai-submit"
+              class="button button--secondary button--block"
+              type="button"
+            >
+              UPLOAD FSSAI
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="chef-privacy-note">
+      <span
+        class="chef-privacy-note__icon"
+        aria-hidden="true"
+      >
+        i
+      </span>
+
+      <p>
+        Your KYC documents are stored privately. Only authorized ApnaBite Admins can access them for verification.
+      </p>
+    </section>
+
+    <div class="chef-onboarding-bottom-space"></div>
+  </main>
+
+  <div class="chef-onboarding-action-bar">
+    <button
+      id="chef-kyc-continue-button"
+      class="button button--primary button--block button--large"
+      type="button"
+      disabled
+    >
+      COMPLETE ALL KYC DOCUMENTS
+    </button>
+  </div>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-kyc.js"></script>
+</body>
+</html>
