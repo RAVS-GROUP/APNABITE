@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Review and submit your ApnaBite Kitchen for approval."
+  >
+
+  <title>Review Kitchen | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+</head>
+
+<body class="chef-page chef-review-page">
+  <header class="chef-header">
+    <div class="chef-header__inner">
+      <button
+        id="chef-review-back-button"
+        class="chef-header__back"
+        type="button"
+        aria-label="Go back"
+      >
+        ‹
+      </button>
+
+      <div class="chef-header__content">
+        <span class="chef-header__eyebrow">
+          STEP 6 OF 6
+        </span>
+
+        <h1 class="chef-header__title">
+          Review & Submit
+        </h1>
+      </div>
+
+      <span
+        id="chef-review-save-status"
+        class="chef-header__save-status"
+        aria-live="polite"
+      >
+        Checking…
+      </span>
+    </div>
+  </header>
+
+  <main class="chef-onboarding-main">
+    <section class="chef-page-intro">
+      <span
+        class="chef-page-intro__icon"
+        aria-hidden="true"
+      >
+        ✓
+      </span>
+
+      <div>
+        <h2 class="chef-page-intro__title">
+          Review your Kitchen
+        </h2>
+
+        <p class="chef-page-intro__text">
+          Check all details before submitting your Kitchen for verification.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-review-status-card"
+      class="chef-status-card chef-status-card--loading"
+      aria-live="polite"
+    >
+      <span
+        id="chef-review-status-icon"
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        …
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="chef-review-status-title">
+          Checking onboarding details
+        </strong>
+
+        <p id="chef-review-status-message">
+          Please wait while we prepare your Kitchen summary.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-review-content"
+      hidden
+    >
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>
+            Kitchen profile
+          </h2>
+
+          <p>
+            Your public Kitchen information.
+          </p>
+        </div>
+
+        <div class="chef-review-profile">
+          <img
+            id="chef-review-kitchen-image"
+            class="chef-review-profile__image"
+            src=""
+            alt="Kitchen"
+            hidden
+          >
+
+          <div
+            id="chef-review-image-placeholder"
+            class="chef-review-profile__placeholder"
+            aria-hidden="true"
+          >
+            🍲
+          </div>
+
+          <div class="chef-review-profile__content">
+            <h3 id="chef-review-kitchen-name">
+              —
+            </h3>
+
+            <p id="chef-review-description">
+              —
+            </p>
+
+            <div class="chef-review-tags">
+              <span id="chef-review-food-type">
+                —
+              </span>
+
+              <span id="chef-review-capacity">
+                —
+              </span>
+
+              <span id="chef-review-preparation">
+                —
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          id="chef-review-edit-profile"
+          class="chef-review-edit-button"
+          type="button"
+        >
+          EDIT KITCHEN PROFILE
+        </button>
+      </section>
+
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>
+            Kitchen address
+          </h2>
+
+          <p>
+            Location used for discovery and delivery calculations.
+          </p>
+        </div>
+
+        <div class="chef-review-detail">
+          <span
+            class="chef-review-detail__icon"
+            aria-hidden="true"
+          >
+            📍
+          </span>
+
+          <div>
+            <strong id="chef-review-address-title">
+              Kitchen address
+            </strong>
+
+            <p id="chef-review-address-text">
+              Saved exact Kitchen location
+            </p>
+
+            <small id="chef-review-coordinates">
+              —
+            </small>
+          </div>
+        </div>
+
+        <button
+          id="chef-review-edit-address"
+          class="chef-review-edit-button"
+          type="button"
+        >
+          EDIT KITCHEN ADDRESS
+        </button>
+      </section>
+
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>
+            KYC documents
+          </h2>
+
+          <p>
+            Required Chef verification documents.
+          </p>
+        </div>
+
+        <div
+          id="chef-review-kyc-list"
+          class="chef-review-check-list"
+        ></div>
+
+        <button
+          id="chef-review-edit-kyc"
+          class="chef-review-edit-button"
+          type="button"
+        >
+          VIEW KYC DOCUMENTS
+        </button>
+      </section>
+
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>
+            Payout method
+          </h2>
+
+          <p>
+            Settlement details saved securely.
+          </p>
+        </div>
+
+        <div class="chef-review-detail">
+          <span
+            class="chef-review-detail__icon"
+            aria-hidden="true"
+          >
+            ₹
+          </span>
+
+          <div>
+            <strong id="chef-review-payout-method">
+              —
+            </strong>
+
+            <p id="chef-review-payout-details">
+              —
+            </p>
+
+            <small id="chef-review-payout-status">
+              —
+            </small>
+          </div>
+        </div>
+
+        <button
+          id="chef-review-edit-payout"
+          class="chef-review-edit-button"
+          type="button"
+        >
+          EDIT PAYOUT DETAILS
+        </button>
+      </section>
+
+      <section class="chef-information-card">
+        <span
+          class="chef-information-card__icon"
+          aria-hidden="true"
+        >
+          i
+        </span>
+
+        <p>
+          After submission, ApnaBite Admin will verify your Kitchen, KYC and payout details. Your Kitchen will remain closed until approval.
+        </p>
+      </section>
+
+      <div class="chef-onboarding-bottom-space"></div>
+    </section>
+
+    <section
+      id="chef-review-error"
+      class="chef-error-card"
+      role="alert"
+      hidden
+    ></section>
+  </main>
+
+  <div class="chef-onboarding-action-bar">
+    <button
+      id="chef-review-submit-button"
+      class="button button--primary button--block button--large"
+      type="button"
+      disabled
+    >
+      CHECKING DETAILS…
+    </button>
+  </div>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-review.js?v=20260905-01"></script>
+</body>
+</html>
