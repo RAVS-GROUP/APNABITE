@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — CHEF STYLES
  * File: assets/css/chef.css
- * Complete replacement — Part 1 of 3
+ * Complete replacement — Part 1 of 4
  * ============================================================
  */
 
@@ -408,7 +408,8 @@
 }
 
 .chef-form .form-label,
-.chef-kyc-page .form-label {
+.chef-kyc-page .form-label,
+.chef-payout-page .form-label {
   margin-bottom: 7px;
   display: block;
   color: #334155;
@@ -417,7 +418,8 @@
   line-height: 1.4;
 }
 
-.chef-form .form-label > span[aria-hidden="true"] {
+.chef-form .form-label > span[aria-hidden="true"],
+.chef-payout-page .form-label > span[aria-hidden="true"] {
   color: #dc2626;
 }
 
@@ -430,7 +432,8 @@
 
 .chef-form .form-input,
 .chef-location-search .form-input,
-.chef-kyc-page .form-input {
+.chef-kyc-page .form-input,
+.chef-payout-page .form-input {
   width: 100%;
   min-height: 46px;
   padding: 11px 13px;
@@ -455,25 +458,29 @@
 
 .chef-form .form-input:hover,
 .chef-location-search .form-input:hover,
-.chef-kyc-page .form-input:hover {
+.chef-kyc-page .form-input:hover,
+.chef-payout-page .form-input:hover {
   border-color: #94a3b8;
 }
 
 .chef-form .form-input:focus,
 .chef-location-search .form-input:focus,
-.chef-kyc-page .form-input:focus {
+.chef-kyc-page .form-input:focus,
+.chef-payout-page .form-input:focus {
   border-color: #f97316;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
 }
 
 .chef-form .form-input::placeholder,
 .chef-location-search .form-input::placeholder,
-.chef-kyc-page .form-input::placeholder {
+.chef-kyc-page .form-input::placeholder,
+.chef-payout-page .form-input::placeholder {
   color: #94a3b8;
 }
 
 .chef-form .form-input:disabled,
-.chef-kyc-page .form-input:disabled {
+.chef-kyc-page .form-input:disabled,
+.chef-payout-page .form-input:disabled {
   color: #64748b;
   background: #f1f5f9;
   cursor: not-allowed;
@@ -481,28 +488,16 @@
 
 .chef-form .form-input--error,
 .chef-location-search .form-input--error,
-.chef-kyc-page .form-input--error {
+.chef-kyc-page .form-input--error,
+.chef-payout-page .form-input--error {
   border-color: #dc2626;
   background: #fffafa;
 }
 
-.chef-form .form-input--error:focus,
-.chef-location-search .form-input--error:focus,
-.chef-kyc-page .form-input--error:focus {
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-}
-
-.chef-form .form-help {
-  margin-top: 6px;
-  display: block;
-  color: #64748b;
-  font-size: 10px;
-  line-height: 1.45;
-}
-
 .chef-form .form-error,
 .chef-location-search .form-error,
-.chef-kyc-page .form-error {
+.chef-kyc-page .form-error,
+.chef-payout-page .form-error {
   margin: 7px 0 0;
   color: #b91c1c;
   font-size: 10px;
@@ -512,7 +507,8 @@
 
 .chef-form .form-error[hidden],
 .chef-location-search .form-error[hidden],
-.chef-kyc-page .form-error[hidden] {
+.chef-kyc-page .form-error[hidden],
+.chef-payout-page .form-error[hidden] {
   display: none;
 }
 
@@ -1019,10 +1015,6 @@
   border-radius: 15px;
 }
 
-/*
- * Global image styles ko Leaflet tiles par
- * apply hone se rokta hai.
- */
 .chef-address-map .leaflet-tile,
 .chef-address-map .leaflet-marker-icon,
 .chef-address-map .leaflet-marker-shadow {
@@ -1537,6 +1529,223 @@
   line-height: 1.55;
 }
 
+/* PAYOUT METHODS */
+
+.chef-payout-methods {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
+}
+
+.chef-payout-method {
+  position: relative;
+  min-width: 0;
+  min-height: 112px;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 26px;
+  align-items: center;
+  gap: 12px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 15px;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.chef-payout-method:hover,
+.chef-payout-method:focus-within {
+  background: #fffaf5;
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08);
+}
+
+.chef-payout-method:active {
+  transform: scale(0.995);
+}
+
+.chef-payout-method > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chef-payout-method__icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: #f1f5f9;
+  border-radius: 50%;
+}
+
+.chef-payout-method__content {
+  min-width: 0;
+}
+
+.chef-payout-method__content strong,
+.chef-payout-method__content small {
+  display: block;
+}
+
+.chef-payout-method__content strong {
+  margin-bottom: 4px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.chef-payout-method__content small {
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.chef-payout-method__check {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  font-size: 12px;
+  font-weight: 800;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+}
+
+.chef-payout-method--selected {
+  background: #fff7ed;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.chef-payout-method--selected .chef-payout-method__icon {
+  background: #ffedd5;
+}
+
+.chef-payout-method--selected .chef-payout-method__check {
+  color: #ffffff;
+  background: #f97316;
+  border-color: #f97316;
+}
+
+.chef-payout-method-divider {
+  align-self: center;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* PAYOUT SAVED SUMMARY */
+
+.chef-payout-summary {
+  margin-bottom: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 17px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.045);
+}
+
+.chef-payout-summary[hidden] {
+  display: none;
+}
+
+.chef-payout-summary__header {
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fdf4;
+  border-bottom: 1px solid #bbf7d0;
+}
+
+.chef-payout-summary__icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  color: #15803d;
+  font-size: 17px;
+  font-weight: 800;
+  background: #dcfce7;
+  border-radius: 50%;
+}
+
+.chef-payout-summary__header h2 {
+  margin: 0 0 3px;
+  color: #14532d;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.chef-payout-summary__header p {
+  margin: 0;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.chef-payout-summary__details {
+  margin: 0;
+  padding: 4px 17px;
+}
+
+.chef-payout-summary__details > div {
+  padding: 11px 0;
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  gap: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chef-payout-summary__details > div:last-child {
+  border-bottom: 0;
+}
+
+.chef-payout-summary__details dt {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.chef-payout-summary__details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+/* HIDDEN SECTIONS */
+
+.chef-form-card[hidden],
+.chef-payout-page [hidden] {
+  display: none;
+}
+
 /* FIXED ACTION BAR */
 
 .chef-onboarding-action-bar {
@@ -1678,6 +1887,30 @@
   .chef-image-preview img,
   .chef-current-image img {
     height: 240px;
+  }
+
+  .chef-payout-methods {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .chef-payout-method-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .chef-payout-method-divider::before,
+  .chef-payout-method-divider::after {
+    height: 1px;
+    flex: 1;
+    content: "";
+    background: #e2e8f0;
+  }
+
+  .chef-payout-method {
+    min-height: 94px;
   }
 }
 
@@ -1906,6 +2139,51 @@
 
   .chef-document-upload__content strong {
     font-size: 11px;
+  }
+
+  .chef-payout-method {
+    min-height: 88px;
+    padding: 12px;
+    grid-template-columns: 38px minmax(0, 1fr) 24px;
+    gap: 10px;
+    border-radius: 13px;
+  }
+
+  .chef-payout-method__icon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+
+  .chef-payout-method__content strong {
+    font-size: 12px;
+  }
+
+  .chef-payout-method__content small {
+    font-size: 9px;
+  }
+
+  .chef-payout-method__check {
+    width: 24px;
+    height: 24px;
+  }
+
+  .chef-payout-summary {
+    border-radius: 14px;
+  }
+
+  .chef-payout-summary__header {
+    padding: 13px;
+  }
+
+  .chef-payout-summary__details {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+
+  .chef-payout-summary__details > div {
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 10px;
   }
 
   .chef-onboarding-action-bar {
