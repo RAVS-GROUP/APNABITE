@@ -2596,3 +2596,559 @@
     padding: 10px;
   }
 }
+
+/* ============================================================
+   APNABITE V1 — CHEF DASHBOARD
+   Page: chef/dashboard.html
+   ============================================================ */
+
+.chef-dashboard-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #0f172a;
+  padding-bottom: 88px;
+}
+
+.chef-dashboard-page [hidden] {
+  display: none !important;
+}
+
+/* Header */
+
+.chef-dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background: #111c32;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+.chef-dashboard-header__inner {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 76px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.chef-dashboard-brand {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.chef-dashboard-brand__icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(249, 115, 22, 0.42);
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.12);
+  font-size: 24px;
+}
+
+.chef-dashboard-brand__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chef-dashboard-brand__content small {
+  color: #fb923c;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+}
+
+.chef-dashboard-brand__content strong {
+  max-width: 360px;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chef-dashboard-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chef-dashboard-header .chef-page-save-status {
+  color: #cbd5e1;
+}
+
+.chef-dashboard-header-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #475569;
+  border-radius: 12px;
+  background: #1e293b;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.chef-dashboard-header-button:hover {
+  border-color: #64748b;
+  background: #273449;
+  transform: translateY(-1px);
+}
+
+.chef-dashboard-header-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.chef-dashboard-header-button--danger {
+  border-color: #dc2626;
+  color: #fecaca;
+}
+
+.chef-dashboard-header-button--danger:hover {
+  border-color: #ef4444;
+  background: rgba(220, 38, 38, 0.15);
+}
+
+/* Main container */
+
+.chef-dashboard-main {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 32px;
+}
+
+.chef-dashboard-welcome {
+  margin-bottom: 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.chef-dashboard-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+}
+
+.chef-dashboard-welcome h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.chef-dashboard-welcome p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.chef-dashboard-account-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.chef-dashboard-account-badge--active {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.chef-dashboard-account-badge--pending {
+  border-color: #fde68a;
+  background: #fef3c7;
+  color: #a16207;
+}
+
+/* Loading and error */
+
+.chef-dashboard-loading {
+  min-height: 130px;
+  margin-bottom: 22px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 20px;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.chef-dashboard-loading__spinner {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 4px solid #fed7aa;
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: chef-dashboard-spin 0.8s linear infinite;
+}
+
+.chef-dashboard-loading strong {
+  display: block;
+  color: #7c2d12;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.chef-dashboard-loading p {
+  margin: 4px 0 0;
+  color: #9a3412;
+  font-size: 13px;
+}
+
+@keyframes chef-dashboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chef-dashboard-page
+.chef-status-card {
+  margin-bottom: 22px;
+}
+
+.chef-dashboard-page
+.chef-status-card
+.button {
+  flex: 0 0 auto;
+}
+
+/* Kitchen status card */
+
+.chef-dashboard-kitchen-card {
+  margin-bottom: 22px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 22px;
+  border: 1px solid #dbe4f0;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.chef-dashboard-kitchen-card__image-wrap {
+  width: 140px;
+  height: 140px;
+  overflow: hidden;
+  border: 1px solid #fed7aa;
+  border-radius: 18px;
+  background: #fff7ed;
+}
+
+.chef-dashboard-kitchen-card__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.chef-dashboard-kitchen-card__content {
+  min-width: 0;
+}
+
+.chef-dashboard-kitchen-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.chef-dashboard-status-pill {
+  min-height: 26px;
+  margin-bottom: 8px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.chef-dashboard-status-pill--approved {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.chef-dashboard-status-pill--pending {
+  border-color: #fde68a;
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.chef-dashboard-status-pill--rejected {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.chef-dashboard-kitchen-card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.chef-dashboard-kitchen-card__heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chef-dashboard-availability {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: end;
+  gap: 5px 10px;
+}
+
+.chef-dashboard-availability > span {
+  grid-column: 1 / -1;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chef-dashboard-availability > strong {
+  min-width: 58px;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.chef-dashboard-switch {
+  position: relative;
+  width: 48px;
+  height: 27px;
+  display: inline-block;
+}
+
+.chef-dashboard-switch input {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.chef-dashboard-switch__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chef-dashboard-switch__slider::before {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  content: "";
+  transition: transform 0.2s ease;
+}
+
+.chef-dashboard-switch
+input:checked +
+.chef-dashboard-switch__slider {
+  background: #16a34a;
+}
+
+.chef-dashboard-switch
+input:checked +
+.chef-dashboard-switch__slider::before {
+  transform: translateX(21px);
+}
+
+.chef-dashboard-switch
+input:disabled +
+.chef-dashboard-switch__slider {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.chef-dashboard-kitchen-meta {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.chef-dashboard-kitchen-meta span {
+  padding: 8px 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.chef-dashboard-kitchen-meta strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.chef-dashboard-kitchen-card__message {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #f97316;
+  border-radius: 0 9px 9px 0;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Statistic cards */
+
+.chef-dashboard-stat-grid {
+  margin-bottom: 22px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.chef-dashboard-stat-card {
+  min-width: 0;
+  min-height: 112px;
+  padding: 17px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid #dbe4f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+}
+
+.chef-dashboard-stat-card__icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.chef-dashboard-stat-card div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chef-dashboard-stat-card small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.chef-dashboard-stat-card strong {
+  margin-top: 4px;
+  color: #0f172a;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.chef-dashboard-stat-card div > span {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+/* Dashboard sections */
+
+.chef-dashboard-section {
+  margin-bottom: 22px;
+  padding: 20px;
+  border: 1px solid #dbe4f0;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045);
+}
+
+.chef-dashboard-section__heading {
+  margin-bottom: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.chef-dashboard-section__heading h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.chef-dashboard-section__heading p {
+  margin: 4px 0 0;
+  color: #64748
