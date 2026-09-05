@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Manage your ApnaBite Kitchen, menu and incoming orders."
+  >
+
+  <title>Chef Dashboard | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+</head>
+
+<body class="chef-page chef-dashboard-page">
+  <header class="chef-dashboard-header">
+    <div class="chef-dashboard-header__inner">
+      <a
+        class="chef-dashboard-brand"
+        href="dashboard.html"
+        aria-label="ApnaBite Chef Dashboard"
+      >
+        <span
+          class="chef-dashboard-brand__icon"
+          aria-hidden="true"
+        >
+          👨‍🍳
+        </span>
+
+        <span class="chef-dashboard-brand__content">
+          <small>
+            APNABITE CHEF
+          </small>
+
+          <strong id="chef-dashboard-kitchen-name">
+            My Kitchen
+          </strong>
+        </span>
+      </a>
+
+      <div class="chef-dashboard-header__actions">
+        <span
+          id="chef-dashboard-sync-status"
+          class="chef-page-save-status"
+          aria-live="polite"
+        >
+          Loading…
+        </span>
+
+        <button
+          id="chef-dashboard-refresh-button"
+          class="chef-dashboard-header-button"
+          type="button"
+        >
+          Refresh
+        </button>
+
+        <button
+          id="chef-dashboard-logout-button"
+          class="chef-dashboard-header-button chef-dashboard-header-button--danger"
+          type="button"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="chef-dashboard-main">
+    <section class="chef-dashboard-welcome">
+      <div>
+        <span class="chef-dashboard-eyebrow">
+          CHEF DASHBOARD
+        </span>
+
+        <h1>
+          Welcome,
+          <span id="chef-dashboard-chef-name">
+            Chef
+          </span>
+        </h1>
+
+        <p id="chef-dashboard-welcome-message">
+          Manage your Kitchen, menu and incoming orders.
+        </p>
+      </div>
+
+      <div
+        id="chef-dashboard-account-badge"
+        class="chef-dashboard-account-badge"
+      >
+        Checking account…
+      </div>
+    </section>
+
+    <section
+      id="chef-dashboard-loading"
+      class="chef-dashboard-loading"
+      aria-live="polite"
+    >
+      <span
+        class="chef-dashboard-loading__spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>
+          Loading your Kitchen
+        </strong>
+
+        <p>
+          Please wait while we prepare your dashboard.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-dashboard-error"
+      class="chef-status-card chef-status-card--rejected"
+      role="alert"
+      hidden
+    >
+      <span
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        !
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="chef-dashboard-error-title">
+          Dashboard could not be loaded
+        </strong>
+
+        <p id="chef-dashboard-error-message">
+          Please check your internet connection and try again.
+        </p>
+      </div>
+
+      <button
+        id="chef-dashboard-error-retry"
+        class="button button--secondary"
+        type="button"
+      >
+        RETRY
+      </button>
+    </section>
+
+    <div
+      id="chef-dashboard-content"
+      hidden
+    >
+      <section
+        id="chef-dashboard-kitchen-status-card"
+        class="chef-dashboard-kitchen-card"
+      >
+        <div class="chef-dashboard-kitchen-card__image-wrap">
+          <img
+            id="chef-dashboard-kitchen-image"
+            class="chef-dashboard-kitchen-card__image"
+            src="../assets/images/logo.png"
+            alt="Kitchen"
+          >
+        </div>
+
+        <div class="chef-dashboard-kitchen-card__content">
+          <div class="chef-dashboard-kitchen-card__heading">
+            <div>
+              <span
+                id="chef-dashboard-approval-status"
+                class="chef-dashboard-status-pill"
+              >
+                CHECKING
+              </span>
+
+              <h2 id="chef-dashboard-kitchen-title">
+                My Kitchen
+              </h2>
+
+              <p id="chef-dashboard-kitchen-food-type">
+                Food type
+              </p>
+            </div>
+
+            <div class="chef-dashboard-availability">
+              <span>
+                Kitchen availability
+              </span>
+
+              <label class="chef-dashboard-switch">
+                <input
+                  id="chef-dashboard-availability-toggle"
+                  type="checkbox"
+                  aria-label="Change Kitchen availability"
+                  disabled
+                >
+
+                <span
+                  class="chef-dashboard-switch__slider"
+                  aria-hidden="true"
+                ></span>
+              </label>
+
+              <strong id="chef-dashboard-availability-text">
+                CLOSED
+              </strong>
+            </div>
+          </div>
+
+          <div class="chef-dashboard-kitchen-meta">
+            <span>
+              Service radius:
+              <strong id="chef-dashboard-service-radius">
+                —
+              </strong>
+            </span>
+
+            <span>
+              Preparation:
+              <strong id="chef-dashboard-preparation-time">
+                —
+              </strong>
+            </span>
+
+            <span>
+              Minimum order:
+              <strong id="chef-dashboard-minimum-order">
+                —
+              </strong>
+            </span>
+          </div>
+
+          <p
+            id="chef-dashboard-kitchen-status-message"
+            class="chef-dashboard-kitchen-card__message"
+          >
+            Checking your Kitchen approval and availability.
+          </p>
+        </div>
+      </section>
+
+      <section class="chef-dashboard-stat-grid">
+        <article class="chef-dashboard-stat-card">
+          <span
+            class="chef-dashboard-stat-card__icon"
+            aria-hidden="true"
+          >
+            🍱
+          </span>
+
+          <div>
+            <small>
+              Daily capacity
+            </small>
+
+            <strong id="chef-dashboard-daily-capacity">
+              0
+            </strong>
+          </div>
+        </article>
+
+        <article class="chef-dashboard-stat-card">
+          <span
+            class="chef-dashboard-stat-card__icon"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
+
+          <div>
+            <small>
+              Meals booked today
+            </small>
+
+            <strong id="chef-dashboard-meals-booked">
+              0
+            </strong>
+          </div>
+        </article>
+
+        <article class="chef-dashboard-stat-card">
+          <span
+            class="chef-dashboard-stat-card__icon"
+            aria-hidden="true"
+          >
+            +
+          </span>
+
+          <div>
+            <small>
+              Remaining capacity
+            </small>
+
+            <strong id="chef-dashboard-remaining-capacity">
+              0
+            </strong>
+          </div>
+        </article>
+
+        <article class="chef-dashboard-stat-card">
+          <span
+            class="chef-dashboard-stat-card__icon"
+            aria-hidden="true"
+          >
+            ★
+          </span>
+
+          <div>
+            <small>
+              Customer rating
+            </small>
+
+            <strong id="chef-dashboard-average-rating">
+              New
+            </strong>
+
+            <span id="chef-dashboard-rating-count">
+              No ratings
+            </span>
+          </div>
+        </article>
+      </section>
+
+      <section class="chef-dashboard-section">
+        <div class="chef-dashboard-section__heading">
+          <div>
+            <h2>
+              Quick actions
+            </h2>
+
+            <p>
+              Manage the main parts of your Kitchen.
+            </p>
+          </div>
+        </div>
+
+        <div class="chef-dashboard-action-grid">
+          <a
+            id="chef-dashboard-menu-action"
+            class="chef-dashboard-action-card"
+            href="menu.html"
+          >
+            <span
+              class="chef-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              🍽️
+            </span>
+
+            <span class="chef-dashboard-action-card__content">
+              <strong>
+                Manage menu
+              </strong>
+
+              <small>
+                Add, edit or disable food items.
+              </small>
+            </span>
+
+            <span
+              class="chef-dashboard-action-card__arrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </a>
+
+          <a
+            id="chef-dashboard-orders-action"
+            class="chef-dashboard-action-card"
+            href="orders.html"
+          >
+            <span
+              class="chef-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              📋
+            </span>
+
+            <span class="chef-dashboard-action-card__content">
+              <strong>
+                Manage orders
+              </strong>
+
+              <small>
+                Accept and prepare incoming orders.
+              </small>
+            </span>
+
+            <span
+              id="chef-dashboard-pending-orders-badge"
+              class="chef-dashboard-action-card__badge"
+              hidden
+            >
+              0
+            </span>
+
+            <span
+              class="chef-dashboard-action-card__arrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </a>
+
+          <a
+            id="chef-dashboard-profile-action"
+            class="chef-dashboard-action-card"
+            href="kitchen-profile.html?mode=edit"
+          >
+            <span
+              class="chef-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              🏠
+            </span>
+
+            <span class="chef-dashboard-action-card__content">
+              <strong>
+                Kitchen profile
+              </strong>
+
+              <small>
+                Review Kitchen information and capacity.
+              </small>
+            </span>
+
+            <span
+              class="chef-dashboard-action-card__arrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </a>
+
+          <a
+            id="chef-dashboard-earnings-action"
+            class="chef-dashboard-action-card"
+            href="earnings.html"
+          >
+            <span
+              class="chef-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              ₹
+            </span>
+
+            <span class="chef-dashboard-action-card__content">
+              <strong>
+                Earnings
+              </strong>
+
+              <small>
+                View payouts and settlement history.
+              </small>
+            </span>
+
+            <span
+              class="chef-dashboard-action-card__arrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </a>
+        </div>
+      </section>
+
+      <section class="chef-dashboard-section">
+        <div class="chef-dashboard-section__heading">
+          <div>
+            <h2>
+              Today’s activity
+            </h2>
+
+            <p>
+              Your current order summary.
+            </p>
+          </div>
+
+          <a
+            class="chef-dashboard-section__link"
+            href="orders.html"
+          >
+            View orders
+          </a>
+        </div>
+
+        <div class="chef-dashboard-order-summary">
+          <article>
+            <small>
+              Awaiting response
+            </small>
+
+            <strong id="chef-dashboard-awaiting-orders">
+              0
+            </strong>
+          </article>
+
+          <article>
+            <small>
+              Preparing
+            </small>
+
+            <strong id="chef-dashboard-preparing-orders">
+              0
+            </strong>
+          </article>
+
+          <article>
+            <small>
+              Ready
+            </small>
+
+            <strong id="chef-dashboard-ready-orders">
+              0
+            </strong>
+          </article>
+
+          <article>
+            <small>
+              Completed
+            </small>
+
+            <strong id="chef-dashboard-completed-orders">
+              0
+            </strong>
+          </article>
+        </div>
+
+        <div
+          id="chef-dashboard-orders-note"
+          class="chef-dashboard-empty-note"
+        >
+          Order management will appear here when orders are available.
+        </div>
+      </section>
+
+      <section class="chef-dashboard-section">
+        <div class="chef-dashboard-section__heading">
+          <div>
+            <h2>
+              Kitchen performance
+            </h2>
+
+            <p>
+              Current service and order quality indicators.
+            </p>
+          </div>
+        </div>
+
+        <div class="chef-dashboard-performance">
+          <div class="chef-dashboard-performance__item">
+            <div>
+              <span>
+                Acceptance rate
+              </span>
+
+              <strong id="chef-dashboard-acceptance-rate">
+                0%
+              </strong>
+            </div>
+
+            <div class="chef-dashboard-progress">
+              <span
+                id="chef-dashboard-acceptance-progress"
+                style="width: 0%"
+              ></span>
+            </div>
+          </div>
+
+          <div class="chef-dashboard-performance__item">
+            <div>
+              <span>
+                Cancellation rate
+              </span>
+
+              <strong id="chef-dashboard-cancellation-rate">
+                0%
+              </strong>
+            </div>
+
+            <div class="chef-dashboard-progress chef-dashboard-progress--danger">
+              <span
+                id="chef-dashboard-cancellation-progress"
+                style="width: 0%"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav
+    class="chef-dashboard-nav"
+    aria-label="Chef navigation"
+  >
+    <a
+      class="chef-dashboard-nav__item chef-dashboard-nav__item--active"
+      href="dashboard.html"
+      aria-current="page"
+    >
+      <span aria-hidden="true">
+       ⌂
+      </span>
+
+      <small>
+        Home
+      </small>
+    </a>
+
+    <a
+      class="chef-dashboard-nav__item"
+      href="orders.html"
+    >
+      <span aria-hidden="true">
+        📋
+      </span>
+
+      <small>
+        Orders
+      </small>
+    </a>
+
+    <a
+      class="chef-dashboard-nav__item"
+      href="menu.html"
+    >
+      <span aria-hidden="true">
+        🍽️
+      </span>
+
+      <small>
+        Menu
+      </small>
+    </a>
+
+    <a
+      class="chef-dashboard-nav__item"
+      href="earnings.html"
+    >
+      <span aria-hidden="true">
+        ₹
+      </span>
+
+      <small>
+        Earnings
+      </small>
+    </a>
+
+    <a
+      class="chef-dashboard-nav__item"
+      href="account.html"
+    >
+      <span aria-hidden="true">
+        👤
+      </span>
+
+      <small>
+        Account
+      </small>
+    </a>
+  </nav>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-dashboard.js?v=20260906-01"></script>
+</body>
+</html>
