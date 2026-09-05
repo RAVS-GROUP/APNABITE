@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0f172a"
+  >
+
+  <meta
+    name="description"
+    content="Verify ApnaBite Chefs, Kitchens, KYC documents and payout details."
+  >
+
+  <title>Chef Verification | ApnaBite Admin</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/admin.css"
+  >
+</head>
+
+<body class="admin-page admin-chef-verification-page">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <button
+        id="admin-chef-back-button"
+        class="admin-icon-button"
+        type="button"
+        aria-label="Go to Admin dashboard"
+      >
+        ‹
+      </button>
+
+      <div class="admin-header__content">
+        <span class="admin-header__eyebrow">
+          APNABITE ADMIN
+        </span>
+
+        <h1 class="admin-header__title">
+          Chef Verification
+        </h1>
+      </div>
+
+      <button
+        id="admin-chef-refresh-button"
+        class="admin-header__button"
+        type="button"
+      >
+        REFRESH
+      </button>
+
+      <button
+        id="admin-logout-button"
+        class="admin-header__button admin-header__button--danger"
+        type="button"
+      >
+        LOGOUT
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-page-heading">
+      <div>
+        <h2>
+          Chef approval queue
+        </h2>
+
+        <p>
+          Verify KYC and payout details before approving a Kitchen.
+        </p>
+      </div>
+
+      <span
+        id="admin-chef-page-status"
+        class="admin-page-status"
+        aria-live="polite"
+      >
+        Loading…
+      </span>
+    </section>
+
+    <section
+      id="admin-chef-counts"
+      class="admin-stat-grid"
+    >
+      <button
+        class="admin-stat-card admin-stat-card--active"
+        type="button"
+        data-filter="ALL"
+      >
+        <span>All Chefs</span>
+        <strong id="admin-chef-count-all">0</strong>
+      </button>
+
+      <button
+        class="admin-stat-card admin-stat-card--warning"
+        type="button"
+        data-filter="ACTION_REQUIRED"
+      >
+        <span>Action Required</span>
+        <strong id="admin-chef-count-action">0</strong>
+      </button>
+
+      <button
+        class="admin-stat-card"
+        type="button"
+        data-filter="PENDING"
+      >
+        <span>Incomplete</span>
+        <strong id="admin-chef-count-pending">0</strong>
+      </button>
+
+      <button
+        class="admin-stat-card admin-stat-card--success"
+        type="button"
+        data-filter="APPROVED"
+      >
+        <span>Approved</span>
+        <strong id="admin-chef-count-approved">0</strong>
+      </button>
+
+      <button
+        class="admin-stat-card admin-stat-card--danger"
+        type="button"
+        data-filter="REJECTED"
+      >
+        <span>Rejected</span>
+        <strong id="admin-chef-count-rejected">0</strong>
+      </button>
+    </section>
+
+    <section class="admin-toolbar">
+      <div class="admin-search">
+        <label
+          class="admin-visually-hidden"
+          for="admin-chef-search"
+        >
+          Search Chef
+        </label>
+
+        <input
+          id="admin-chef-search"
+          class="admin-input"
+          type="search"
+          maxlength="120"
+          autocomplete="off"
+          placeholder="Search Chef, Kitchen, mobile or ID"
+        >
+
+        <button
+          id="admin-chef-search-button"
+          class="admin-button admin-button--primary"
+          type="button"
+        >
+          SEARCH
+        </button>
+      </div>
+
+      <select
+        id="admin-chef-filter"
+        class="admin-select"
+        aria-label="Chef queue filter"
+      >
+        <option value="ALL">
+          All Chefs
+        </option>
+
+        <option value="ACTION_REQUIRED">
+          Action Required
+        </option>
+
+        <option value="PENDING">
+          Incomplete
+        </option>
+
+        <option value="APPROVED">
+          Approved
+        </option>
+
+        <option value="REJECTED">
+          Rejected
+        </option>
+
+        <option value="SUSPENDED">
+          Suspended
+        </option>
+      </select>
+    </section>
+
+    <div class="admin-chef-layout">
+      <section class="admin-panel admin-chef-list-panel">
+        <div class="admin-panel__header">
+          <div>
+            <h2>
+              Chefs
+            </h2>
+
+            <p id="admin-chef-result-count">
+              Loading records…
+            </p>
+          </div>
+        </div>
+
+        <div
+          id="admin-chef-list-loading"
+          class="admin-loading-card"
+        >
+          Loading Chef verification queue…
+        </div>
+
+        <div
+          id="admin-chef-list-empty"
+          class="admin-empty-card"
+          hidden
+        >
+          No Chefs found for this filter.
+        </div>
+
+        <div
+          id="admin-chef-list-error"
+          class="admin-error-card"
+          role="alert"
+          hidden
+        ></div>
+
+        <div
+          id="admin-chef-list"
+          class="admin-chef-list"
+          aria-live="polite"
+        ></div>
+
+        <div
+          id="admin-chef-pagination"
+          class="admin-pagination"
+          hidden
+        >
+          <button
+            id="admin-chef-previous-button"
+            class="admin-pagination__button"
+            type="button"
+          >
+            PREVIOUS
+          </button>
+
+          <span id="admin-chef-page-information">
+            Page 1 of 1
+          </span>
+
+          <button
+            id="admin-chef-next-button"
+            class="admin-pagination__button"
+            type="button"
+          >
+            NEXT
+          </button>
+        </div>
+      </section>
+
+      <section
+        id="admin-chef-detail-panel"
+        class="admin-panel admin-chef-detail-panel"
+      >
+        <div
+          id="admin-chef-detail-empty"
+          class="admin-detail-placeholder"
+        >
+          <span aria-hidden="true">👨‍🍳</span>
+
+          <h2>
+            Select a Chef
+          </h2>
+
+          <p>
+            Choose a Chef from the queue to review verification details.
+          </p>
+        </div>
+
+        <div
+          id="admin-chef-detail-loading"
+          class="admin-loading-card"
+          hidden
+        >
+          Loading Chef details…
+        </div>
+
+        <div
+          id="admin-chef-detail-error"
+          class="admin-error-card"
+          role="alert"
+          hidden
+        ></div>
+
+        <div
+          id="admin-chef-detail-content"
+          hidden
+        >
+          <section class="admin-detail-header">
+            <div class="admin-detail-header__avatar">
+              <img
+                id="admin-chef-profile-photo"
+                src=""
+                alt="Chef"
+                hidden
+              >
+
+              <span
+                id="admin-chef-profile-placeholder"
+                aria-hidden="true"
+              >
+                👨‍🍳
+              </span>
+            </div>
+
+            <div class="admin-detail-header__content">
+              <span
+                id="admin-chef-queue-status"
+                class="admin-status-badge"
+              >
+                PENDING
+              </span>
+
+              <h2 id="admin-chef-name">
+                —
+              </h2>
+
+              <p id="admin-chef-contact">
+                —
+              </p>
+
+              <small id="admin-chef-user-id">
+                —
+              </small>
+            </div>
+          </section>
+
+          <section class="admin-verification-section">
+            <div class="admin-verification-section__heading">
+              <div>
+                <h3>
+                  Kitchen profile
+                </h3>
+
+                <p>
+                  Review Kitchen identity, image and operating details.
+                </p>
+              </div>
+
+              <span
+                id="admin-kitchen-status"
+                class="admin-status-badge"
+              >
+                —
+              </span>
+            </div>
+
+            <div class="admin-kitchen-summary">
+              <img
+                id="admin-kitchen-image"
+                class="admin-kitchen-summary__image"
+                src=""
+                alt="Kitchen"
+                hidden
+              >
+
+              <div
+                id="admin-kitchen-image-placeholder"
+                class="admin-kitchen-summary__placeholder"
+              >
+                🍲
+              </div>
+
+              <div class="admin-kitchen-summary__content">
+                <strong id="admin-kitchen-name">
+                  —
+                </strong>
+
+                <p id="admin-kitchen-description">
+                  —
+                </p>
+
+                <div class="admin-tag-list">
+                  <span id="admin-kitchen-food-type">
+                    —
+                  </span>
+
+                  <span id="admin-kitchen-capacity">
+                    —
+                  </span>
+
+                  <span id="admin-kitchen-preparation">
+                    —
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-verification-section">
+            <div class="admin-verification-section__heading">
+              <div>
+                <h3>
+                  Kitchen address
+                </h3>
+
+                <p>
+                  Confirm the Kitchen and delivery location.
+                </p>
+              </div>
+            </div>
+
+            <div class="admin-address-card">
+              <strong id="admin-kitchen-address-label">
+                —
+              </strong>
+
+              <p id="admin-kitchen-address">
+                —
+              </p>
+
+              <small id="admin-kitchen-coordinates">
+                —
+              </small>
+
+              <a
+                id="admin-kitchen-map-link"
+                class="admin-document-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              >
+                OPEN IN GOOGLE MAPS
+              </a>
+            </div>
+          </section>
+
+          <section class="admin-verification-section">
+            <div class="admin-verification-section__heading">
+              <div>
+                <h3>
+                  KYC documents
+                </h3>
+
+                <p>
+                  Verify Aadhaar, PAN and FSSAI individually.
+                </p>
+              </div>
+
+              <span
+                id="admin-kyc-overall-status"
+                class="admin-status-badge"
+              >
+                —
+              </span>
+            </div>
+
+            <div
+              id="admin-kyc-document-list"
+              class="admin-document-list"
+            ></div>
+          </section>
+
+          <section class="admin-verification-section">
+            <div class="admin-verification-section__heading">
+              <div>
+                <h3>
+                  Payout verification
+                </h3>
+
+                <p>
+                  Check Bank or UPI details and ownership proof.
+                </p>
+              </div>
+
+              <span
+                id="admin-payout-status"
+                class="admin-status-badge"
+              >
+                —
+              </span>
+            </div>
+
+            <div
+              id="admin-payout-missing"
+              class="admin-empty-card"
+              hidden
+            >
+              Payout details have not been submitted.
+            </div>
+
+            <div
+              id="admin-payout-content"
+              class="admin-payout-card"
+              hidden
+            >
+              <dl class="admin-detail-list">
+                <div>
+                  <dt>Method</dt>
+                  <dd id="admin-payout-method">—</dd>
+                </div>
+
+                <div>
+                  <dt>Account holder</dt>
+                  <dd id="admin-payout-holder">—</dd>
+                </div>
+
+                <div>
+                  <dt>Payment details</dt>
+                  <dd id="admin-payout-details">—</dd>
+                </div>
+              </dl>
+
+              <a
+                id="admin-payout-proof-link"
+                class="admin-document-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              >
+                OPEN PAYOUT PROOF
+              </a>
+
+              <div class="admin-verification-actions">
+                <button
+                  id="admin-payout-verify-button"
+                  class="admin-button admin-button--success"
+                  type="button"
+                >
+                  VERIFY PAYOUT
+                </button>
+
+                <button
+                  id="admin-payout-reject-button"
+                  class="admin-button admin-button--danger"
+                  type="button"
+                >
+                  REJECT PAYOUT
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-verification-section admin-kitchen-decision">
+            <div class="admin-verification-section__heading">
+              <div>
+                <h3>
+                  Final Kitchen decision
+                </h3>
+
+                <p>
+                  KYC and payout must be verified before approval.
+                </p>
+              </div>
+            </div>
+
+            <div class="admin-radius-field">
+              <label for="admin-approved-radius">
+                Approved service radius
+              </label>
+
+              <div>
+                <input
+                  id="admin-approved-radius"
+                  class="admin-input"
+                  type="number"
+                  min="0.5"
+                  max="50"
+                  step="0.5"
+                  inputmode="decimal"
+                  value="3"
+                >
+
+                <span>KM</span>
+              </div>
+            </div>
+
+            <div
+              id="admin-kitchen-approval-message"
+              class="admin-information-card"
+            >
+              Complete KYC and payout verification to approve this Kitchen.
+            </div>
+
+            <div class="admin-verification-actions">
+              <button
+                id="admin-kitchen-approve-button"
+                class="admin-button admin-button--success admin-button--large"
+                type="button"
+                disabled
+              >
+                APPROVE KITCHEN
+              </button>
+
+              <button
+                id="admin-kitchen-reject-button"
+                class="admin-button admin-button--danger admin-button--large"
+                type="button"
+              >
+                REJECT KITCHEN
+              </button>
+
+              <button
+                id="admin-kitchen-suspend-button"
+                class="admin-button admin-button--secondary admin-button--large"
+                type="button"
+                hidden
+              >
+                SUSPEND KITCHEN
+              </button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div
+    id="admin-decision-dialog"
+    class="admin-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admin-decision-title"
+    hidden
+  >
+    <div
+      id="admin-decision-backdrop"
+      class="admin-dialog__backdrop"
+    ></div>
+
+    <div class="admin-dialog__content">
+      <div class="admin-dialog__header">
+        <div>
+          <h2 id="admin-decision-title">
+            Reject verification
+          </h2>
+
+          <p id="admin-decision-message">
+            Enter the reason that will be shown to the Chef.
+          </p>
+        </div>
+
+        <button
+          id="admin-decision-close-button"
+          class="admin-icon-button"
+          type="button"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <label
+        class="admin-label"
+        for="admin-decision-reason"
+      >
+        Reason
+      </label>
+
+      <textarea
+        id="admin-decision-reason"
+        class="admin-textarea"
+        maxlength="300"
+        rows="5"
+        placeholder="Enter a clear reason"
+      ></textarea>
+
+      <p
+        id="admin-decision-error"
+        class="admin-field-error"
+        role="alert"
+        hidden
+      ></p>
+
+      <div class="admin-dialog__actions">
+        <button
+          id="admin-decision-cancel-button"
+          class="admin-button admin-button--secondary"
+          type="button"
+        >
+          CANCEL
+        </button>
+
+        <button
+          id="admin-decision-confirm-button"
+          class="admin-button admin-button--danger"
+          type="button"
+        >
+          CONFIRM
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/admin-chef-verification-v1.js"></script>
+</body>
+</html>
