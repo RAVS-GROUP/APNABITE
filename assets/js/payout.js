@@ -2156,18 +2156,22 @@
       selectMethod: selectMethod
     });
 
+   /*
+   * Start independently from core.ready().
+   * This guarantees initialization even when
+   * DOMContentLoaded has already completed.
+   */
   if (
-    window.ApnaBiteCore &&
-    typeof window.ApnaBiteCore
-      .ready === 'function'
+    document.readyState === 'loading'
   ) {
-    window.ApnaBiteCore.ready(
-      initialize
-    );
-  } else {
     document.addEventListener(
       'DOMContentLoaded',
-      initialize
+      initialize,
+      {
+        once: true
+      }
     );
+  } else {
+    initialize();
   }
 })(window, document);
