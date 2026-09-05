@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Add Chef payout details for receiving ApnaBite settlements."
+  >
+
+  <title>Payout Details | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef.css"
+  >
+</head>
+
+<body class="chef-page chef-payout-page">
+  <header class="chef-header">
+    <div class="chef-header__inner">
+      <button
+        id="chef-payout-back-button"
+        class="chef-back-button"
+        type="button"
+        aria-label="Go back"
+      >
+        ‹
+      </button>
+
+      <div class="chef-header__content">
+        <span class="chef-header__eyebrow">
+          STEP 5 OF 6
+        </span>
+
+        <h1 class="chef-header__title">
+          Payout Details
+        </h1>
+      </div>
+
+      <span
+        id="chef-payout-save-status"
+        class="chef-page-save-status"
+        aria-live="polite"
+      >
+        Checking…
+      </span>
+    </div>
+  </header>
+
+  <main class="chef-onboarding-main">
+    <section class="chef-form-intro">
+      <span
+        class="chef-form-intro__icon"
+        aria-hidden="true"
+      >
+        ₹
+      </span>
+
+      <div>
+        <h2 class="chef-form-intro__title">
+          Receive your settlements
+        </h2>
+
+        <p class="chef-form-intro__text">
+          Add either a Bank Account or UPI ID. Only one complete payout method is required.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-payout-status-card"
+      class="chef-status-card chef-status-card--loading"
+      aria-live="polite"
+    >
+      <span
+        id="chef-payout-status-icon"
+        class="chef-status-card__icon"
+        aria-hidden="true"
+      >
+        …
+      </span>
+
+      <div class="chef-status-card__content">
+        <strong id="chef-payout-status-title">
+          Checking payout details
+        </strong>
+
+        <p id="chef-payout-status-message">
+          Please wait while we load your saved payout method.
+        </p>
+      </div>
+    </section>
+
+    <form
+      id="chef-payout-form"
+      class="chef-form"
+      novalidate
+    >
+      <section class="chef-form-card">
+        <div class="chef-form-card__heading">
+          <h2>
+            Select payout method
+          </h2>
+
+          <p>
+            Choose the method where you want to receive ApnaBite settlements.
+          </p>
+        </div>
+
+        <div
+          class="chef-payout-methods"
+          role="radiogroup"
+          aria-label="Payout method"
+        >
+          <label
+            id="chef-payout-bank-option"
+            class="chef-payout-method"
+          >
+            <input
+              id="chef-payout-method-bank"
+              type="radio"
+              name="payoutMethod"
+              value="BANK"
+            >
+
+            <span
+              class="chef-payout-method__icon"
+              aria-hidden="true"
+            >
+              🏦
+            </span>
+
+            <span class="chef-payout-method__content">
+              <strong>
+                Bank Account
+              </strong>
+
+              <small>
+                Receive settlement directly in your bank account.
+              </small>
+            </span>
+
+            <span
+              class="chef-payout-method__check"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+          </label>
+
+          <div
+            class="chef-payout-method-divider"
+            aria-hidden="true"
+          >
+            OR
+          </div>
+
+          <label
+            id="chef-payout-upi-option"
+            class="chef-payout-method"
+          >
+            <input
+              id="chef-payout-method-upi"
+              type="radio"
+              name="payoutMethod"
+              value="UPI"
+            >
+
+            <span
+              class="chef-payout-method__icon"
+              aria-hidden="true"
+            >
+              📱
+            </span>
+
+            <span class="chef-payout-method__content">
+              <strong>
+                UPI ID
+              </strong>
+
+              <small>
+                Receive settlement using your verified UPI ID.
+              </small>
+            </span>
+
+            <span
+              class="chef-payout-method__check"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+          </label>
+        </div>
+
+        <p
+          id="chef-payout-method-error"
+          class="form-error"
+          role="alert"
+          hidden
+        ></p>
+      </section>
+
+      <section
+        id="chef-payout-common-section"
+        class="chef-form-card"
+        hidden
+      >
+        <div class="chef-form-card__heading">
+          <h2>
+            Account holder
+          </h2>
+
+          <p>
+            The name should match your Bank or UPI account.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label
+            class="form-label"
+            for="chef-payout-holder-name"
+          >
+            Account-holder name
+            <span aria-hidden="true">
+              *
+            </span>
+          </label>
+
+          <input
+            id="chef-payout-holder-name"
+            class="form-input"
+            type="text"
+            maxlength="120"
+            autocomplete="name"
+            placeholder="Enter account-holder name"
+          >
+
+          <p
+            id="chef-payout-holder-name-error"
+            class="form-error"
+            role="alert"
+            hidden
+          ></p>
+        </div>
+      </section>
+
+      <section
+        id="chef-payout-bank-section"
+        class="chef-form-card"
+        hidden
+      >
+        <div class="chef-form-card__heading">
+          <h2>
+            Bank account details
+          </h2>
+
+          <p>
+            Enter your bank information carefully.
+          </p>
+        </div>
+
+        <div class="chef-form-grid">
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="chef-payout-bank-name"
+            >
+              Bank name
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-bank-name"
+              class="form-input"
+              type="text"
+              maxlength="120"
+              autocomplete="organization"
+              placeholder="For example, State Bank of India"
+            >
+
+            <p
+              id="chef-payout-bank-name-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="chef-payout-account-number"
+            >
+              Account number
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-account-number"
+              class="form-input"
+              type="password"
+              inputmode="numeric"
+              maxlength="30"
+              autocomplete="off"
+              placeholder="Enter account number"
+            >
+
+            <p
+              id="chef-payout-account-number-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="chef-payout-confirm-account-number"
+            >
+              Confirm account number
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-confirm-account-number"
+              class="form-input"
+              type="text"
+              inputmode="numeric"
+              maxlength="30"
+              autocomplete="off"
+              placeholder="Re-enter account number"
+            >
+
+            <p
+              id="chef-payout-confirm-account-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group chef-form-grid__full">
+            <label
+              class="form-label"
+              for="chef-payout-ifsc"
+            >
+              IFSC code
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-ifsc"
+              class="form-input"
+              type="text"
+              maxlength="11"
+              autocomplete="off"
+              placeholder="For example, SBIN0001234"
+            >
+
+            <p
+              id="chef-payout-ifsc-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chef-payout-upi-section"
+        class="chef-form-card"
+        hidden
+      >
+        <div class="chef-form-card__heading">
+          <h2>
+            UPI details
+          </h2>
+
+          <p>
+            Enter the UPI ID linked to your Bank account.
+          </p>
+        </div>
+
+        <div class="chef-form-grid">
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="chef-payout-upi-id"
+            >
+              UPI ID
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-upi-id"
+              class="form-input"
+              type="text"
+              maxlength="100"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              placeholder="For example, name@upi"
+            >
+
+            <p
+              id="chef-payout-upi-id-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+
+          <div class="form-group">
+            <label
+              class="form-label"
+              for="chef-payout-confirm-upi-id"
+            >
+              Confirm UPI ID
+              <span aria-hidden="true">
+                *
+              </span>
+            </label>
+
+            <input
+              id="chef-payout-confirm-upi-id"
+              class="form-input"
+              type="text"
+              maxlength="100"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              placeholder="Re-enter UPI ID"
+            >
+
+            <p
+              id="chef-payout-confirm-upi-error"
+              class="form-error"
+              role="alert"
+              hidden
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chef-payout-proof-section"
+        class="chef-form-card"
+        hidden
+      >
+        <div class="chef-form-card__heading">
+          <h2>
+            Verification proof
+          </h2>
+
+          <p id="chef-payout-proof-description">
+            Upload a clear payout verification document.
+          </p>
+        </div>
+
+        <label
+          id="chef-payout-proof-label"
+          class="chef-document-upload"
+          for="chef-payout-proof-file"
+        >
+          <input
+            id="chef-payout-proof-file"
+            class="chef-document-upload__input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+          >
+
+          <span
+            class="chef-document-upload__icon"
+            aria-hidden="true"
+          >
+            ↑
+          </span>
+
+          <span class="chef-document-upload__content">
+            <strong id="chef-payout-proof-file-name">
+              Select verification proof
+            </strong>
+
+            <small id="chef-payout-proof-file-help">
+              JPG, PNG, WebP or PDF · Maximum 5 MB
+            </small>
+          </span>
+        </label>
+
+        <div
+          id="chef-payout-existing-proof"
+          class="chef-document-existing"
+          hidden
+        >
+          <span aria-hidden="true">
+            ✓
+          </span>
+
+          <div>
+            <strong>
+              Existing proof saved
+            </strong>
+
+            <small id="chef-payout-existing-proof-text">
+              Upload a new proof only when changing payout details.
+            </small>
+          </div>
+        </div>
+
+        <p
+          id="chef-payout-proof-error"
+          class="form-error"
+          role="alert"
+          hidden
+        ></p>
+      </section>
+
+      <section
+        id="chef-payout-saved-summary"
+        class="chef-payout-summary"
+        hidden
+      >
+        <div class="chef-payout-summary__header">
+          <span
+            class="chef-payout-summary__icon"
+            aria-hidden="true"
+          >
+            ₹
+          </span>
+
+          <div>
+            <h2>
+              Saved payout method
+            </h2>
+
+            <p id="chef-payout-summary-status">
+              Verification pending
+            </p>
+          </div>
+        </div>
+
+        <dl class="chef-payout-summary__details">
+          <div>
+            <dt>
+              Method
+            </dt>
+
+            <dd id="chef-payout-summary-method">
+              —
+            </dd>
+          </div>
+
+          <div>
+            <dt>
+              Account holder
+            </dt>
+
+            <dd id="chef-payout-summary-holder">
+              —
+            </dd>
+          </div>
+
+          <div id="chef-payout-summary-bank-row">
+            <dt>
+              Bank account
+            </dt>
+
+            <dd id="chef-payout-summary-bank">
+              —
+            </dd>
+          </div>
+
+          <div id="chef-payout-summary-upi-row">
+            <dt>
+              UPI ID
+            </dt>
+
+            <dd id="chef-payout-summary-upi">
+              —
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="chef-privacy-note">
+        <span
+          class="chef-privacy-note__icon"
+          aria-hidden="true"
+        >
+          i
+        </span>
+
+        <p>
+          Full Bank Account and UPI details are protected. Google Sheets stores only masked information and a secure protected reference.
+        </p>
+      </section>
+
+      <div class="chef-onboarding-bottom-space"></div>
+    </form>
+  </main>
+
+  <div class="chef-onboarding-action-bar">
+    <button
+      id="chef-payout-submit-button"
+      class="button button--primary button--block button--large"
+      type="submit"
+      form="chef-payout-form"
+      disabled
+    >
+      SELECT BANK OR UPI
+    </button>
+  </div>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef-payout.js"></script>
+</body>
+</html>
