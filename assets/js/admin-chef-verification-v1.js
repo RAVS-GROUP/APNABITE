@@ -2,13 +2,22 @@
  * ============================================================
  * APNABITE V1 — ADMIN CHEF VERIFICATION CONTROLLER
  * File: assets/js/admin-chef-verification-v1.js
- * Complete file — Part 1 of 3
+ * Complete replacement — Part 1 of 3
  * Requires: core.js, api.js, ui.js
  * ============================================================
  */
 
 (function(window, document) {
   'use strict';
+
+  const ADMIN_CHEF_CACHE_KEY =
+    'APNABITE_ADMIN_CHEF_DETAIL_V1';
+
+  const ADMIN_CHEF_SCROLL_KEY =
+    'APNABITE_ADMIN_CHEF_SCROLL_V1';
+
+  const ADMIN_CHEF_CACHE_MS =
+    10 * 60 * 1000;
 
   const state = {
     initialized: false,
@@ -306,6 +315,128 @@
     }
 
     return {};
+  }
+
+  function saveChefDetailCache() {
+    if (
+      !state.selectedUserId ||
+      !state.detail
+    ) {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(
+        ADMIN_CHEF_CACHE_KEY,
+        JSON.stringify({
+          userId:
+            state.selectedUserId,
+          detail:
+            state.detail,
+          savedAt:
+            Date.now()
+        })
+      );
+    } catch (error) {
+      /*
+       * Browser storage failure must not
+       * block Admin verification.
+       */
+    }
+  }
+
+  function readChefDetailCache() {
+    try {
+      const raw =
+        window.sessionStorage.getItem(
+          ADMIN_CHEF_CACHE_KEY
+        );
+
+      if (!raw) {
+        return null;
+      }
+
+      const cached =
+        JSON.parse(raw);
+
+      if (
+        !cached ||
+        !cached.userId ||
+        !cached.detail ||
+        !cached.savedAt ||
+        (
+          Date.now() -
+          Number(cached.savedAt)
+        ) > ADMIN_CHEF_CACHE_MS
+      ) {
+        window.sessionStorage.removeItem(
+          ADMIN_CHEF_CACHE_KEY
+        );
+
+        return null;
+      }
+
+      return cached;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function clearChefDetailCache() {
+    try {
+      window.sessionStorage.removeItem(
+        ADMIN_CHEF_CACHE_KEY
+      );
+    } catch (error) {
+      /*
+       * Ignore unavailable browser storage.
+       */
+    }
+  }
+
+  function saveAdminScrollPosition() {
+    try {
+      window.sessionStorage.setItem(
+        ADMIN_CHEF_SCROLL_KEY,
+        String(
+          window.scrollY || 0
+        )
+      );
+    } catch (error) {
+      /*
+       * Ignore unavailable browser storage.
+       */
+    }
+  }
+
+  function restoreAdminScrollPosition() {
+    let savedPosition = 0;
+
+    try {
+      savedPosition =
+        Number(
+          window.sessionStorage.getItem(
+            ADMIN_CHEF_SCROLL_KEY
+          )
+        ) || 0;
+    } catch (error) {
+      savedPosition = 0;
+    }
+
+    if (savedPosition <= 0) {
+      return;
+    }
+
+    window.requestAnimationFrame(
+      function() {
+        window.scrollTo({
+          top:
+            savedPosition,
+          behavior:
+            'auto'
+        });
+      }
+    );
   }
 
   function setText(element, value) {
@@ -731,7 +862,11 @@
     }
   }
 
-  function renderQueueLoading() {
+  /*
+   * Continue directly with Part 2 below this line.
+   */
+
+   function renderQueueLoading() {
     setHidden(
       elements.listLoading,
       false
@@ -1159,10 +1294,7 @@
     }
   }
 
-  /*
-   * Continue directly with Part 2 below this line.
-   */
-   function buildKycDocumentCard(
+  function buildKycDocumentCard(
     documentType,
     documentRecord
   ) {
@@ -1766,7 +1898,21 @@
     }
 
     state.loadingQueue = true;
-    renderQueueLoading();
+
+    /*
+     * Keep cached Chef detail visible while
+     * only the lightweight queue refreshes.
+     */
+    if (
+      !preserveSelection ||
+      !state.detail
+    ) {
+      renderQueueLoading();
+    } else {
+      setPageStatus(
+        'Updating list…'
+      );
+    }
 
     try {
       const response =
@@ -1838,6 +1984,8 @@
           state.selectedUserId = '';
           state.detail = null;
 
+          clearChefDetailCache();
+
           setHidden(
             elements.detailEmpty,
             false
@@ -1861,10 +2009,30 @@
     const cleanUserId =
       cleanText(userId);
 
+    if (!cleanUserId) {
+      return;
+    }
+
+    /*
+     * Do not call the detail API again when
+     * the same selected Chef is already loaded.
+     */
     if (
-      !cleanUserId ||
-      state.loadingDetail
+      cleanUserId ===
+        state.selectedUserId &&
+      state.detail &&
+      state.detail.chef &&
+      cleanText(
+        state.detail.chef.userId
+      ) === cleanUserId
     ) {
+      renderQueue();
+      renderDetail();
+      restoreAdminScrollPosition();
+      return;
+    }
+
+    if (state.loadingDetail) {
       return;
     }
 
@@ -1907,6 +2075,7 @@
       state.detail =
         detail;
 
+      saveChefDetailCache();
       renderDetail();
 
       if (
@@ -1931,7 +2100,16 @@
     const userId =
       state.selectedUserId;
 
-    await loadQueue(true);
+    clearChefDetailCache();
+
+    /*
+     * Force a fresh detail request only after
+     * Verify, Reject, Approve or Refresh.
+     */
+    state.detail = null;
+    state.selectedUserId = '';
+
+    await loadQueue(false);
 
     if (userId) {
       await selectChef(userId);
@@ -1955,9 +2133,11 @@
         state.processing;
     }
 
-    renderKyc();
-    renderPayout();
-    renderKitchenDecision();
+    if (state.detail) {
+      renderKyc();
+      renderPayout();
+      renderKitchenDecision();
+    }
   }
 
   function openDecisionDialog(
@@ -2456,10 +2636,6 @@
     }
 
     if (result) {
-      /*
-       * Reset processing before closing,
-       * because close is blocked while processing.
-       */
       state.processing = false;
       closeDecisionDialog();
 
@@ -2564,6 +2740,18 @@
        * the server request is unavailable.
        */
     } finally {
+      clearChefDetailCache();
+
+      try {
+        window.sessionStorage.removeItem(
+          ADMIN_CHEF_SCROLL_KEY
+        );
+      } catch (error) {
+        /*
+         * Ignore unavailable browser storage.
+         */
+      }
+
       if (
         window.ApnaBiteCore &&
         typeof window.ApnaBiteCore
@@ -2592,6 +2780,8 @@
     state.page = 1;
     state.selectedUserId = '';
     state.detail = null;
+
+    clearChefDetailCache();
 
     setHidden(
       elements.detailEmpty,
@@ -2855,6 +3045,41 @@
         }
       }
     );
+
+    /*
+     * Before a Drive document opens,
+     * preserve selected Chef and position.
+     */
+    document.addEventListener(
+      'click',
+      function(event) {
+        const link =
+          event.target.closest(
+            '.admin-document-link'
+          );
+
+        if (!link) {
+          return;
+        }
+
+        saveChefDetailCache();
+        saveAdminScrollPosition();
+      },
+      true
+    );
+
+    /*
+     * Browser may discard the Admin tab while
+     * a Drive document is open. Preserve state
+     * before the page becomes inactive.
+     */
+    window.addEventListener(
+      'pagehide',
+      function() {
+        saveChefDetailCache();
+        saveAdminScrollPosition();
+      }
+    );
   }
 
   function validateAdminSession() {
@@ -2912,7 +3137,36 @@
       return;
     }
 
-    loadQueue(false);
+    const cached =
+      readChefDetailCache();
+
+    if (
+      cached &&
+      cached.userId &&
+      cached.detail
+    ) {
+      state.selectedUserId =
+        cleanText(
+          cached.userId
+        );
+
+      state.detail =
+        cached.detail;
+
+      /*
+       * Cached detail is rendered immediately.
+       * No detail API request is made here.
+       */
+      renderDetail();
+      restoreAdminScrollPosition();
+
+      /*
+       * Only refresh the lightweight Chef list.
+       */
+      loadQueue(true);
+    } else {
+      loadQueue(false);
+    }
   }
 
   window.ApnaBiteAdminChefVerification =
