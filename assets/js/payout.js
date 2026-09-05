@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — CHEF PAYOUT CONTROLLER
  * File: assets/js/chef-payout.js
- * Part: 1 of 2
+ * Complete replacement — Part 1 of 2
  * Requires: core.js, api.js, ui.js
  * ============================================================
  */
@@ -22,7 +22,9 @@
 
   const state = {
     initialized: false,
+    sessionReady: false,
     loading: false,
+    loadFailed: false,
     saving: false,
     editing: false,
     user: null,
@@ -413,6 +415,10 @@
       return;
     }
 
+    if (state.saving) {
+      return;
+    }
+
     state.selectedMethod =
       normalized;
 
@@ -446,12 +452,26 @@
         'chef-payout-method--selected',
         isBank
       );
+
+      elements.bankOption.setAttribute(
+        'aria-pressed',
+        isBank
+          ? 'true'
+          : 'false'
+      );
     }
 
     if (elements.upiOption) {
       elements.upiOption.classList.toggle(
         'chef-payout-method--selected',
         isUpi
+      );
+
+      elements.upiOption.setAttribute(
+        'aria-pressed',
+        isUpi
+          ? 'true'
+          : 'false'
       );
     }
 
@@ -653,6 +673,84 @@
   }
 
   function renderStatus() {
+    if (!state.sessionReady) {
+      setStatusType('loading');
+
+      setText(
+        elements.statusIcon,
+        '…'
+      );
+
+      setText(
+        elements.statusTitle,
+        'Checking secure session'
+      );
+
+      setText(
+        elements.statusMessage,
+        'You can select Bank Account or UPI while your session is being checked.'
+      );
+
+      setText(
+        elements.saveStatus,
+        'Checking…'
+      );
+
+      return;
+    }
+
+    if (state.loading) {
+      setStatusType('loading');
+
+      setText(
+        elements.statusIcon,
+        '…'
+      );
+
+      setText(
+        elements.statusTitle,
+        'Checking payout details'
+      );
+
+      setText(
+        elements.statusMessage,
+        'Loading your saved payout method. You can still select Bank Account or UPI.'
+      );
+
+      setText(
+        elements.saveStatus,
+        'Checking…'
+      );
+
+      return;
+    }
+
+    if (state.loadFailed) {
+      setStatusType('rejected');
+
+      setText(
+        elements.statusIcon,
+        '!'
+      );
+
+      setText(
+        elements.statusTitle,
+        'Unable to load payout details'
+      );
+
+      setText(
+        elements.statusMessage,
+        'Your saved details could not be checked. Tap Retry before saving.'
+      );
+
+      setText(
+        elements.saveStatus,
+        'Retry required'
+      );
+
+      return;
+    }
+
     if (!hasSavedPayout()) {
       setStatusType('');
 
@@ -772,6 +870,42 @@
 
     if (state.saving) {
       button.disabled = true;
+      button.dataset.action =
+        'saving';
+
+      return;
+    }
+
+    if (!state.sessionReady) {
+      button.disabled = true;
+      button.textContent =
+        'CHECKING SECURE SESSION…';
+
+      button.dataset.action =
+        'wait';
+
+      return;
+    }
+
+    if (state.loading) {
+      button.disabled = true;
+      button.textContent =
+        'CHECKING SAVED DETAILS…';
+
+      button.dataset.action =
+        'wait';
+
+      return;
+    }
+
+    if (state.loadFailed) {
+      button.disabled = false;
+      button.textContent =
+        'RETRY LOADING PAYOUT';
+
+      button.dataset.action =
+        'retry';
+
       return;
     }
 
@@ -904,18 +1038,20 @@
 
       const accountNumber =
         String(
-          elements.accountNumber &&
-          elements.accountNumber.value ||
+          (
+            elements.accountNumber &&
+            elements.accountNumber.value
+          ) ||
           ''
         ).replace(/\D/g, '');
 
       const confirmAccountNumber =
         String(
-          elements
-            .confirmAccountNumber &&
-          elements
-            .confirmAccountNumber
-            .value ||
+          (
+            elements.confirmAccountNumber &&
+            elements.confirmAccountNumber
+              .value
+          ) ||
           ''
         ).replace(/\D/g, '');
 
@@ -1044,16 +1180,16 @@
     }
 
     return {
-      valid:
-        valid,
-      payload:
-        payload,
-      file:
-        state.selectedProof
+      valid: valid,
+      payload: payload,
+      file: state.selectedProof
     };
   }
 
-  function readFileAsBase64(file) {
+  /*
+   * Continue directly with Part 2 below this line.
+   */
+   function readFileAsBase64(file) {
     return new Promise(
       function(resolve, reject) {
         const reader =
@@ -1129,12 +1265,9 @@
             base64Data
         },
         {
-          retry:
-            false,
-          deduplicate:
-            false,
-          timeoutMs:
-            45000
+          retry: false,
+          deduplicate: false,
+          timeoutMs: 45000
         }
       );
 
@@ -1171,12 +1304,9 @@
         'payout.save',
         formResult.payload,
         {
-          retry:
-            false,
-          deduplicate:
-            false,
-          timeoutMs:
-            30000
+          retry: false,
+          deduplicate: false,
+          timeoutMs: 30000
         }
       );
 
@@ -1224,14 +1354,29 @@
   }
 
   function applySavedAccount(
-    payoutAccount
+    payoutAccount,
+    preserveEditing
   ) {
     state.payoutAccount =
       payoutAccount || null;
 
+    /*
+     * If the Chef has already selected a method
+     * while the API was loading, do not clear
+     * or replace the form.
+     */
+    if (
+      preserveEditing &&
+      state.editing
+    ) {
+      return;
+    }
+
     if (!payoutAccount) {
-      state.selectedMethod = '';
-      state.editing = false;
+      if (!state.editing) {
+        state.selectedMethod = '';
+      }
+
       return;
     }
 
@@ -1264,8 +1409,8 @@
     }
 
     /*
-     * Full Account Number and UPI ID are never
-     * returned to the Chef frontend.
+     * Full Account Number and full UPI ID
+     * are never returned to the frontend.
      */
     resetSensitiveFields();
   }
@@ -1275,10 +1420,7 @@
   ) {
     event.preventDefault();
 
-    if (
-      state.saving ||
-      state.loading
-    ) {
+    if (state.saving) {
       return;
     }
 
@@ -1287,6 +1429,23 @@
         ? elements.submitButton
           .dataset.action
         : '';
+
+    if (action === 'retry') {
+      await loadPayout();
+      return;
+    }
+
+    if (
+      !state.sessionReady ||
+      state.loading
+    ) {
+      showToast(
+        'Please wait while your secure session is checked.',
+        'info'
+      );
+
+      return;
+    }
 
     if (
       action === 'continue' &&
@@ -1320,7 +1479,6 @@
     }
 
     state.saving = true;
-
     render();
 
     setButtonLoading(
@@ -1341,6 +1499,7 @@
 
       const payoutAccount =
         result.payoutAccount ||
+        result.account ||
         null;
 
       if (!payoutAccount) {
@@ -1349,11 +1508,12 @@
         );
       }
 
-      applySavedAccount(
-        payoutAccount
-      );
-
       state.editing = false;
+
+      applySavedAccount(
+        payoutAccount,
+        false
+      );
 
       showToast(
         'Payout details saved successfully.',
@@ -1387,8 +1547,7 @@
           .handleApiError(
             error,
             {
-              redirectToLogin:
-                true
+              redirectToLogin: true
             }
           );
       } else {
@@ -1476,41 +1635,17 @@
   }
 
   async function loadPayout() {
-    if (state.loading) {
+    if (
+      state.loading ||
+      !state.sessionReady
+    ) {
       return;
     }
 
     state.loading = true;
+    state.loadFailed = false;
 
-    setStatusType('loading');
-
-    setText(
-      elements.statusIcon,
-      '…'
-    );
-
-    setText(
-      elements.statusTitle,
-      'Checking payout details'
-    );
-
-    setText(
-      elements.statusMessage,
-      'Please wait while we load your saved payout method.'
-    );
-
-    setText(
-      elements.saveStatus,
-      'Checking…'
-    );
-
-    if (elements.submitButton) {
-      elements.submitButton.disabled =
-        true;
-
-      elements.submitButton.textContent =
-        'LOADING…';
-    }
+    render();
 
     try {
       const response =
@@ -1518,44 +1653,44 @@
           'payout.get',
           {},
           {
-            retry:
-              true,
-            retryCount:
-              1,
-            deduplicate:
-              true,
-            timeoutMs:
-              20000
+            retry: false,
+            deduplicate: false,
+            timeoutMs: 15000
           }
         );
 
       const data =
         getResponseData(response);
 
+      /*
+       * The backend may return either:
+       * { payoutAccount: {...} }
+       * or { exists: true, account: {...} }
+       */
+      const payoutAccount =
+        data.payoutAccount ||
+        data.account ||
+        null;
+
       applySavedAccount(
-        data.payoutAccount || null
+        payoutAccount,
+        true
       );
+
+      state.loadFailed = false;
     } catch (error) {
-      setStatusType('rejected');
+      state.loadFailed = true;
 
-      setText(
-        elements.statusIcon,
-        '!'
-      );
+      const message =
+        cleanText(
+          error &&
+          error.message
+        ) ||
+        'Payout details could not be loaded.';
 
-      setText(
-        elements.statusTitle,
-        'Unable to load payout details'
-      );
-
-      setText(
-        elements.statusMessage,
-        'Check your internet connection and reload this page.'
-      );
-
-      setText(
-        elements.saveStatus,
-        'Not loaded'
+      showToast(
+        message,
+        'error'
       );
 
       if (
@@ -1568,8 +1703,7 @@
           .handleApiError(
             error,
             {
-              redirectToLogin:
-                true
+              redirectToLogin: true
             }
           );
       }
@@ -1584,6 +1718,11 @@
       !window.ApnaBiteCore ||
       !window.ApnaBiteAPI
     ) {
+      showToast(
+        'Required application files did not load. Please refresh the page.',
+        'error'
+      );
+
       return null;
     }
 
@@ -1645,8 +1784,7 @@
             sessionToken:
               window.ApnaBiteCore
                 .getSessionToken(),
-            user:
-              user
+            user: user
           });
       }
 
@@ -1662,6 +1800,18 @@
 
       return user;
     } catch (error) {
+      const message =
+        cleanText(
+          error &&
+          error.message
+        ) ||
+        'Your session could not be verified.';
+
+      showToast(
+        message,
+        'error'
+      );
+
       if (
         window.ApnaBiteUI &&
         typeof window.ApnaBiteUI
@@ -1672,8 +1822,7 @@
           .handleApiError(
             error,
             {
-              redirectToLogin:
-                true
+              redirectToLogin: true
             }
           );
       }
@@ -1705,6 +1854,24 @@
             );
           }
         );
+
+      elements.bankOption
+        .addEventListener(
+          'keydown',
+          function(event) {
+            if (
+              event.key === 'Enter' ||
+              event.key === ' '
+            ) {
+              event.preventDefault();
+
+              selectMethod(
+                'BANK',
+                true
+              );
+            }
+          }
+        );
     }
 
     if (elements.upiOption) {
@@ -1716,6 +1883,24 @@
               'UPI',
               true
             );
+          }
+        );
+
+      elements.upiOption
+        .addEventListener(
+          'keydown',
+          function(event) {
+            if (
+              event.key === 'Enter' ||
+              event.key === ' '
+            ) {
+              event.preventDefault();
+
+              selectMethod(
+                'UPI',
+                true
+              );
+            }
           }
         );
     }
@@ -1907,7 +2092,8 @@
       function(event) {
         if (
           event.persisted &&
-          state.initialized
+          state.initialized &&
+          state.sessionReady
         ) {
           loadPayout();
         }
@@ -1925,28 +2111,49 @@
       return;
     }
 
+    if (state.initialized) {
+      return;
+    }
+
     getElements();
+
+    /*
+     * Bind Bank/UPI click events immediately.
+     * They no longer wait for an API response.
+     */
+    bindEvents();
+
+    state.initialized = true;
+
+    /*
+     * Show the interactive page immediately.
+     */
+    render();
 
     const user =
       await validateChefSession();
 
     if (!user) {
+      state.sessionReady = false;
+      render();
       return;
     }
 
-    bindEvents();
+    state.sessionReady = true;
+    render();
 
-    state.initialized = true;
-
+    /*
+     * Saved payout details now load in
+     * the background after controls are active.
+     */
     await loadPayout();
   }
 
   window.ApnaBiteChefPayout =
     Object.freeze({
-      initialize:
-        initialize,
-      loadPayout:
-        loadPayout
+      initialize: initialize,
+      loadPayout: loadPayout,
+      selectMethod: selectMethod
     });
 
   if (
