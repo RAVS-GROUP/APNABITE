@@ -940,3 +940,379 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   CHEF REVIEW & SUBMIT — STEP 6
+   ============================================================ */
+
+.chef-review-page .chef-onboarding-main {
+  padding-bottom: 34px;
+}
+
+.chef-review-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.chef-review-profile__image,
+.chef-review-profile__placeholder {
+  width: 112px;
+  height: 112px;
+  flex: 0 0 112px;
+  border-radius: 15px;
+}
+
+.chef-review-profile__image {
+  display: block;
+  object-fit: cover;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.chef-review-profile__image[hidden] {
+  display: none;
+}
+
+.chef-review-profile__placeholder {
+  display: grid;
+  place-items: center;
+  color: #c2410c;
+  font-size: 42px;
+  line-height: 1;
+  background:
+    linear-gradient(
+      135deg,
+      #fff7ed,
+      #ffedd5
+    );
+  border: 1px solid #fed7aa;
+}
+
+.chef-review-profile__placeholder[hidden] {
+  display: none;
+}
+
+.chef-review-profile__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.chef-review-profile__content h3 {
+  margin: 0 0 7px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.chef-review-profile__content > p {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.chef-review-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chef-review-tags span {
+  padding: 6px 9px;
+  color: #9a3412;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+}
+
+.chef-review-edit-button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  padding: 9px 13px;
+  color: #c2410c;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.chef-review-edit-button:hover {
+  color: #9a3412;
+  background: #ffedd5;
+  border-color: #fb923c;
+}
+
+.chef-review-edit-button:focus-visible {
+  outline: 3px solid rgba(
+    249,
+    115,
+    22,
+    0.18
+  );
+  outline-offset: 2px;
+}
+
+.chef-review-edit-button:active {
+  transform: scale(0.995);
+}
+
+.chef-review-detail {
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+}
+
+.chef-review-detail__icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  color: #c2410c;
+  font-size: 18px;
+  line-height: 1;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 11px;
+}
+
+.chef-review-detail > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.chef-review-detail strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.chef-review-detail p {
+  margin: 0 0 5px;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.chef-review-detail small {
+  display: block;
+  color: #94a3b8;
+  font-size: 9px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.chef-review-check-list {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chef-review-check-item {
+  min-width: 0;
+  min-height: 82px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.chef-review-check-item__icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  display: grid;
+  place-items: center;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  background: #dcfce7;
+  border-radius: 50%;
+}
+
+.chef-review-check-item > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.chef-review-check-item strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.chef-review-check-item small {
+  display: block;
+  color: #64748b;
+  font-size: 9px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.chef-review-check-item--complete {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.chef-review-check-item--complete
+.chef-review-check-item__icon {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.chef-review-check-item--pending {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.chef-review-check-item--pending
+.chef-review-check-item__icon {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.chef-review-check-item--missing {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.chef-review-check-item--missing
+.chef-review-check-item__icon {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.chef-review-page .chef-error-card {
+  margin-top: 16px;
+}
+
+.chef-review-page
+.chef-onboarding-action-bar
+.button {
+  letter-spacing: 0.01em;
+}
+
+/* REVIEW TABLET */
+
+@media (max-width: 720px) {
+  .chef-review-check-list {
+    grid-template-columns: 1fr;
+  }
+
+  .chef-review-check-item {
+    min-height: 68px;
+  }
+}
+
+/* REVIEW MOBILE */
+
+@media (max-width: 480px) {
+  .chef-review-profile {
+    gap: 12px;
+  }
+
+  .chef-review-profile__image,
+  .chef-review-profile__placeholder {
+    width: 86px;
+    height: 86px;
+    flex-basis: 86px;
+    border-radius: 13px;
+  }
+
+  .chef-review-profile__placeholder {
+    font-size: 34px;
+  }
+
+  .chef-review-profile__content h3 {
+    margin-bottom: 5px;
+    font-size: 15px;
+  }
+
+  .chef-review-profile__content > p {
+    margin-bottom: 9px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .chef-review-tags {
+    gap: 5px;
+  }
+
+  .chef-review-tags span {
+    padding: 5px 7px;
+    font-size: 8px;
+  }
+
+  .chef-review-edit-button {
+    min-height: 38px;
+    margin-top: 13px;
+    padding: 8px 11px;
+    font-size: 9px;
+  }
+
+  .chef-review-detail {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .chef-review-detail__icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    font-size: 16px;
+  }
+
+  .chef-review-detail strong {
+    font-size: 12px;
+  }
+
+  .chef-review-detail p {
+    font-size: 10px;
+  }
+
+  .chef-review-detail small {
+    font-size: 8px;
+  }
+
+  .chef-review-check-list {
+    gap: 8px;
+  }
+
+  .chef-review-check-item {
+    min-height: 62px;
+    padding: 10px;
+  }
+}
