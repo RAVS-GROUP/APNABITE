@@ -536,11 +536,8 @@
         ? ' customer-product-card__food-marker--non-veg'
         : '';
 
-    const buttonText =
-      quantityMode === 'COUNT' &&
-      !(product.addons || []).length
-        ? 'ADD'
-        : 'CUSTOMISE';
+const buttonText = 'ADD';
+    
 
     return (
       '<article class="customer-product-card">' +
