@@ -1914,20 +1914,13 @@ const buttonText = 'ADD';
   }
 
   function handleCartBarClick() {
-    if (!state.cart.items.length) {
-      return;
-    }
-
-    /*
-     * cart-checkout.html will be connected
-     * in the next module.
-     */
-    showToast(
-      'Cart is saved. Checkout will be connected next.',
-      'success'
-    );
+  if (!state.cart.items.length) {
+    return;
   }
 
+  window.location.href =
+    'cart-checkout.html';
+}
   function bindEvents() {
     elements.refreshButton.addEventListener(
       'click',
