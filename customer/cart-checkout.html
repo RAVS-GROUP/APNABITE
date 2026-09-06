@@ -1,1 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta name="theme-color" content="#f97316">
+  <meta
+    name="description"
+    content="Review your ApnaBite cart and delivery details."
+  >
 
+  <title>Cart & Checkout | ApnaBite</title>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="stylesheet" href="../assets/css/core.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/customer.css">
+  <link
+    rel="stylesheet"
+    href="../assets/css/customer/cart-checkout.css?v=20260906-01"
+  >
+</head>
+
+<body class="customer-page customer-cart-page">
+  <header class="customer-cart-header">
+    <div class="customer-cart-header__inner">
+      <a
+        class="customer-cart-header__back"
+        href="javascript:history.back()"
+        aria-label="Go back"
+      >
+        ‹
+      </a>
+
+      <div>
+        <small>APNABITE</small>
+        <strong>Cart & Checkout</strong>
+      </div>
+
+      <button
+        id="customer-cart-refresh-button"
+        class="customer-cart-header__refresh"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <main class="customer-cart-main">
+    <section
+      id="customer-cart-loading"
+      class="customer-cart-loading"
+      aria-live="polite"
+    >
+      <span
+        class="customer-cart-loading__spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>Preparing your cart</strong>
+        <p>Please wait a moment.</p>
+      </div>
+    </section>
+
+    <section
+      id="customer-cart-error"
+      class="customer-cart-error"
+      role="alert"
+      hidden
+    >
+      <span aria-hidden="true">!</span>
+
+      <div>
+        <strong id="customer-cart-error-title">
+          Cart could not be loaded
+        </strong>
+
+        <p id="customer-cart-error-message">
+          Please try again.
+        </p>
+      </div>
+
+      <button
+        id="customer-cart-error-retry"
+        class="button button--secondary"
+        type="button"
+      >
+        RETRY
+      </button>
+    </section>
+
+    <section
+      id="customer-cart-empty"
+      class="customer-cart-empty"
+      hidden
+    >
+      <span aria-hidden="true">🛒</span>
+
+      <h1>Your cart is empty</h1>
+
+      <p>
+        Add homemade food from a nearby Kitchen.
+      </p>
+
+      <a
+        class="button button--primary"
+        href="home.html"
+      >
+        EXPLORE KITCHENS
+      </a>
+    </section>
+
+    <div
+      id="customer-cart-content"
+      hidden
+    >
+      <section class="customer-cart-kitchen">
+        <div>
+          <small>ORDERING FROM</small>
+
+          <h1 id="customer-cart-kitchen-name">
+            Kitchen
+          </h1>
+        </div>
+
+        <a
+          id="customer-cart-add-more"
+          href="home.html"
+        >
+          Add more
+        </a>
+      </section>
+
+      <section class="customer-cart-section">
+        <div class="customer-cart-section__heading">
+          <div>
+            <h2>Your items</h2>
+
+            <p id="customer-cart-item-summary">
+              Review quantity and selected options.
+            </p>
+          </div>
+
+          <button
+            id="customer-cart-clear-button"
+            class="customer-cart-text-button customer-cart-text-button--danger"
+            type="button"
+          >
+            Clear cart
+          </button>
+        </div>
+
+        <div id="customer-cart-items"></div>
+      </section>
+
+      <section class="customer-cart-section">
+        <div class="customer-cart-section__heading">
+          <div>
+            <h2>Delivery address</h2>
+
+            <p>
+              Your order will be delivered here.
+            </p>
+          </div>
+
+          <button
+            id="customer-cart-change-address"
+            class="customer-cart-text-button"
+            type="button"
+          >
+            Change
+          </button>
+        </div>
+
+        <article
+          id="customer-cart-address-card"
+          class="customer-cart-address"
+        >
+          <span
+            class="customer-cart-address__icon"
+            aria-hidden="true"
+          >
+            ⌖
+          </span>
+
+          <div>
+            <div class="customer-cart-address__title">
+              <strong id="customer-cart-address-label">
+                Selected address
+              </strong>
+
+              <span id="customer-cart-address-distance"></span>
+            </div>
+
+            <p id="customer-cart-address-line">
+              Loading delivery address…
+            </p>
+
+            <small id="customer-cart-address-receiver"></small>
+          </div>
+        </article>
+
+        <div
+          id="customer-cart-address-warning"
+          class="customer-cart-warning"
+          hidden
+        >
+          Select a delivery address before continuing.
+        </div>
+      </section>
+
+      <section class="customer-cart-section">
+        <div class="customer-cart-section__heading">
+          <div>
+            <h2>Offers & rewards</h2>
+
+            <p>
+              Eligible savings will be applied automatically.
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="customer-cart-offer-button"
+          class="customer-cart-offer"
+          type="button"
+        >
+          <span
+            class="customer-cart-offer__icon"
+            aria-hidden="true"
+          >
+            %
+          </span>
+
+          <span>
+            <strong id="customer-cart-offer-title">
+              Check available offers
+            </strong>
+
+            <small id="customer-cart-offer-message">
+              Tap to view eligible savings.
+            </small>
+          </span>
+
+          <span aria-hidden="true">›</span>
+        </button>
+      </section>
+
+      <section class="customer-cart-section">
+        <div class="customer-cart-section__heading">
+          <div>
+            <h2>Bill details</h2>
+
+            <p>
+              Final amount will be verified before payment.
+            </p>
+          </div>
+        </div>
+
+        <div class="customer-cart-bill">
+          <div>
+            <span>Item total</span>
+
+            <strong id="customer-cart-item-total">
+              ₹0
+            </strong>
+          </div>
+
+          <div>
+            <span>Delivery fee</span>
+
+            <strong id="customer-cart-delivery-fee">
+              Calculating…
+            </strong>
+          </div>
+
+          <div>
+            <span>Platform fee</span>
+
+            <strong id="customer-cart-platform-fee">
+              ₹0
+            </strong>
+          </div>
+
+          <div
+            id="customer-cart-discount-row"
+            class="customer-cart-bill__discount"
+            hidden
+          >
+            <span>Discount</span>
+
+            <strong id="customer-cart-discount">
+              − ₹0
+            </strong>
+          </div>
+
+          <div
+            id="customer-cart-reward-row"
+            class="customer-cart-bill__discount"
+            hidden
+          >
+            <span>Reward points</span>
+
+            <strong id="customer-cart-reward-discount">
+              − ₹0
+            </strong>
+          </div>
+
+          <div class="customer-cart-bill__total">
+            <span>To pay</span>
+
+            <strong id="customer-cart-final-total">
+              ₹0
+            </strong>
+          </div>
+        </div>
+
+        <p
+          id="customer-cart-minimum-warning"
+          class="customer-cart-warning"
+          hidden
+        >
+          Minimum order value has not been reached.
+        </p>
+
+        <p
+          id="customer-cart-free-delivery-message"
+          class="customer-cart-saving-message"
+          hidden
+        ></p>
+      </section>
+
+      <section class="customer-cart-section">
+        <label
+          class="customer-cart-instruction"
+          for="customer-cart-instruction-input"
+        >
+          <span>
+            <strong>Cooking instructions</strong>
+
+            <small>
+              Optional instructions for the Chef.
+            </small>
+          </span>
+
+          <textarea
+            id="customer-cart-instruction-input"
+            maxlength="300"
+            rows="3"
+            placeholder="Example: Less spicy, please."
+          ></textarea>
+        </label>
+      </section>
+    </div>
+  </main>
+
+  <footer
+    id="customer-cart-checkout-bar"
+    class="customer-cart-checkout-bar"
+    hidden
+  >
+    <div>
+      <small>Total</small>
+
+      <strong id="customer-cart-footer-total">
+        ₹0
+      </strong>
+    </div>
+
+    <button
+      id="customer-cart-continue-button"
+      class="button button--primary"
+      type="button"
+      disabled
+    >
+      CONTINUE
+      <span aria-hidden="true">›</span>
+    </button>
+  </footer>
+
+  <template id="customer-cart-item-template">
+    <article class="customer-cart-item">
+      <div class="customer-cart-item__heading">
+        <span
+          class="customer-cart-item__food-marker"
+          data-food-marker
+          aria-hidden="true"
+        ></span>
+
+        <div>
+          <h3 data-product-name>Product</h3>
+
+          <p data-option-label></p>
+        </div>
+
+        <button
+          class="customer-cart-item__remove"
+          type="button"
+          data-remove-item
+          aria-label="Remove item"
+        >
+          ×
+        </button>
+      </div>
+
+      <div
+        class="customer-cart-item__addons"
+        data-addon-list
+        hidden
+      ></div>
+
+      <div class="customer-cart-item__footer">
+        <div class="customer-cart-quantity">
+          <button
+            type="button"
+            data-item-minus
+            aria-label="Decrease quantity"
+          >
+            −
+          </button>
+
+          <strong data-item-quantity>1</strong>
+
+          <button
+            type="button"
+            data-item-plus
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
+        </div>
+
+        <strong data-item-total>₹0</strong>
+      </div>
+    </article>
+  </template>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script
+    src="../assets/js/customer/cart-checkout.js?v=20260906-01"
+  ></script>
+</body>
+</html>
