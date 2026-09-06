@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Manage your ApnaBite Kitchen menu and products."
+  >
+
+  <title>Manage Menu | ApnaBite Chef</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/chef/menu.css?v=20260906-01"
+  >
+</head>
+
+<body class="chef-menu-page">
+  <header class="chef-menu-header">
+    <div class="chef-menu-header__inner">
+      <a
+        class="chef-menu-back"
+        href="dashboard.html"
+        aria-label="Back to Chef Dashboard"
+      >
+        ‹
+      </a>
+
+      <div class="chef-menu-header__title">
+        <small>
+          APNABITE CHEF
+        </small>
+
+        <h1>
+          Manage Menu
+        </h1>
+      </div>
+
+      <button
+        id="chef-menu-refresh-button"
+        class="chef-menu-header__button"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <main class="chef-menu-main">
+    <section class="chef-menu-intro">
+      <div>
+        <span class="chef-menu-eyebrow">
+          KITCHEN MENU
+        </span>
+
+        <h2 id="chef-menu-kitchen-name">
+          Your food items
+        </h2>
+
+        <p>
+          Add products, manage stock and submit menu items for approval.
+        </p>
+      </div>
+
+      <button
+        id="chef-menu-add-product-button"
+        class="chef-menu-primary-button"
+        type="button"
+      >
+        <span aria-hidden="true">
+          +
+        </span>
+
+        Add Product
+      </button>
+    </section>
+
+    <section
+      id="chef-menu-loading"
+      class="chef-menu-loading"
+      aria-live="polite"
+    >
+      <span
+        class="chef-menu-spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>
+          Loading menu
+        </strong>
+
+        <p>
+          Please wait while we load your products.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="chef-menu-error"
+      class="chef-menu-alert chef-menu-alert--error"
+      role="alert"
+      hidden
+    >
+      <span aria-hidden="true">
+        !
+      </span>
+
+      <div>
+        <strong id="chef-menu-error-title">
+          Menu could not be loaded
+        </strong>
+
+        <p id="chef-menu-error-message">
+          Please check your connection and try again.
+        </p>
+      </div>
+
+      <button
+        id="chef-menu-retry-button"
+        type="button"
+      >
+        Retry
+      </button>
+    </section>
+
+    <section
+      id="chef-menu-content"
+      hidden
+    >
+      <div class="chef-menu-stats">
+        <button
+          class="chef-menu-stat chef-menu-stat--selected"
+          type="button"
+          data-menu-filter="ALL"
+        >
+          <small>
+            All products
+          </small>
+
+          <strong id="chef-menu-count-all">
+            0
+          </strong>
+        </button>
+
+        <button
+          class="chef-menu-stat"
+          type="button"
+          data-menu-filter="ACTIVE"
+        >
+          <small>
+            Active
+          </small>
+
+          <strong id="chef-menu-count-active">
+            0
+          </strong>
+        </button>
+
+        <button
+          class="chef-menu-stat"
+          type="button"
+          data-menu-filter="DRAFT"
+        >
+          <small>
+            Draft
+          </small>
+
+          <strong id="chef-menu-count-draft">
+            0
+          </strong>
+        </button>
+
+        <button
+          class="chef-menu-stat"
+          type="button"
+          data-menu-filter="PENDING"
+        >
+          <small>
+            In review
+          </small>
+
+          <strong id="chef-menu-count-pending">
+            0
+          </strong>
+        </button>
+      </div>
+
+      <section class="chef-menu-tools">
+        <div class="chef-menu-search">
+          <span aria-hidden="true">
+            ⌕
+          </span>
+
+          <input
+            id="chef-menu-search-input"
+            type="search"
+            maxlength="150"
+            autocomplete="off"
+            placeholder="Search product or category"
+            aria-label="Search menu products"
+          >
+
+          <button
+            id="chef-menu-search-clear"
+            type="button"
+            aria-label="Clear search"
+            hidden
+          >
+            ×
+          </button>
+        </div>
+
+        <select
+          id="chef-menu-category-filter"
+          aria-label="Filter by category"
+        >
+          <option value="ALL">
+            All categories
+          </option>
+
+          <option value="BREAKFAST">
+            Breakfast
+          </option>
+
+          <option value="LUNCH">
+            Lunch
+          </option>
+
+          <option value="DINNER">
+            Dinner
+          </option>
+
+          <option value="SNACKS">
+            Snacks
+          </option>
+
+          <option value="MEAL">
+            Meal
+          </option>
+
+          <option value="THALI">
+            Thali
+          </option>
+
+          <option value="COMBO">
+            Combo
+          </option>
+
+          <option value="BEVERAGE">
+            Beverage
+          </option>
+
+          <option value="DESSERT">
+            Dessert
+          </option>
+
+          <option value="OTHER">
+            Other
+          </option>
+        </select>
+      </section>
+
+      <div
+        id="chef-menu-product-list"
+        class="chef-menu-product-list"
+        aria-live="polite"
+      ></div>
+
+      <section
+        id="chef-menu-empty"
+        class="chef-menu-empty"
+        hidden
+      >
+        <span aria-hidden="true">
+          🍽️
+        </span>
+
+        <h2 id="chef-menu-empty-title">
+          No products added
+        </h2>
+
+        <p id="chef-menu-empty-message">
+          Add your first homemade food item to start building your menu.
+        </p>
+
+        <button
+          id="chef-menu-empty-add-button"
+          class="chef-menu-primary-button"
+          type="button"
+        >
+          Add First Product
+        </button>
+      </section>
+
+      <div
+        id="chef-menu-pagination"
+        class="chef-menu-pagination"
+        hidden
+      >
+        <button
+          id="chef-menu-previous-page"
+          type="button"
+        >
+          ‹ Previous
+        </button>
+
+        <span id="chef-menu-page-status">
+          Page 1 of 1
+        </span>
+
+        <button
+          id="chef-menu-next-page"
+          type="button"
+        >
+          Next ›
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Product form sheet -->
+
+  <div
+    id="chef-product-modal"
+    class="chef-menu-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chef-product-modal-title"
+    hidden
+  >
+    <button
+      class="chef-menu-modal__backdrop"
+      type="button"
+      data-close-product-modal
+      aria-label="Close Product form"
+    ></button>
+
+    <section class="chef-menu-modal__panel">
+      <header class="chef-menu-modal__header">
+        <div>
+          <small id="chef-product-modal-eyebrow">
+            NEW PRODUCT
+          </small>
+
+          <h2 id="chef-product-modal-title">
+            Add Product
+          </h2>
+        </div>
+
+        <button
+          class="chef-menu-modal__close"
+          type="button"
+          data-close-product-modal
+          aria-label="Close Product form"
+        >
+          ×
+        </button>
+      </header>
+
+      <form
+        id="chef-product-form"
+        class="chef-product-form"
+        novalidate
+      >
+        <input
+          id="chef-product-id"
+          type="hidden"
+        >
+
+        <section class="chef-product-form__section">
+          <div class="chef-product-form__heading">
+            <h3>
+              Product information
+            </h3>
+
+            <p>
+              Tell Customers what you are offering.
+            </p>
+          </div>
+
+          <div class="chef-product-form__grid">
+            <div class="chef-product-field chef-product-field--full">
+              <label for="chef-product-name">
+                Product name
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <input
+                id="chef-product-name"
+                type="text"
+                maxlength="150"
+                autocomplete="off"
+                placeholder="For example, Home Style Veg Thali"
+              >
+
+              <small
+                id="chef-product-name-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-category">
+                Category
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <select id="chef-product-category">
+                <option value="">
+                  Select category
+                </option>
+
+                <option value="BREAKFAST">
+                  Breakfast
+                </option>
+
+                <option value="LUNCH">
+                  Lunch
+                </option>
+
+                <option value="DINNER">
+                  Dinner
+                </option>
+
+                <option value="SNACKS">
+                  Snacks
+                </option>
+
+                <option value="MEAL">
+                  Meal
+                </option>
+
+                <option value="THALI">
+                  Thali
+                </option>
+
+                <option value="COMBO">
+                  Combo
+                </option>
+
+                <option value="BEVERAGE">
+                  Beverage
+                </option>
+
+                <option value="DESSERT">
+                  Dessert
+                </option>
+
+                <option value="OTHER">
+                  Other
+                </option>
+              </select>
+
+              <small
+                id="chef-product-category-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-food-type">
+                Food type
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <select id="chef-product-food-type">
+                <option value="">
+                  Select food type
+                </option>
+
+                <option value="VEG">
+                  Veg
+                </option>
+
+                <option value="NON_VEG">
+                  Non-Veg
+                </option>
+              </select>
+
+              <small
+                id="chef-product-food-type-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field chef-product-field--full">
+              <label for="chef-product-description">
+                Description
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <textarea
+                id="chef-product-description"
+                maxlength="700"
+                rows="4"
+                placeholder="Describe ingredients, portions and what is included"
+              ></textarea>
+
+              <div class="chef-product-field__meta">
+                <small
+                  id="chef-product-description-error"
+                  class="chef-product-error"
+                  hidden
+                ></small>
+
+                <small id="chef-product-description-count">
+                  0/700
+                </small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="chef-product-form__section">
+          <div class="chef-product-form__heading">
+            <h3>
+              Price and quantity
+            </h3>
+
+            <p>
+              Control selling price and daily stock.
+            </p>
+          </div>
+
+          <div class="chef-product-form__grid">
+            <div class="chef-product-field">
+              <label for="chef-product-price">
+                Base price
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <div class="chef-product-input-prefix">
+                <span>
+                  ₹
+                </span>
+
+                <input
+                  id="chef-product-price"
+                  type="number"
+                  inputmode="decimal"
+                  min="1"
+                  max="100000"
+                  step="0.01"
+                  placeholder="199"
+                >
+              </div>
+
+              <small
+                id="chef-product-price-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-stock">
+                Available quantity
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <input
+                id="chef-product-stock"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="10000"
+                step="1"
+                value="0"
+              >
+
+              <small
+                id="chef-product-stock-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-minimum-quantity">
+                Minimum order quantity
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <input
+                id="chef-product-minimum-quantity"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="100"
+                step="1"
+                value="1"
+              >
+
+              <small
+                id="chef-product-minimum-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-maximum-quantity">
+                Maximum order quantity
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <input
+                id="chef-product-maximum-quantity"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="100"
+                step="1"
+                value="10"
+              >
+
+              <small
+                id="chef-product-maximum-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-preparation">
+                Preparation time
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <div class="chef-product-input-suffix">
+                <input
+                  id="chef-product-preparation"
+                  type="number"
+                  inputmode="numeric"
+                  min="5"
+                  max="240"
+                  step="1"
+                  value="30"
+                >
+
+                <span>
+                  min
+                </span>
+              </div>
+
+              <small
+                id="chef-product-preparation-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-product-display-order">
+                Display order
+              </label>
+
+              <input
+                id="chef-product-display-order"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="10000"
+                step="1"
+                value="0"
+              >
+
+              <small>
+                Lower number appears first.
+              </small>
+            </div>
+          </div>
+        </section>
+
+        <section class="chef-product-form__section">
+          <div class="chef-product-form__heading">
+            <h3>
+              Product images
+            </h3>
+
+            <p>
+              Thumbnail is required before submitting for approval.
+            </p>
+          </div>
+
+          <div class="chef-product-image-grid">
+            <div class="chef-product-field">
+              <label>
+                Product thumbnail
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <label
+                class="chef-product-upload"
+                for="chef-product-thumbnail-file"
+              >
+                <input
+                  id="chef-product-thumbnail-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                >
+
+                <span
+                  class="chef-product-upload__preview"
+                  id="chef-product-thumbnail-preview"
+                >
+                  📷
+                </span>
+
+                <span class="chef-product-upload__content">
+                  <strong id="chef-product-thumbnail-name">
+                    Select thumbnail
+                  </strong>
+
+                  <small>
+                    JPG, PNG or WebP · Maximum 5 MB
+                  </small>
+                </span>
+              </label>
+
+              <small
+                id="chef-product-thumbnail-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label>
+                Detail image
+                <span class="chef-product-optional">
+                  Optional
+                </span>
+              </label>
+
+              <label
+                class="chef-product-upload"
+                for="chef-product-detail-file"
+              >
+                <input
+                  id="chef-product-detail-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                >
+
+                <span
+                  class="chef-product-upload__preview"
+                  id="chef-product-detail-preview"
+                >
+                  🖼️
+                </span>
+
+                <span class="chef-product-upload__content">
+                  <strong id="chef-product-detail-name">
+                    Select detail image
+                  </strong>
+
+                  <small>
+                    JPG, PNG or WebP · Maximum 5 MB
+                  </small>
+                </span>
+              </label>
+
+              <small
+                id="chef-product-detail-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+          </div>
+
+          <div
+            id="chef-product-upload-note"
+            class="chef-product-form__note"
+          >
+            Product details will be saved first, then selected images will upload securely.
+          </div>
+        </section>
+
+        <section
+          id="chef-product-existing-status"
+          class="chef-product-existing-status"
+          hidden
+        >
+          <div>
+            <small>
+              Current moderation
+            </small>
+
+            <strong id="chef-product-current-moderation">
+              NOT SUBMITTED
+            </strong>
+          </div>
+
+          <p id="chef-product-admin-remark"></p>
+        </section>
+
+        <div
+          id="chef-product-form-general-error"
+          class="chef-menu-alert chef-menu-alert--error"
+          role="alert"
+          hidden
+        >
+          Product could not be saved.
+        </div>
+
+        <footer class="chef-product-form__actions">
+          <button
+            class="chef-menu-secondary-button"
+            type="button"
+            data-close-product-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="chef-product-save-button"
+            class="chef-menu-primary-button"
+            type="submit"
+          >
+            Save Product
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+
+  <!-- Product details and Add-ons sheet -->
+
+  <div
+    id="chef-product-detail-modal"
+    class="chef-menu-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chef-product-detail-title"
+    hidden
+  >
+    <button
+      class="chef-menu-modal__backdrop"
+      type="button"
+      data-close-detail-modal
+      aria-label="Close Product details"
+    ></button>
+
+    <section class="chef-menu-modal__panel">
+      <header class="chef-menu-modal__header">
+        <div>
+          <small>
+            PRODUCT MANAGEMENT
+          </small>
+
+          <h2 id="chef-product-detail-title">
+            Product
+          </h2>
+        </div>
+
+        <button
+          class="chef-menu-modal__close"
+          type="button"
+          data-close-detail-modal
+          aria-label="Close Product details"
+        >
+          ×
+        </button>
+      </header>
+
+      <div
+        id="chef-product-detail-loading"
+        class="chef-menu-loading"
+      >
+        <span
+          class="chef-menu-spinner"
+          aria-hidden="true"
+        ></span>
+
+        <div>
+          <strong>
+            Loading Product
+          </strong>
+
+          <p>
+            Please wait.
+          </p>
+        </div>
+      </div>
+
+      <div
+        id="chef-product-detail-content"
+        hidden
+      >
+        <section class="chef-product-detail-card">
+          <img
+            id="chef-product-detail-image"
+            src="../assets/images/logo.png"
+            alt="Product"
+          >
+
+          <div>
+            <div class="chef-product-detail-card__badges">
+              <span id="chef-product-detail-food-type">
+                VEG
+              </span>
+
+              <span id="chef-product-detail-moderation">
+                NOT SUBMITTED
+              </span>
+            </div>
+
+            <h3 id="chef-product-detail-name">
+              Product name
+            </h3>
+
+            <p id="chef-product-detail-description">
+              Product description
+            </p>
+
+            <strong id="chef-product-detail-price">
+              ₹0
+            </strong>
+          </div>
+        </section>
+
+        <section class="chef-product-control-card">
+          <div>
+            <h3>
+              Product controls
+            </h3>
+
+            <p id="chef-product-detail-status-message">
+              Manage approval and availability.
+            </p>
+          </div>
+
+          <div class="chef-product-control-card__actions">
+            <button
+              id="chef-product-edit-button"
+              class="chef-menu-secondary-button"
+              type="button"
+            >
+              Edit
+            </button>
+
+            <button
+              id="chef-product-submit-approval-button"
+              class="chef-menu-primary-button"
+              type="button"
+            >
+              Submit for Approval
+            </button>
+
+            <label class="chef-product-online-control">
+              <span>
+                Available online
+              </span>
+
+              <input
+                id="chef-product-online-toggle"
+                type="checkbox"
+                disabled
+              >
+
+              <i aria-hidden="true"></i>
+            </label>
+          </div>
+        </section>
+
+        <section class="chef-product-addon-section">
+          <div class="chef-product-addon-section__heading">
+            <div>
+              <h3>
+                Add-ons
+              </h3>
+
+              <p>
+                Optional extras such as extra roti or additional rice.
+              </p>
+            </div>
+
+            <button
+              id="chef-product-add-addon-button"
+              class="chef-menu-secondary-button"
+              type="button"
+            >
+              + Add-on
+            </button>
+          </div>
+
+          <div
+            id="chef-product-addon-list"
+            class="chef-product-addon-list"
+          ></div>
+
+          <div
+            id="chef-product-addon-empty"
+            class="chef-product-addon-empty"
+            hidden
+          >
+            No Add-ons added for this Product.
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <!-- Add-on form sheet -->
+
+  <div
+    id="chef-addon-modal"
+    class="chef-menu-modal chef-menu-modal--small"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chef-addon-modal-title"
+    hidden
+  >
+    <button
+      class="chef-menu-modal__backdrop"
+      type="button"
+      data-close-addon-modal
+      aria-label="Close Add-on form"
+    ></button>
+
+    <section class="chef-menu-modal__panel">
+      <header class="chef-menu-modal__header">
+        <div>
+          <small>
+            PRODUCT EXTRA
+          </small>
+
+          <h2 id="chef-addon-modal-title">
+            Add Add-on
+          </h2>
+        </div>
+
+        <button
+          class="chef-menu-modal__close"
+          type="button"
+          data-close-addon-modal
+          aria-label="Close Add-on form"
+        >
+          ×
+        </button>
+      </header>
+
+      <form
+        id="chef-addon-form"
+        class="chef-product-form"
+        novalidate
+      >
+        <input
+          id="chef-addon-id"
+          type="hidden"
+        >
+
+        <input
+          id="chef-addon-product-id"
+          type="hidden"
+        >
+
+        <section class="chef-product-form__section">
+          <div class="chef-product-form__grid">
+            <div class="chef-product-field chef-product-field--full">
+              <label for="chef-addon-name">
+                Add-on name
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <input
+                id="chef-addon-name"
+                type="text"
+                maxlength="120"
+                autocomplete="off"
+                placeholder="For example, Extra Roti"
+              >
+
+              <small
+                id="chef-addon-name-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field chef-product-field--full">
+              <label for="chef-addon-description">
+                Description
+              </label>
+
+              <textarea
+                id="chef-addon-description"
+                maxlength="300"
+                rows="3"
+                placeholder="Short description of this Add-on"
+              ></textarea>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-addon-price">
+                Unit price
+                <span aria-hidden="true">
+                  *
+                </span>
+              </label>
+
+              <div class="chef-product-input-prefix">
+                <span>
+                  ₹
+                </span>
+
+                <input
+                  id="chef-addon-price"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  max="100000"
+                  step="0.01"
+                  placeholder="10"
+                >
+              </div>
+
+              <small
+                id="chef-addon-price-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-addon-stock">
+                Available quantity
+              </label>
+
+              <input
+                id="chef-addon-stock"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="10000"
+                step="1"
+                value="0"
+              >
+
+              <small
+                id="chef-addon-stock-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-addon-minimum">
+                Minimum quantity
+              </label>
+
+              <input
+                id="chef-addon-minimum"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="100"
+                step="1"
+                value="0"
+              >
+            </div>
+
+            <div class="chef-product-field">
+              <label for="chef-addon-maximum">
+                Maximum quantity
+              </label>
+
+              <input
+                id="chef-addon-maximum"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="100"
+                step="1"
+                value="5"
+              >
+
+              <small
+                id="chef-addon-quantity-error"
+                class="chef-product-error"
+                hidden
+              ></small>
+            </div>
+
+            <div class="chef-product-field chef-product-field--full">
+              <label for="chef-addon-display-order">
+                Display order
+              </label>
+
+              <input
+                id="chef-addon-display-order"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="10000"
+                step="1"
+                value="0"
+              >
+            </div>
+          </div>
+        </section>
+
+        <div
+          id="chef-addon-form-error"
+          class="chef-menu-alert chef-menu-alert--error"
+          role="alert"
+          hidden
+        >
+          Add-on could not be saved.
+        </div>
+
+        <footer class="chef-product-form__actions">
+          <button
+            class="chef-menu-secondary-button"
+            type="button"
+            data-close-addon-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="chef-addon-save-button"
+            class="chef-menu-primary-button"
+            type="submit"
+          >
+            Save Add-on
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+
+  <nav
+    class="chef-menu-nav"
+    aria-label="Chef navigation"
+  >
+    <a href="dashboard.html">
+      <span aria-hidden="true">
+        ⌂
+      </span>
+
+      <small>
+        Home
+      </small>
+    </a>
+
+    <a href="orders.html">
+      <span aria-hidden="true">
+        📋
+      </span>
+
+      <small>
+        Orders
+      </small>
+    </a>
+
+    <a
+      class="chef-menu-nav__active"
+      href="menu.html"
+      aria-current="page"
+    >
+      <span aria-hidden="true">
+        🍽️
+      </span>
+
+      <small>
+        Menu
+      </small>
+    </a>
+
+    <a href="earnings.html">
+      <span aria-hidden="true">
+        ₹
+      </span>
+
+      <small>
+        Earnings
+      </small>
+    </a>
+
+    <a href="account.html">
+      <span aria-hidden="true">
+        👤
+      </span>
+
+      <small>
+        Account
+      </small>
+    </a>
+  </nav>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/chef/menu.js?v=20260906-01"></script>
+</body>
+</html>
