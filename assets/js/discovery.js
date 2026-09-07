@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — CUSTOMER KITCHEN DISCOVERY
  * File: assets/js/discovery.js
- * Version: 15
+ * Complete replacement — Part 1 of 3
  * ============================================================
  */
 
@@ -10,99 +10,87 @@
   'use strict';
 
   const CONFIG = Object.freeze({
-    CACHE_PREFIX:
-      'apnabite_nearby_kitchens_',
+    CACHE_PREFIX: 'apnabite_nearby_kitchens_',
     CACHE_MINUTES: 5,
-    SEARCH_DELAY_MS: 250,
+    SEARCH_DELAY_MS: 300,
     DEFAULT_SORT: 'NEAREST',
     DEFAULT_CATEGORY: 'ALL'
   });
 
   const state = {
+    initialized: false,
+    eventsBound: false,
     location: null,
+    locationKey: '',
     allKitchens: [],
     openKitchens: [],
     closedKitchens: [],
     radiusKm: 3,
     search: '',
-    category:
-      CONFIG.DEFAULT_CATEGORY,
-    sortBy:
-      CONFIG.DEFAULT_SORT,
+    category: CONFIG.DEFAULT_CATEGORY,
+    sortBy: CONFIG.DEFAULT_SORT,
     loading: false,
-    searchTimer: null
+    searchTimer: null,
+    requestNumber: 0
   };
 
   const elements = {};
 
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
   function getElements() {
-    elements.search =
-      document.getElementById(
-        'kitchen-search'
-      );
+    elements.search = byId('kitchen-search');
 
-    elements.categoryButtons =
-      Array.from(
-        document.querySelectorAll(
-          '[data-kitchen-category]'
-        )
-      );
+    elements.categoryButtons = Array.from(
+      document.querySelectorAll(
+        '[data-kitchen-category]'
+      )
+    );
 
-    elements.sort =
-      document.getElementById(
-        'kitchen-sort'
-      );
+    elements.sort = byId('kitchen-sort');
+    elements.radius = byId('discovery-radius');
+    elements.status = byId('backend-status');
+    elements.openList = byId('kitchen-list');
+    elements.closedSection = byId('closed-kitchen-section');
+    elements.closedList = byId('closed-kitchen-list');
+    elements.openCount = byId('open-kitchen-count');
+    elements.closedCount = byId('closed-kitchen-count');
+    elements.refresh = byId('refresh-kitchens');
+  }
 
-    elements.radius =
-      document.getElementById(
-        'discovery-radius'
-      );
-
-    elements.status =
-      document.getElementById(
-        'backend-status'
-      );
-
-    elements.openList =
-      document.getElementById(
-        'kitchen-list'
-      );
-
-    elements.closedSection =
-      document.getElementById(
-        'closed-kitchen-section'
-      );
-
-    elements.closedList =
-      document.getElementById(
-        'closed-kitchen-list'
-      );
-
-    elements.openCount =
-      document.getElementById(
-        'open-kitchen-count'
-      );
-
-    elements.closedCount =
-      document.getElementById(
-        'closed-kitchen-count'
-      );
-
-    elements.refresh =
-      document.getElementById(
-        'refresh-kitchens'
-      );
+  function requiredElementsAvailable() {
+    return Boolean(
+      elements.search &&
+      elements.sort &&
+      elements.radius &&
+      elements.status &&
+      elements.openList &&
+      elements.closedSection &&
+      elements.closedList &&
+      elements.openCount &&
+      elements.closedCount &&
+      elements.refresh
+    );
   }
 
   function clean(value) {
-    return String(value || '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return String(
+      value === undefined || value === null
+        ? ''
+        : value
+    ).replace(/\s+/g, ' ').trim();
+  }
+
+  function normalize(value) {
+    return clean(value)
+      .toUpperCase()
+      .replace(/\s+/g, '_');
   }
 
   function numberOrZero(value) {
     const number = Number(value);
-
     return Number.isFinite(number)
       ? number
       : 0;
@@ -114,74 +102,89 @@
     return {
       kitchenId:
         clean(input.kitchenId),
+
       chefUserId:
         clean(input.chefUserId),
+
       kitchenName:
         clean(input.kitchenName) ||
         'ApnaBite Kitchen',
+
       description:
         clean(input.description),
+
       foodType:
-        clean(input.foodType)
-          .toUpperCase(),
+        normalize(input.foodType),
+
       thumbnailFileId:
         clean(input.thumbnailFileId),
+
+      thumbnailUrl:
+        clean(input.thumbnailUrl),
+
       distanceKm:
         numberOrZero(
           input.distanceKm
         ),
+
       availabilityStatus:
-        clean(
+        normalize(
           input.availabilityStatus
-        ).toUpperCase(),
+        ),
+
       isOpen:
         input.isOpen === true,
+
       remainingCapacity:
         numberOrZero(
           input.remainingCapacity
         ),
+
       minimumOrderValue:
         numberOrZero(
           input.minimumOrderValue
         ),
+
       averagePreparationMinutes:
         numberOrZero(
           input.averagePreparationMinutes
         ),
+
       estimatedDeliveryMinutes:
         numberOrZero(
           input.estimatedDeliveryMinutes
         ),
+
       averageRating:
         numberOrZero(
           input.averageRating
         ),
+
       ratingCount:
         numberOrZero(
           input.ratingCount
         ),
+
       minimumProductPrice:
-        input.minimumProductPrice ===
-          null ||
-        input.minimumProductPrice ===
-          undefined
+        input.minimumProductPrice === null ||
+        input.minimumProductPrice === undefined
           ? null
           : numberOrZero(
               input.minimumProductPrice
             ),
+
       productCount:
         numberOrZero(
           input.productCount
         ),
+
       categories:
         Array.isArray(input.categories)
           ? input.categories.map(
-              function(category) {
-                return clean(category)
-                  .toUpperCase();
-              }
+              normalize
             )
           : [],
+
       productsPreview:
         Array.isArray(
           input.productsPreview
@@ -191,29 +194,28 @@
     };
   }
 
+  function createLocationKey(location) {
+    return (
+      Number(location.latitude).toFixed(4) +
+      '_' +
+      Number(location.longitude).toFixed(4)
+    );
+  }
+
   function getCacheKey(location) {
-    const latitude =
-      Number(location.latitude)
-        .toFixed(3);
-
-    const longitude =
-      Number(location.longitude)
-        .toFixed(3);
-
     return (
       CONFIG.CACHE_PREFIX +
-      latitude +
-      '_' +
-      longitude
+      createLocationKey(location)
     );
   }
 
   function readCache(location) {
     try {
+      const key =
+        getCacheKey(location);
+
       const raw =
-        localStorage.getItem(
-          getCacheKey(location)
-        );
+        localStorage.getItem(key);
 
       if (!raw) return null;
 
@@ -227,23 +229,21 @@
           cached.kitchens
         )
       ) {
+        localStorage.removeItem(key);
         return null;
       }
-
-      const age =
-        Date.now() -
-        Number(cached.savedAt);
 
       const maximumAge =
         CONFIG.CACHE_MINUTES *
         60 *
         1000;
 
-      if (age > maximumAge) {
-        localStorage.removeItem(
-          getCacheKey(location)
-        );
-
+      if (
+        Date.now() -
+        Number(cached.savedAt) >
+        maximumAge
+      ) {
+        localStorage.removeItem(key);
         return null;
       }
 
@@ -277,8 +277,7 @@
   function setStatus(text, type) {
     if (!elements.status) return;
 
-    elements.status.textContent =
-      text;
+    elements.status.textContent = text;
 
     elements.status.className =
       type === 'success'
@@ -303,6 +302,23 @@
     }
   }
 
+  function setControlsEnabled(enabled) {
+    elements.search.disabled =
+      !enabled;
+
+    elements.categoryButtons.forEach(
+      function(button) {
+        button.disabled = !enabled;
+      }
+    );
+
+    elements.sort.disabled =
+      !enabled;
+
+    elements.refresh.disabled =
+      !enabled || state.loading;
+  }
+
   function showSkeletons() {
     if (
       window.ApnaBiteUI &&
@@ -319,14 +335,11 @@
 
     elements.openList.innerHTML =
       '<div class="kitchen-loading">' +
-      'Finding nearby Kitchens…' +
+        'Finding nearby Kitchens…' +
       '</div>';
   }
 
-  function createEmptyState(
-    title,
-    message
-  ) {
+  function createEmptyState(title, message) {
     const container =
       document.createElement('div');
 
@@ -358,22 +371,25 @@
     return container;
   }
 
-  function getThumbnailUrl(fileId) {
-    const id = clean(fileId);
-
-    if (!id) return '';
+  function getThumbnailUrl(kitchen) {
+    const directUrl =
+      clean(kitchen.thumbnailUrl);
 
     if (
-      /^https?:\/\//i.test(id) ||
-      /^data:/i.test(id)
+      /^https?:\/\//i.test(directUrl) ||
+      /^data:/i.test(directUrl)
     ) {
-      return id;
+      return directUrl;
     }
 
+    const fileId =
+      clean(kitchen.thumbnailFileId);
+
+    if (!fileId) return '';
+
     return (
-      'https://drive.google.com/thumbnail' +
-      '?id=' +
-      encodeURIComponent(id) +
+      'https://drive.google.com/thumbnail?id=' +
+      encodeURIComponent(fileId) +
       '&sz=w600'
     );
   }
@@ -405,8 +421,7 @@
   }
 
   function formatPrice(value) {
-    const price =
-      Number(value);
+    const price = Number(value);
 
     if (!Number.isFinite(price)) {
       return '';
@@ -418,7 +433,23 @@
     );
   }
 
-  function createKitchenCard(kitchen) {
+  function showToast(message, type) {
+    if (
+      window.ApnaBiteUI &&
+      typeof window.ApnaBiteUI
+        .showToast === 'function'
+    ) {
+      window.ApnaBiteUI.showToast(
+        message,
+        type || 'info'
+      );
+    }
+  }
+
+  /*
+   * Continue directly with Part 2 below this line.
+   */
+   function createKitchenCard(kitchen) {
     const card =
       document.createElement('article');
 
@@ -428,17 +459,14 @@
         : 'kitchen-card kitchen-card--closed';
 
     card.tabIndex = 0;
+    card.dataset.kitchenId =
+      kitchen.kitchenId;
 
     const media =
       document.createElement('div');
 
     media.className =
       'kitchen-card__media';
-
-    const imageUrl =
-      getThumbnailUrl(
-        kitchen.thumbnailFileId
-      );
 
     const fallback =
       document.createElement('span');
@@ -450,6 +478,9 @@
 
     media.appendChild(fallback);
 
+    const imageUrl =
+      getThumbnailUrl(kitchen);
+
     if (imageUrl) {
       const image =
         document.createElement('img');
@@ -458,9 +489,7 @@
         'kitchen-card__image';
 
       image.src = imageUrl;
-      image.alt =
-        kitchen.kitchenName;
-
+      image.alt = kitchen.kitchenName;
       image.loading = 'lazy';
       image.decoding = 'async';
 
@@ -492,7 +521,9 @@
       closedBadge.textContent =
         'CLOSED';
 
-      media.appendChild(closedBadge);
+      media.appendChild(
+        closedBadge
+      );
     }
 
     const content =
@@ -526,7 +557,8 @@
       kitchen.ratingCount > 0
         ? (
           '★ ' +
-          kitchen.averageRating.toFixed(1)
+          kitchen.averageRating
+            .toFixed(1)
         )
         : 'New';
 
@@ -546,15 +578,23 @@
       foodType.className =
         kitchen.foodType === 'VEG'
           ? 'food-tag food-tag--veg'
-          : 'food-tag food-tag--nonveg';
+          : (
+            kitchen.foodType ===
+              'NON_VEG'
+              ? 'food-tag food-tag--nonveg'
+              : 'food-tag'
+          );
 
       foodType.textContent =
         kitchen.foodType === 'VEG'
           ? 'Veg'
-          : kitchen.foodType ===
+          : (
+            kitchen.foodType ===
               'NON_VEG'
-            ? 'Non-Veg'
-            : kitchen.foodType;
+              ? 'Non-Veg'
+              : kitchen.foodType
+                .replace(/_/g, ' ')
+          );
 
       tags.appendChild(foodType);
     }
@@ -565,8 +605,7 @@
         const tag =
           document.createElement('span');
 
-        tag.className =
-          'food-tag';
+        tag.className = 'food-tag';
 
         tag.textContent =
           category.replace(/_/g, ' ');
@@ -598,330 +637,54 @@
         kitchen.distanceKm
       );
 
-    const deliveryTime =
-      document.createElement('span');
-
-    deliveryTime.textContent =
-      kitchen.estimatedDeliveryMinutes > 0
-        ? (
-          kitchen
-            .estimatedDeliveryMinutes +
-          ' min'
-        )
-        : '';
-
-    meta.appendChild(distance);
-
-    if (deliveryTime.textContent) {
-      meta.appendChild(deliveryTime);
+    if (distance.textContent) {
+      meta.appendChild(distance);
     }
 
     if (
-      kitchen.minimumProductPrice !==
-      null
+      kitchen.estimatedDeliveryMinutes >
+      0
     ) {
-      const price =
+      const deliveryTime =
         document.createElement('span');
 
-      price.textContent =
-        'From ' +
-        formatPrice(
-          kitchen.minimumProductPrice
-        );
+      deliveryTime.textContent =
+        kitchen.estimatedDeliveryMinutes +
+        ' min';
 
-      meta.appendChild(price);
+      meta.append
+
+       async function loadFreshData(forceRefresh) {
+    if (!state.location) {
+      return;
     }
 
-    content.appendChild(top);
-    content.appendChild(tags);
-    content.appendChild(description);
-    content.appendChild(meta);
-
-    card.appendChild(media);
-    card.appendChild(content);
-
-    function openKitchen() {
-      if (!kitchen.isOpen) {
-        if (
-          window.ApnaBiteUI &&
-          typeof window.ApnaBiteUI
-            .showToast === 'function'
-        ) {
-          window.ApnaBiteUI.showToast(
-            'This Kitchen is currently closed.',
-            'warning'
-          );
-        }
-
-        return;
-      }
-
-      window.location.href =
-        'kitchen.html?kitchenId=' +
-        encodeURIComponent(
-          kitchen.kitchenId
-        );
-    }
-
-    card.addEventListener(
-      'click',
-      openKitchen
-    );
-
-    card.addEventListener(
-      'keydown',
-      function(event) {
-        if (
-          event.key === 'Enter' ||
-          event.key === ' '
-        ) {
-          event.preventDefault();
-          openKitchen();
-        }
-      }
-    );
-
-    return card;
-  }
-
-  function matchesSearch(kitchen) {
-    if (!state.search) return true;
-
-    const searchable =
-      [
-        kitchen.kitchenName,
-        kitchen.description,
-        kitchen.foodType
-      ]
-        .concat(kitchen.categories)
-        .concat(
-          kitchen.productsPreview.map(
-            function(product) {
-              return product.productName;
-            }
-          )
-        )
-        .join(' ')
-        .toLowerCase();
-
-    return (
-      searchable.indexOf(
-        state.search
-      ) !== -1
-    );
-  }
-
-  function matchesCategory(kitchen) {
-    if (
-      state.category === 'ALL'
-    ) {
-      return true;
-    }
-
-    if (
-      state.category === 'VEG' ||
-      state.category === 'NON_VEG'
-    ) {
-      return (
-        kitchen.foodType ===
-          state.category ||
-        kitchen.productsPreview.some(
-          function(product) {
-            return (
-              clean(product.foodType)
-                .toUpperCase() ===
-              state.category
-            );
-          }
-        )
-      );
-    }
-
-    return (
-      kitchen.categories.indexOf(
-        state.category
-      ) !== -1
-    );
-  }
-
-  function sortKitchens(kitchens) {
-    kitchens.sort(
-      function(first, second) {
-        if (
-          state.sortBy ===
-          'TOP_RATED'
-        ) {
-          return (
-            second.averageRating -
-              first.averageRating ||
-            first.distanceKm -
-              second.distanceKm
-          );
-        }
-
-        if (
-          state.sortBy ===
-          'PRICE_LOW_TO_HIGH'
-        ) {
-          const firstPrice =
-            first.minimumProductPrice ===
-              null
-              ? Number.MAX_SAFE_INTEGER
-              : first.minimumProductPrice;
-
-          const secondPrice =
-            second.minimumProductPrice ===
-              null
-              ? Number.MAX_SAFE_INTEGER
-              : second.minimumProductPrice;
-
-          return (
-            firstPrice -
-              secondPrice ||
-            first.distanceKm -
-              second.distanceKm
-          );
-        }
-
-        if (
-          state.sortBy === 'FASTEST'
-        ) {
-          return (
-            first
-              .estimatedDeliveryMinutes -
-              second
-                .estimatedDeliveryMinutes ||
-            first.distanceKm -
-              second.distanceKm
-          );
-        }
-
-        return (
-          first.distanceKm -
-            second.distanceKm ||
-          second.averageRating -
-            first.averageRating
-        );
-      }
-    );
-
-    return kitchens;
-  }
-
-  function render() {
-    const matching =
-      state.allKitchens
-        .filter(matchesSearch)
-        .filter(matchesCategory);
-
-    const open =
-      sortKitchens(
-        matching.filter(
-          function(kitchen) {
-            return kitchen.isOpen;
-          }
-        )
-      );
-
-    const closed =
-      sortKitchens(
-        matching.filter(
-          function(kitchen) {
-            return !kitchen.isOpen;
-          }
-        )
-      );
-
-    state.openKitchens = open;
-    state.closedKitchens = closed;
-
-    elements.openList.innerHTML = '';
-    elements.closedList.innerHTML = '';
-
-    elements.openCount.textContent =
-      String(open.length);
-
-    elements.closedCount.textContent =
-      String(closed.length);
-
-    elements.radius.textContent =
-      'Within ' +
-      state.radiusKm +
-      ' km';
-
-    if (!open.length) {
-      elements.openList.appendChild(
-        createEmptyState(
-          matching.length
-            ? 'No Kitchen is open right now'
-            : 'No nearby Kitchens found',
-          state.search ||
-          state.category !== 'ALL'
-            ? 'Try changing your search or food category.'
-            : (
-              'No active Kitchen is available within ' +
-              state.radiusKm +
-              ' km of this address.'
-            )
-        )
-      );
-    } else {
-      open.forEach(function(kitchen) {
-        elements.openList.appendChild(
-          createKitchenCard(kitchen)
-        );
-      });
-    }
-
-    if (!closed.length) {
-      elements.closedSection.hidden =
-        true;
-    } else {
-      elements.closedSection.hidden =
-        false;
-
-      closed.forEach(function(kitchen) {
-        elements.closedList.appendChild(
-          createKitchenCard(kitchen)
-        );
-      });
-    }
-  }
-
-  function applyDiscoveryData(data) {
-    const input = data || {};
-
-    state.radiusKm =
-      numberOrZero(
-        input.radiusKm
-      ) || 3;
-
-    const kitchens =
-      Array.isArray(input.kitchens)
-        ? input.kitchens
-        : [];
-
-    state.allKitchens =
-      kitchens
-        .map(normalizeKitchen)
-        .filter(function(kitchen) {
-          return Boolean(
-            kitchen.kitchenId
-          );
-        });
-
-    render();
-  }
-
-  async function loadFreshData() {
-    if (
-      state.loading ||
-      !state.location
-    ) {
+    if (state.loading) {
+      state.reloadRequested = true;
       return;
     }
 
     state.loading = true;
+    state.reloadRequested = false;
+
+    const requestNumber =
+      state.requestNumber + 1;
+
+    state.requestNumber =
+      requestNumber;
+
+    const requestLocation = {
+      latitude:
+        state.location.latitude,
+      longitude:
+        state.location.longitude
+    };
+
+    const requestLocationKey =
+      createLocationKey(
+        requestLocation
+      );
+
     setLoading(true);
 
     try {
@@ -930,30 +693,52 @@
           'discovery.nearbyKitchens',
           {
             latitude:
-              state.location.latitude,
+              requestLocation.latitude,
+
             longitude:
-              state.location.longitude,
+              requestLocation.longitude,
+
             search: '',
             category: 'ALL',
             sortBy: 'NEAREST',
-            limit: 50
+            limit: 50,
+
+            refreshToken:
+              forceRefresh
+                ? Date.now()
+                : ''
           },
           {
             retry: false,
-            deduplicate: true,
+            deduplicate:
+              !forceRefresh,
             timeoutMs: 12000
           }
         );
 
+      /*
+       * Ignore a response belonging to an
+       * older location or older request.
+       */
+      if (
+        requestNumber !==
+          state.requestNumber ||
+        requestLocationKey !==
+          state.locationKey
+      ) {
+        return;
+      }
+
       const data =
-        response && response.data
+        response &&
+        response.data
           ? response.data
           : {};
 
       applyDiscoveryData(data);
 
       writeCache(
-        state.location,
+        requestLocation,
         data
       );
 
@@ -962,6 +747,15 @@
         'success'
       );
     } catch (error) {
+      if (
+        requestNumber !==
+          state.requestNumber ||
+        requestLocationKey !==
+          state.locationKey
+      ) {
+        return;
+      }
+
       console.error(
         'Kitchen discovery failed:',
         error
@@ -983,87 +777,53 @@
         'error'
       );
 
+      showToast(
+        clean(error && error.message) ||
+        'Unable to load nearby Kitchens.',
+        'error'
+      );
+    } finally {
       if (
-        window.ApnaBiteUI &&
-        typeof window.ApnaBiteUI
-          .showToast === 'function'
+        requestNumber ===
+        state.requestNumber
       ) {
-        window.ApnaBiteUI.showToast(
-          error && error.message
-            ? error.message
-            : 'Unable to load nearby Kitchens.',
-          'error'
+        state.loading = false;
+        setLoading(false);
+      }
+
+      if (state.reloadRequested) {
+        state.reloadRequested = false;
+
+        window.setTimeout(
+          function() {
+            loadFreshData(false);
+          },
+          0
         );
       }
-    } finally {
-      state.loading = false;
-      setLoading(false);
     }
   }
 
-  function handleSearch() {
-    window.clearTimeout(
-      state.searchTimer
-    );
-
-    state.searchTimer =
-      window.setTimeout(function() {
-        state.search =
-          clean(
-            elements.search.value
-          ).toLowerCase();
-
-        render();
-      }, CONFIG.SEARCH_DELAY_MS);
-  }
-
-  function handleCategory(event) {
-    const button =
-      event.currentTarget;
-
-    const category =
-      clean(
-        button.dataset
-          .kitchenCategory
-      ).toUpperCase();
-
-    state.category =
-      category || 'ALL';
-
-    elements.categoryButtons
-      .forEach(function(item) {
-        item.classList.toggle(
-          'chip--active',
-          item === button
-        );
-      });
-
-    render();
-  }
-
-  function handleSort() {
-    state.sortBy =
-      clean(
-        elements.sort.value
-      ).toUpperCase() ||
-      'NEAREST';
-
-    render();
-  }
-
   function bindEvents() {
+    if (state.eventsBound) {
+      return;
+    }
+
+    state.eventsBound = true;
+
     elements.search.addEventListener(
       'input',
       handleSearch
     );
 
-    elements.categoryButtons
-      .forEach(function(button) {
+    elements.categoryButtons.forEach(
+      function(button) {
         button.addEventListener(
           'click',
           handleCategory
         );
-      });
+      }
+    );
 
     elements.sort.addEventListener(
       'change',
@@ -1078,47 +838,166 @@
           'warning'
         );
 
-        loadFreshData();
+        loadFreshData(true);
       }
     );
   }
 
-  function initialize(location) {
+  function resetFilters() {
+    state.search = '';
+    state.category =
+      CONFIG.DEFAULT_CATEGORY;
+    state.sortBy =
+      CONFIG.DEFAULT_SORT;
+
+    if (elements.search) {
+      elements.search.value = '';
+    }
+
+    if (elements.sort) {
+      elements.sort.value =
+        CONFIG.DEFAULT_SORT;
+    }
+
+    elements.categoryButtons.forEach(
+      function(button) {
+        const active =
+          normalize(
+            button.dataset
+              .kitchenCategory
+          ) ===
+          CONFIG.DEFAULT_CATEGORY;
+
+        button.classList.toggle(
+          'chip--active',
+          active
+        );
+
+        button.setAttribute(
+          'aria-pressed',
+          active
+            ? 'true'
+            : 'false'
+        );
+      }
+    );
+  }
+
+  function setLocation(location) {
     const latitude =
-      numberOrZero(
-        location && location.latitude
+      Number(
+        location &&
+        location.latitude
       );
 
     const longitude =
-      numberOrZero(
-        location && location.longitude
+      Number(
+        location &&
+        location.longitude
       );
 
-    if (!latitude || !longitude) {
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      state.location = null;
+      state.locationKey = '';
+      state.allKitchens = [];
+
       elements.openList.innerHTML = '';
 
       elements.openList.appendChild(
         createEmptyState(
           'Select delivery location',
-          'Choose your delivery address to view nearby Kitchens.'
+          'Choose a delivery address to view nearby Kitchens.'
         )
       );
+
+      elements.closedSection.hidden =
+        true;
+
+      elements.openCount.textContent =
+        '0';
+
+      elements.closedCount.textContent =
+        '0';
+
+      setControlsEnabled(false);
 
       setStatus(
         'Location needed',
         'error'
       );
 
-      return;
+      return false;
     }
 
-    state.location = {
+    const nextLocation = {
       latitude: latitude,
       longitude: longitude
     };
 
+    const nextLocationKey =
+      createLocationKey(
+        nextLocation
+      );
+
+    const locationChanged =
+      nextLocationKey !==
+      state.locationKey;
+
+    state.location =
+      nextLocation;
+
+    state.locationKey =
+      nextLocationKey;
+
+    setControlsEnabled(true);
+
+    if (!locationChanged) {
+      if (!state.allKitchens.length) {
+        const cached =
+          readCache(nextLocation);
+
+        if (cached) {
+          applyDiscoveryData(cached);
+
+          setStatus(
+            'Updated',
+            'success'
+          );
+        } else {
+          showSkeletons();
+
+          setStatus(
+            'Finding nearby',
+            'warning'
+          );
+
+          loadFreshData(false);
+        }
+      }
+
+      return true;
+    }
+
+    /*
+     * Location changed: discard old visible
+     * results before loading the new area.
+     */
+    state.requestNumber += 1;
+    state.allKitchens = [];
+    state.openKitchens = [];
+    state.closedKitchens = [];
+
+    resetFilters();
+
     const cached =
-      readCache(state.location);
+      readCache(nextLocation);
 
     if (cached) {
       applyDiscoveryData(cached);
@@ -1128,6 +1007,15 @@
         'warning'
       );
     } else {
+      elements.closedSection.hidden =
+        true;
+
+      elements.openCount.textContent =
+        '0';
+
+      elements.closedCount.textContent =
+        '0';
+
       showSkeletons();
 
       setStatus(
@@ -1136,29 +1024,70 @@
       );
     }
 
-    loadFreshData();
+    loadFreshData(false);
+
+    return true;
   }
 
   function setup(location) {
-    getElements();
-    bindEvents();
+    if (!state.initialized) {
+      getElements();
 
-    elements.search.disabled = false;
+      if (
+        !requiredElementsAvailable()
+      ) {
+        console.error(
+          'Customer discovery page elements are incomplete.'
+        );
+        return false;
+      }
 
-    elements.categoryButtons
-      .forEach(function(button) {
-        button.disabled = false;
-      });
+      bindEvents();
+      state.initialized = true;
+    }
 
-    elements.sort.disabled = false;
-    elements.refresh.disabled = false;
+    return setLocation(location);
+  }
 
-    initialize(location);
+  function refresh() {
+    if (!state.location) {
+      showToast(
+        'Select a delivery location first.',
+        'warning'
+      );
+
+      return;
+    }
+
+    setStatus(
+      'Refreshing',
+      'warning'
+    );
+
+    loadFreshData(true);
   }
 
   window.ApnaBiteDiscovery =
     Object.freeze({
-      setup: setup,
-      refresh: loadFreshData
+      setup:
+        setup,
+
+      updateLocation:
+        setLocation,
+
+      refresh:
+        refresh,
+
+      getLocation:
+        function() {
+          return state.location
+            ? {
+                latitude:
+                  state.location.latitude,
+                longitude:
+                  state.location.longitude
+              }
+            : null;
+        }
     });
 })(window, document);
