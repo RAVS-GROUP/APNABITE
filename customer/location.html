@@ -64,7 +64,7 @@
         </h1>
 
         <p class="page-header__subtitle">
-          Search or adjust the pin for exact delivery.
+          Select a saved address or choose a new location.
         </p>
       </div>
     </div>
@@ -76,14 +76,21 @@
       class="location-section"
     >
       <div class="location-section__header">
-        <h2 class="location-section__title">
-          Saved Addresses
-        </h2>
+        <div>
+          <h2 class="location-section__title">
+            Saved Addresses
+          </h2>
+
+          <p class="location-helper-text">
+            Tap an address to select it immediately.
+          </p>
+        </div>
       </div>
 
       <div
         id="saved-address-list"
         class="saved-address-list"
+        aria-live="polite"
       ></div>
 
       <div
@@ -97,7 +104,7 @@
     <section class="location-section">
       <div class="location-section__header">
         <h2 class="location-section__title">
-          Search Location
+          Search New Location
         </h2>
       </div>
 
@@ -241,7 +248,7 @@
       </div>
 
       <p class="location-helper-text">
-        Enter the receiver details required for correct delivery.
+        Enter receiver details for correct delivery.
       </p>
 
       <div class="form-grid">
@@ -467,13 +474,10 @@
     </button>
   </div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  ></script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../assets/js/core.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/ui.js"></script>
-  <script src="../assets/js/customer.js"></script>
+  <script src="../assets/js/customer/location.js?v=20260907-01"></script>
 </body>
 </html>
