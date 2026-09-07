@@ -12,7 +12,7 @@
     SESSION_TOKEN: 'apnabite_session_token',
     SESSION_USER: 'apnabite_session_user',
     DEVICE_ID: 'apnabite_device_id',
-    CART: 'apnabite_cart',
+    CART: 'apnabite_cart_v1',
     SELECTED_ADDRESS: 'apnabite_selected_address',
     LOCATION: 'apnabite_location',
     LANGUAGE: 'apnabite_language',
@@ -261,15 +261,67 @@
   }
 
   function getCart() {
-    return getJsonStorage(
+  const emptyCart = {
+    version: 1,
+    kitchenId: '',
+    kitchenName: '',
+    items: [],
+    updatedAt: ''
+  };
+
+  let cart =
+    getJsonStorage(
       STORAGE_KEYS.CART,
-      {
-        kitchenId: '',
-        items: [],
-        updatedAt: ''
-      }
+      null
     );
+
+  /*
+   * Migrate cart saved with the old key.
+   * Existing Customer items will not be lost.
+   */
+  if (!cart) {
+    const legacyCart =
+      getJsonStorage(
+        'apnabite_cart',
+        null
+      );
+
+    if (
+      legacyCart &&
+      Array.isArray(legacyCart.items)
+    ) {
+      cart = legacyCart;
+
+      setJsonStorage(
+        STORAGE_KEYS.CART,
+        cart
+      );
+
+      removeStorage(
+        'apnabite_cart'
+      );
+    }
   }
+
+  if (
+    !cart ||
+    !Array.isArray(cart.items)
+  ) {
+    return emptyCart;
+  }
+
+  return {
+    version: 1,
+    kitchenId:
+      cleanText(cart.kitchenId, 100),
+    kitchenName:
+      cleanText(cart.kitchenName, 150),
+    items:
+      cart.items,
+    updatedAt:
+      cleanText(cart.updatedAt, 50)
+  };
+}
 
   function saveCart(cart) {
     const value = cart || {
@@ -291,23 +343,34 @@
   }
 
   function clearCart() {
-    removeStorage(STORAGE_KEYS.CART);
+  removeStorage(
+    STORAGE_KEYS.CART
+  );
 
-    const emptyCart = {
-      kitchenId: '',
-      items: [],
-      updatedAt:
-        new Date().toISOString()
-    };
+  /*
+   * Remove obsolete legacy key too.
+   */
+  removeStorage(
+    'apnabite_cart'
+  );
 
-    dispatch(
-      'cart:changed',
-      emptyCart
-    );
+  const emptyCart = {
+    version: 1,
+    kitchenId: '',
+    kitchenName: '',
+    items: [],
+    updatedAt:
+      new Date().toISOString()
+  };
 
-    return emptyCart;
-  }
+  dispatch(
+    'cart:changed',
+    emptyCart
+  );
 
+  return emptyCart;
+}
+  
   function getCartQuantity() {
     const cart = getCart();
 
