@@ -209,22 +209,21 @@
   }
 
   function startDiscovery(location) {
-    if (
-      state.discoveryStarted ||
-      !location ||
-      !window.ApnaBiteDiscovery ||
-      typeof window.ApnaBiteDiscovery
-        .setup !== 'function'
-    ) {
-      return;
-    }
-
-    state.discoveryStarted = true;
-
-    window.ApnaBiteDiscovery.setup(
-      location
-    );
+  if (
+    !location ||
+    !window.ApnaBiteDiscovery ||
+    typeof window.ApnaBiteDiscovery.setup !==
+      'function'
+  ) {
+    return;
   }
+
+  window.ApnaBiteDiscovery.setup(
+    location
+  );
+
+  state.discoveryStarted = true;
+}
 
   async function reverseCurrentLocation(
     currentLocation
