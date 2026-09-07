@@ -41,7 +41,7 @@
   >
 </head>
 
-<body class="customer-page">
+<body class="customer-page customer-home-page">
   <header class="customer-header">
     <div class="customer-header__inner">
       <button
@@ -57,8 +57,9 @@
         <span
           id="header-location"
           class="customer-location__value"
+          aria-live="polite"
         >
-          Select delivery location
+          Detecting current location…
         </span>
       </button>
 
@@ -191,7 +192,7 @@
           id="discovery-radius"
           class="discovery-radius"
         >
-          Within 3 km
+          Nearby
         </span>
 
         <label
@@ -233,7 +234,7 @@
           </h2>
 
           <p class="customer-section__subtitle">
-            Homemade food near your delivery address
+            Homemade food near your current delivery location
           </p>
         </div>
 
@@ -248,8 +249,9 @@
           <span
             id="backend-status"
             class="badge badge--warning"
+            aria-live="polite"
           >
-            Connecting
+            Detecting location
           </span>
         </div>
       </div>
@@ -369,176 +371,7 @@
   <script src="../assets/js/core.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/ui.js"></script>
-  <script src="../assets/js/discovery.js"></script>
-
-  <script>
-    (function() {
-      'use strict';
-
-      const greeting =
-        document.getElementById(
-          'customer-greeting'
-        );
-
-      const headerLocation =
-        document.getElementById(
-          'header-location'
-        );
-
-      const changeLocationButton =
-        document.getElementById(
-          'change-location-button'
-        );
-
-      const locationHeaderButton =
-        document.getElementById(
-          'location-header-button'
-        );
-
-      function clean(value) {
-        return String(value || '')
-          .replace(/\s+/g, ' ')
-          .trim();
-      }
-
-      function updateGreeting(user) {
-        const fullName =
-          clean(
-            user && user.fullName
-          );
-
-        const firstName =
-          fullName
-            ? fullName.split(/\s+/)[0]
-            : '';
-
-        greeting.textContent =
-          firstName
-            ? 'Hello, ' +
-              firstName +
-              '!'
-            : 'Hello!';
-      }
-
-      function displayLocation(location) {
-        const locationName =
-          clean(
-            location &&
-            location.locationName
-          );
-
-        const area =
-          clean(
-            location &&
-            location.area
-          );
-
-        const city =
-          clean(
-            location &&
-            location.city
-          );
-
-        headerLocation.textContent =
-          locationName ||
-          area ||
-          city ||
-          'Select delivery location';
-      }
-
-      function openLocationPage() {
-        window.location.href =
-          'location.html';
-      }
-
-      async function validateSession() {
-        try {
-          const response =
-            await window.ApnaBiteAPI
-              .validateSession();
-
-          const user =
-            response &&
-            response.data
-              ? response.data.user
-              : null;
-
-          if (
-            !user ||
-            user.role !== 'CUSTOMER'
-          ) {
-            window.ApnaBiteCore
-              .redirectToRoleHome(
-                user ? user.role : '',
-                true
-              );
-
-            return null;
-          }
-
-          window.ApnaBiteCore
-            .saveSession({
-              sessionToken:
-                window.ApnaBiteAPI
-                  .getSessionToken(),
-              user: user
-            });
-
-          updateGreeting(user);
-
-          return user;
-        } catch (error) {
-          window.ApnaBiteUI
-            .handleApiError(error);
-
-          return null;
-        }
-      }
-
-      function initialize() {
-        if (
-          !window.ApnaBiteCore
-            .requireLocalSession(
-              ['CUSTOMER']
-            )
-        ) {
-          return;
-        }
-
-        const savedLocation =
-          window.ApnaBiteCore
-            .getJsonStorage(
-              window.ApnaBiteCore
-                .storageKeys.LOCATION,
-              null
-            );
-
-        displayLocation(
-          savedLocation
-        );
-
-        window.ApnaBiteDiscovery
-          .setup(savedLocation);
-
-        validateSession();
-      }
-
-      changeLocationButton
-        .addEventListener(
-          'click',
-          openLocationPage
-        );
-
-      locationHeaderButton
-        .addEventListener(
-          'click',
-          openLocationPage
-        );
-
-      window.ApnaBiteCore.ready(
-        initialize
-      );
-    })();
-  </script>
+  <script src="../assets/js/discovery.js?v=20260907-01"></script>
+  <script src="../assets/js/customer/home-location.js?v=20260907-01"></script>
 </body>
 </html>
