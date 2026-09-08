@@ -1,0 +1,96 @@
+/**
+ * APNABITE V1 — GLOBAL CUSTOMER CART REMINDER
+ * File: assets/css/customer/cart-reminder.css
+ */
+
+.customer-global-cart-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 900;
+  width: min(720px, calc(100% - 24px));
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 20px;
+  background: #15803d;
+  color: #fff;
+  box-shadow: 0 16px 36px rgba(21, 128, 61, .28);
+  transform: translateX(-50%);
+  cursor: pointer;
+  font: inherit;
+}
+
+.customer-global-cart-bar[hidden] {
+  display: none !important;
+}
+
+.customer-global-cart-bar__count,
+.customer-global-cart-bar__total,
+.customer-global-cart-bar__action {
+  display: flex;
+  align-items: center;
+}
+
+.customer-global-cart-bar__count {
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.customer-global-cart-bar__count strong,
+.customer-global-cart-bar__total strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.customer-global-cart-bar__total {
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.customer-global-cart-bar__total small {
+  margin-bottom: 3px;
+  font-size: 10px;
+  opacity: .82;
+}
+
+.customer-global-cart-bar__action {
+  justify-content: flex-end;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.customer-global-cart-bar__action span {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.location-page .customer-global-cart-bar {
+  bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 560px) {
+  .customer-global-cart-bar {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    width: calc(100% - 16px);
+    min-height: 58px;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 17px;
+  }
+
+  .customer-global-cart-bar__count,
+  .customer-global-cart-bar__action {
+    font-size: 13px;
+  }
+
+  .customer-global-cart-bar__count strong,
+  .customer-global-cart-bar__total strong {
+    font-size: 16px;
+  }
+}
