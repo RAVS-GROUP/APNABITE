@@ -2,229 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
-
-  <meta
-    name="theme-color"
-    content="#f97316"
-  >
-
-  <meta
-    name="description"
-    content="Discover nearby homemade-food Kitchens on ApnaBite."
-  >
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f97316">
+  <meta name="description" content="Discover nearby homemade-food Kitchens on ApnaBite.">
   <title>Home | ApnaBite</title>
-
-  <link
-    rel="manifest"
-    href="../manifest.webmanifest"
-  >
-
-  <link
-    rel="stylesheet"
-    href="../assets/css/core.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="../assets/css/components.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="../assets/css/customer.css"
-  >
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="stylesheet" href="../assets/css/core.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/customer.css">
+  <link rel="stylesheet" href="../assets/css/customer/cart-reminder.css?v=20260908-01">
 </head>
 
 <body class="customer-page customer-home-page">
   <header class="customer-header">
     <div class="customer-header__inner">
-      <button
-  id="location-header-button"
-  class="customer-location"
-  type="button"
-  aria-label="Change delivery location"
-  onclick="window.location.href='location.html'"
->
-      <span class="customer-location__label">
-          DELIVERING TO
-        </span>
-
-        <span
-          id="header-location"
-          class="customer-location__value"
-          aria-live="polite"
-        >
-          Detecting current location…
-        </span>
+      <button id="location-header-button" class="customer-location" type="button" aria-label="Change delivery location">
+        <span class="customer-location__label">DELIVERING TO</span>
+        <span id="header-location" class="customer-location__value">Detecting current location…</span>
       </button>
-
-      <button
-  id="change-location-button"
-  class="button button--secondary button--small"
-  type="button"
-  onclick="window.location.href='location.html'"
->
-  CHANGE
-</button>
-      
+      <button id="change-location-button" class="button button--secondary button--small" type="button">CHANGE</button>
     </div>
   </header>
 
   <main class="customer-main">
     <section class="customer-greeting">
-      <h1
-        id="customer-greeting"
-        class="customer-greeting__title"
-      >
-        Hello!
-      </h1>
-
-      <p class="customer-greeting__text">
-        What homemade food would you like today?
-      </p>
+      <h1 id="customer-greeting" class="customer-greeting__title">Hello!</h1>
+      <p class="customer-greeting__text">What homemade food would you like today?</p>
     </section>
 
     <section class="search-box">
-      <label
-        class="visually-hidden"
-        for="kitchen-search"
-      >
-        Search Kitchens or food
-      </label>
-
-      <input
-        id="kitchen-search"
-        class="search-box__input"
-        type="search"
-        placeholder="Search Kitchens or food"
-        autocomplete="off"
-        disabled
-      >
-
-      <span
-        class="search-box__icon"
-        aria-hidden="true"
-      >
-        ⌕
-      </span>
+      <label class="visually-hidden" for="kitchen-search">Search Kitchens or food</label>
+      <input id="kitchen-search" class="search-box__input" type="search" placeholder="Search Kitchens or food" autocomplete="off" disabled>
+      <span class="search-box__icon" aria-hidden="true">⌕</span>
     </section>
 
     <section class="customer-section customer-filter-section">
       <div class="horizontal-scroll">
-        <button
-          class="chip chip--active"
-          type="button"
-          data-kitchen-category="ALL"
-          disabled
-        >
-          All
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="VEG"
-          disabled
-        >
-          Veg
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="NON_VEG"
-          disabled
-        >
-          Non-Veg
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="BREAKFAST"
-          disabled
-        >
-          Breakfast
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="LUNCH"
-          disabled
-        >
-          Lunch
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="DINNER"
-          disabled
-        >
-          Dinner
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="SNACKS"
-          disabled
-        >
-          Snacks
-        </button>
-
-        <button
-          class="chip"
-          type="button"
-          data-kitchen-category="MEAL"
-          disabled
-        >
-          Meals
-        </button>
+        <button class="chip chip--active" type="button" data-kitchen-category="ALL" disabled>All</button>
+        <button class="chip" type="button" data-kitchen-category="VEG" disabled>Veg</button>
+        <button class="chip" type="button" data-kitchen-category="NON_VEG" disabled>Non-Veg</button>
+        <button class="chip" type="button" data-kitchen-category="BREAKFAST" disabled>Breakfast</button>
+        <button class="chip" type="button" data-kitchen-category="LUNCH" disabled>Lunch</button>
+        <button class="chip" type="button" data-kitchen-category="DINNER" disabled>Dinner</button>
+        <button class="chip" type="button" data-kitchen-category="SNACKS" disabled>Snacks</button>
+        <button class="chip" type="button" data-kitchen-category="MEAL" disabled>Meals</button>
       </div>
-
       <div class="discovery-controls">
-        <span
-          id="discovery-radius"
-          class="discovery-radius"
-        >
-          Nearby
-        </span>
-
-        <label
-          class="visually-hidden"
-          for="kitchen-sort"
-        >
-          Sort Kitchens
-        </label>
-
-        <select
-          id="kitchen-sort"
-          class="discovery-sort"
-          disabled
-        >
-          <option value="NEAREST">
-            Nearest
-          </option>
-
-          <option value="TOP_RATED">
-            Top Rated
-          </option>
-
-          <option value="FASTEST">
-            Fastest
-          </option>
-
-          <option value="PRICE_LOW_TO_HIGH">
-            Price: Low to High
-          </option>
+        <span id="discovery-radius" class="discovery-radius">Nearby</span>
+        <label class="visually-hidden" for="kitchen-sort">Sort Kitchens</label>
+        <select id="kitchen-sort" class="discovery-sort" disabled>
+          <option value="NEAREST">Nearest</option>
+          <option value="TOP_RATED">Top Rated</option>
+          <option value="FASTEST">Fastest</option>
+          <option value="PRICE_LOW_TO_HIGH">Price: Low to High</option>
         </select>
       </div>
     </section>
@@ -232,149 +62,53 @@
     <section class="customer-section">
       <div class="customer-section__header">
         <div>
-          <h2 class="customer-section__title">
-            Nearby Kitchens
-          </h2>
-
-          <p class="customer-section__subtitle">
-            Homemade food near your current delivery location
-          </p>
+          <h2 class="customer-section__title">Nearby Kitchens</h2>
+          <p class="customer-section__subtitle">Homemade food near your current delivery location</p>
         </div>
-
         <div class="customer-section__status">
-          <span
-            id="open-kitchen-count"
-            class="kitchen-count"
-          >
-            0
-          </span>
-
-          <span
-            id="backend-status"
-            class="badge badge--warning"
-            aria-live="polite"
-          >
-            Detecting location
-          </span>
+          <span id="open-kitchen-count" class="kitchen-count">0</span>
+          <span id="backend-status" class="badge badge--warning">Detecting location</span>
         </div>
       </div>
-
-      <button
-        id="refresh-kitchens"
-        class="discovery-refresh"
-        type="button"
-        disabled
-      >
-        Refresh
-      </button>
-
-      <div
-        id="kitchen-list"
-        class="kitchen-list"
-        aria-live="polite"
-      ></div>
+      <button id="refresh-kitchens" class="discovery-refresh" type="button" disabled>Refresh</button>
+      <div id="kitchen-list" class="kitchen-list" aria-live="polite"></div>
     </section>
 
-    <section
-      id="closed-kitchen-section"
-      class="customer-section"
-      hidden
-    >
+    <section id="closed-kitchen-section" class="customer-section" hidden>
       <div class="customer-section__header">
         <div>
-          <h2 class="customer-section__title">
-            Closed Kitchens
-          </h2>
-
-          <p class="customer-section__subtitle">
-            These Kitchens are currently unavailable
-          </p>
+          <h2 class="customer-section__title">Closed Kitchens</h2>
+          <p class="customer-section__subtitle">These Kitchens are currently unavailable</p>
         </div>
-
-        <span
-          id="closed-kitchen-count"
-          class="kitchen-count kitchen-count--muted"
-        >
-          0
-        </span>
+        <span id="closed-kitchen-count" class="kitchen-count kitchen-count--muted">0</span>
       </div>
-
-      <div
-        id="closed-kitchen-list"
-        class="kitchen-list"
-        aria-live="polite"
-      ></div>
+      <div id="closed-kitchen-list" class="kitchen-list" aria-live="polite"></div>
     </section>
   </main>
 
-  <nav
-    class="customer-bottom-nav"
-    aria-label="Customer navigation"
-  >
+  <nav class="customer-bottom-nav" aria-label="Customer navigation">
     <div class="customer-bottom-nav__inner">
-      <a
-        class="customer-bottom-nav__item customer-bottom-nav__item--active"
-        href="home.html"
-        aria-current="page"
-      >
-        <span
-          class="customer-bottom-nav__icon"
-          aria-hidden="true"
-        >
-          ⌂
-        </span>
-
-        <span>Home</span>
+      <a class="customer-bottom-nav__item customer-bottom-nav__item--active" href="home.html" aria-current="page">
+        <span class="customer-bottom-nav__icon" aria-hidden="true">⌂</span><span>Home</span>
       </a>
-
-      <a
-        class="customer-bottom-nav__item"
-        href="orders.html"
-      >
-        <span
-          class="customer-bottom-nav__icon"
-          aria-hidden="true"
-        >
-          ◫
-        </span>
-
-        <span>Orders</span>
+      <a class="customer-bottom-nav__item" href="orders.html">
+        <span class="customer-bottom-nav__icon" aria-hidden="true">◫</span><span>Orders</span>
       </a>
-
-      <a
-        class="customer-bottom-nav__item"
-        href="account.html#rewards"
-      >
-        <span
-          class="customer-bottom-nav__icon"
-          aria-hidden="true"
-        >
-          ☆
-        </span>
-
-        <span>Rewards</span>
+      <a class="customer-bottom-nav__item" href="account.html#rewards">
+        <span class="customer-bottom-nav__icon" aria-hidden="true">☆</span><span>Rewards</span>
       </a>
-
-      <a
-        class="customer-bottom-nav__item"
-        href="account.html"
-      >
-        <span
-          class="customer-bottom-nav__icon"
-          aria-hidden="true"
-        >
-          ○
-        </span>
-
-        <span>Account</span>
+      <a class="customer-bottom-nav__item" href="account.html">
+        <span class="customer-bottom-nav__icon" aria-hidden="true">○</span><span>Account</span>
       </a>
     </div>
   </nav>
 
-  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/core.js?v=20260908-01"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/ui.js"></script>
-  <script src="../assets/js/discovery.js?v=20260907-01"></script>
+  <script src="../assets/js/discovery.js?v=20260907-02"></script>
+  <script src="../assets/js/customer/cart-sync.js?v=20260908-01"></script>
   <script src="../assets/js/customer/home-location.js?v=20260907-02"></script>
+  <script src="../assets/js/customer/cart-reminder.js?v=20260908-01"></script>
 </body>
 </html>
