@@ -11,19 +11,17 @@
   <link rel="stylesheet" href="../assets/css/core.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/customer.css">
-  <link rel="stylesheet" href="../assets/css/customer/cart-checkout.css?v=20260907-01">
+  <link rel="stylesheet" href="../assets/css/customer/cart-checkout.css?v=20260908-02">
 </head>
 
 <body class="customer-page customer-cart-page">
   <header class="customer-cart-header">
     <div class="customer-cart-header__inner">
       <a class="customer-cart-header__back" href="home.html" aria-label="Go back">‹</a>
-
       <div>
         <small>APNABITE</small>
         <strong>Cart & Checkout</strong>
       </div>
-
       <button id="customer-cart-refresh-button" class="customer-cart-header__refresh" type="button">
         Refresh
       </button>
@@ -72,7 +70,6 @@
             <h2>Your items</h2>
             <p id="customer-cart-item-summary">Review quantity and selected options.</p>
           </div>
-
           <button
             id="customer-cart-clear-button"
             class="customer-cart-text-button customer-cart-text-button--danger"
@@ -81,7 +78,6 @@
             Clear cart
           </button>
         </div>
-
         <div id="customer-cart-items"></div>
       </section>
 
@@ -91,21 +87,18 @@
             <h2>Delivery address</h2>
             <p>Your order will be delivered here.</p>
           </div>
-
           <button id="customer-cart-change-address" class="customer-cart-text-button" type="button">
             Change
           </button>
         </div>
 
-        <article id="customer-cart-address-card" class="customer-cart-address">
+        <article id="customer-cart-address-card" class="customer-cart-address" tabindex="0">
           <span class="customer-cart-address__icon" aria-hidden="true">⌖</span>
-
           <div>
             <div class="customer-cart-address__title">
               <strong id="customer-cart-address-label">Selected address</strong>
               <span id="customer-cart-address-distance"></span>
             </div>
-
             <p id="customer-cart-address-line">Loading delivery address…</p>
             <small id="customer-cart-address-receiver"></small>
           </div>
@@ -123,15 +116,12 @@
             <p>Eligible savings will be applied automatically.</p>
           </div>
         </div>
-
         <button id="customer-cart-offer-button" class="customer-cart-offer" type="button">
           <span class="customer-cart-offer__icon" aria-hidden="true">%</span>
-
           <span>
             <strong id="customer-cart-offer-title">Check available offers</strong>
             <small id="customer-cart-offer-message">Tap to view eligible savings.</small>
           </span>
-
           <span aria-hidden="true">›</span>
         </button>
       </section>
@@ -153,9 +143,7 @@
               value="ONLINE"
               checked
             >
-
             <span class="customer-cart-payment-option__icon" aria-hidden="true">₹</span>
-
             <span>
               <strong>Pay Online</strong>
               <small>Pay using an available payment app.</small>
@@ -169,13 +157,11 @@
               name="customer-payment-method"
               value="COD"
             >
-
             <span class="customer-cart-payment-option__icon" aria-hidden="true">⌂</span>
-
             <span>
-              <strong>Cash on Delivery</strong>
+              <strong>Pay on Delivery</strong>
               <small id="customer-cart-payment-cod-message">
-                Pay in cash when your order is delivered.
+                Pay by ApnaBite QR or cash when your order is delivered.
               </small>
             </span>
           </label>
@@ -195,27 +181,22 @@
             <span>Item total</span>
             <strong id="customer-cart-item-total">₹0</strong>
           </div>
-
           <div>
             <span>Delivery fee</span>
             <strong id="customer-cart-delivery-fee">Calculating…</strong>
           </div>
-
           <div>
             <span>Platform fee</span>
             <strong id="customer-cart-platform-fee">₹0</strong>
           </div>
-
           <div id="customer-cart-discount-row" class="customer-cart-bill__discount" hidden>
             <span>Discount</span>
             <strong id="customer-cart-discount">− ₹0</strong>
           </div>
-
           <div id="customer-cart-reward-row" class="customer-cart-bill__discount" hidden>
             <span>Reward points</span>
             <strong id="customer-cart-reward-discount">− ₹0</strong>
           </div>
-
           <div class="customer-cart-bill__total">
             <span>To pay</span>
             <strong id="customer-cart-final-total">₹0</strong>
@@ -225,7 +206,6 @@
         <p id="customer-cart-minimum-warning" class="customer-cart-warning" hidden>
           Minimum order value has not been reached.
         </p>
-
         <p id="customer-cart-free-delivery-message" class="customer-cart-saving-message" hidden></p>
       </section>
 
@@ -235,7 +215,6 @@
             <strong>Cooking instructions</strong>
             <small>Optional instructions for the Chef.</small>
           </span>
-
           <textarea
             id="customer-cart-instruction-input"
             maxlength="300"
@@ -252,7 +231,6 @@
       <small>Total</small>
       <strong id="customer-cart-footer-total">₹0</strong>
     </div>
-
     <button id="customer-cart-continue-button" class="button button--primary" type="button" disabled>
       CONTINUE
       <span aria-hidden="true">›</span>
@@ -263,12 +241,10 @@
     <article class="customer-cart-item">
       <div class="customer-cart-item__heading">
         <span class="customer-cart-item__food-marker" data-food-marker aria-hidden="true"></span>
-
         <div>
           <h3 data-product-name>Product</h3>
           <p data-option-label></p>
         </div>
-
         <button
           class="customer-cart-item__remove"
           type="button"
@@ -278,16 +254,13 @@
           ×
         </button>
       </div>
-
       <div class="customer-cart-item__addons" data-addon-list hidden></div>
-
       <div class="customer-cart-item__footer">
         <div class="customer-cart-quantity">
           <button type="button" data-item-minus aria-label="Decrease quantity">−</button>
           <strong data-item-quantity>1</strong>
           <button type="button" data-item-plus aria-label="Increase quantity">+</button>
         </div>
-
         <strong data-item-total>₹0</strong>
       </div>
     </article>
@@ -296,6 +269,7 @@
   <script src="../assets/js/core.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/ui.js"></script>
-  <script src="../assets/js/customer/cart-checkout.js?v=20260907-01"></script>
+  <script src="../assets/js/customer/cart-sync.js?v=20260908-02"></script>
+  <script src="../assets/js/customer/cart-checkout.js?v=20260908-02"></script>
 </body>
 </html>
