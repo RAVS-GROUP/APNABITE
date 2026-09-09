@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — CUSTOMER PAYMENT CONTROLLER
  * File: assets/js/customer/payment.js
- * Complete file
+ * Complete replacement
  * Requires: core.js, api.js, ui.js
  * ============================================================
  */
@@ -10,7 +10,12 @@
 (function(window, document) {
   'use strict';
 
-  const PENDING_ORDER_KEY = 'apnabite_pending_order';
+  const PENDING_ORDER_KEY =
+    'apnabite_pending_order';
+
+  const PAYMENT_LAUNCH_KEY =
+    'apnabite_payment_launch';
+
   const POLL_INTERVAL_MS = 8000;
   const MAX_AUTOMATIC_POLLS = 15;
 
@@ -20,12 +25,15 @@
     submitting: false,
     checking: false,
     paymentLaunched: false,
+    showLaunchHelp: false,
+    launchTimer: null,
     orderId: '',
     paymentId: '',
     payment: null,
     pollTimer: null,
     pollCount: 0
   };
+
   const elements = {};
 
   function byId(id) {
@@ -33,220 +41,643 @@
   }
 
   function collectElements() {
-    elements.refresh = byId('customer-payment-refresh');
-    elements.loading = byId('customer-payment-loading');
-    elements.error = byId('customer-payment-error');
-    elements.errorTitle = byId('customer-payment-error-title');
-    elements.errorMessage = byId('customer-payment-error-message');
-    elements.retry = byId('customer-payment-retry');
-    elements.content = byId('customer-payment-content');
-    elements.statusBadge = byId('customer-payment-status-badge');
-    elements.orderNumber = byId('customer-payment-order-number');
-    elements.amount = byId('customer-payment-amount');
-    elements.ready = byId('customer-payment-ready');
-    elements.payeeName = byId('customer-payment-payee-name');
-    elements.payNow = byId('customer-payment-pay-now');
-    elements.completed = byId('customer-payment-completed');
-    elements.confirming = byId('customer-payment-confirming');
-    elements.checkStatus = byId('customer-payment-check-status');
-    elements.success = byId('customer-payment-success');
-    elements.trackOrder = byId('customer-payment-track-order');
-    elements.rejected = byId('customer-payment-rejected');
-    elements.rejectionMessage = byId('customer-payment-rejection-message');
-    elements.tryAgain = byId('customer-payment-try-again');
+    elements.refresh =
+      byId('customer-payment-refresh');
+
+    elements.loading =
+      byId('customer-payment-loading');
+
+    elements.error =
+      byId('customer-payment-error');
+
+    elements.errorTitle =
+      byId('customer-payment-error-title');
+
+    elements.errorMessage =
+      byId('customer-payment-error-message');
+
+    elements.retry =
+      byId('customer-payment-retry');
+
+    elements.content =
+      byId('customer-payment-content');
+
+    elements.statusBadge =
+      byId('customer-payment-status-badge');
+
+    elements.orderNumber =
+      byId('customer-payment-order-number');
+
+    elements.amount =
+      byId('customer-payment-amount');
+
+    elements.ready =
+      byId('customer-payment-ready');
+
+    elements.payeeName =
+      byId('customer-payment-payee-name');
+
+    elements.payNow =
+      byId('customer-payment-pay-now');
+
+    elements.launchHelp =
+      byId('customer-payment-launch-help');
+
+    elements.openAgain =
+      byId('customer-payment-open-again');
+
+    elements.copyUpi =
+      byId('customer-payment-copy-upi');
+
+    elements.upiId =
+      byId('customer-payment-upi-id');
+
+    elements.completed =
+      byId('customer-payment-completed');
+
+    elements.confirming =
+      byId('customer-payment-confirming');
+
+    elements.checkStatus =
+      byId('customer-payment-check-status');
+
+    elements.success =
+      byId('customer-payment-success');
+
+    elements.trackOrder =
+      byId('customer-payment-track-order');
+
+    elements.rejected =
+      byId('customer-payment-rejected');
+
+    elements.rejectionMessage =
+      byId('customer-payment-rejection-message');
+
+    elements.tryAgain =
+      byId('customer-payment-try-again');
   }
 
   function requiredElementsAvailable() {
     return [
-      'refresh', 'loading', 'error', 'retry', 'content', 'statusBadge',
-      'orderNumber', 'amount', 'ready', 'payeeName', 'payNow', 'completed',
-      'confirming', 'checkStatus', 'success', 'trackOrder', 'rejected',
-      'rejectionMessage', 'tryAgain'
+      'refresh',
+      'loading',
+      'error',
+      'retry',
+      'content',
+      'statusBadge',
+      'orderNumber',
+      'amount',
+      'ready',
+      'payeeName',
+      'payNow',
+      'launchHelp',
+      'openAgain',
+      'copyUpi',
+      'upiId',
+      'completed',
+      'confirming',
+      'checkStatus',
+      'success',
+      'trackOrder',
+      'rejected',
+      'rejectionMessage',
+      'tryAgain'
     ].every(function(name) {
       return Boolean(elements[name]);
     });
   }
 
   function clean(value) {
-    return String(value === undefined || value === null ? '' : value)
+    return String(
+      value === undefined ||
+      value === null
+        ? ''
+        : value
+    )
       .replace(/\s+/g, ' ')
       .trim();
   }
 
   function normalize(value) {
-    return clean(value).toUpperCase().replace(/\s+/g, '_');
+    return clean(value)
+      .toUpperCase()
+      .replace(/\s+/g, '_');
   }
 
   function numberValue(value, fallback) {
     const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
+
+    return Number.isFinite(parsed)
+      ? parsed
+      : fallback;
   }
 
   function setHidden(element, hidden) {
-    if (element) element.hidden = Boolean(hidden);
+    if (element) {
+      element.hidden =
+        Boolean(hidden);
+    }
   }
 
   function setText(element, value) {
-    if (element) element.textContent = clean(value);
+    if (element) {
+      element.textContent =
+        clean(value);
+    }
   }
 
   function formatCurrency(value) {
-    return '₹' + numberValue(value, 0).toLocaleString('en-IN', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    });
+    return '₹' +
+      numberValue(value, 0)
+        .toLocaleString('en-IN', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        });
   }
 
   function getResponseData(response) {
-    return response && response.data && typeof response.data === 'object'
+    return (
+      response &&
+      response.data &&
+      typeof response.data === 'object'
+    )
       ? response.data
       : {};
   }
 
   function showToast(message, type) {
-    if (window.ApnaBiteUI && typeof window.ApnaBiteUI.showToast === 'function') {
-      window.ApnaBiteUI.showToast(message, type || 'info');
+    if (
+      window.ApnaBiteUI &&
+      typeof window.ApnaBiteUI
+        .showToast === 'function'
+    ) {
+      window.ApnaBiteUI.showToast(
+        message,
+        type || 'info'
+      );
+
       return;
     }
+
     console.log(message);
   }
 
   function handleApiError(error) {
-    if (window.ApnaBiteUI && typeof window.ApnaBiteUI.handleApiError === 'function') {
-      window.ApnaBiteUI.handleApiError(error, { redirectToLogin: true });
+    if (
+      window.ApnaBiteUI &&
+      typeof window.ApnaBiteUI
+        .handleApiError === 'function'
+    ) {
+      window.ApnaBiteUI.handleApiError(
+        error,
+        {
+          redirectToLogin: true
+        }
+      );
+
       return;
     }
-    showToast(clean(error && error.message) || 'Something went wrong.', 'error');
+
+    showToast(
+      clean(
+        error &&
+        error.message
+      ) ||
+      'Something went wrong.',
+      'error'
+    );
   }
 
   function readPendingOrder() {
     try {
-      const parsed = JSON.parse(window.sessionStorage.getItem(PENDING_ORDER_KEY) || 'null');
-      return parsed && typeof parsed === 'object' ? parsed : {};
+      const parsed =
+        JSON.parse(
+          window.sessionStorage
+            .getItem(
+              PENDING_ORDER_KEY
+            ) ||
+          'null'
+        );
+
+      return (
+        parsed &&
+        typeof parsed === 'object'
+      )
+        ? parsed
+        : {};
     } catch (error) {
       return {};
     }
   }
 
   function readPageIdentifiers() {
-    const parameters = new URLSearchParams(window.location.search);
-    const pending = readPendingOrder();
-    state.orderId = clean(parameters.get('orderId') || pending.orderId);
-    state.paymentId = clean(parameters.get('paymentId') || pending.paymentId);
+    const parameters =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const pending =
+      readPendingOrder();
+
+    state.orderId =
+      clean(
+        parameters.get('orderId') ||
+        pending.orderId
+      );
+
+    state.paymentId =
+      clean(
+        parameters.get('paymentId') ||
+        pending.paymentId
+      );
   }
 
   function validateLocalSession() {
-    if (!window.ApnaBiteCore || !window.ApnaBiteAPI) {
-      throw new Error('Required application files did not load.');
+    if (
+      !window.ApnaBiteCore ||
+      !window.ApnaBiteAPI
+    ) {
+      throw new Error(
+        'Required application files did not load.'
+      );
     }
-    if (typeof window.ApnaBiteCore.requireLocalSession === 'function' &&
-      !window.ApnaBiteCore.requireLocalSession(['CUSTOMER'])) {
+
+    if (
+      typeof window.ApnaBiteCore
+        .requireLocalSession ===
+        'function' &&
+      !window.ApnaBiteCore
+        .requireLocalSession([
+          'CUSTOMER'
+        ])
+    ) {
       return false;
     }
+
     return true;
   }
 
   function showLoading() {
-    setHidden(elements.loading, false);
-    setHidden(elements.error, true);
-    setHidden(elements.content, true);
+    setHidden(
+      elements.loading,
+      false
+    );
+
+    setHidden(
+      elements.error,
+      true
+    );
+
+    setHidden(
+      elements.content,
+      true
+    );
   }
 
   function showError(title, message) {
     stopPolling();
-    setHidden(elements.loading, true);
-    setHidden(elements.content, true);
-    setHidden(elements.error, false);
-    setText(elements.errorTitle, title || 'Payment could not be loaded');
-    setText(elements.errorMessage, message || 'Please try again.');
+
+    setHidden(
+      elements.loading,
+      true
+    );
+
+    setHidden(
+      elements.content,
+      true
+    );
+
+    setHidden(
+      elements.error,
+      false
+    );
+
+    setText(
+      elements.errorTitle,
+      title ||
+      'Payment could not be loaded'
+    );
+
+    setText(
+      elements.errorMessage,
+      message ||
+      'Please try again.'
+    );
   }
 
-  function setButtonLoading(button, loading, loadingText, normalText) {
+  function setButtonLoading(
+    button,
+    loading,
+    loadingText,
+    normalText
+  ) {
     if (!button) return;
-    button.disabled = Boolean(loading);
-    setText(button, loading ? loadingText : normalText);
+
+    button.disabled =
+      Boolean(loading);
+
+    setText(
+      button,
+      loading
+        ? loadingText
+        : normalText
+    );
   }
 
   function setStatusBadge(text, type) {
-    elements.statusBadge.className = 'customer-payment-badge';
-    if (type) elements.statusBadge.classList.add('customer-payment-badge--' + type);
-    setText(elements.statusBadge, text);
+    elements.statusBadge.className =
+      'customer-payment-badge';
+
+    if (type) {
+      elements.statusBadge.classList.add(
+        'customer-payment-badge--' +
+        type
+      );
+    }
+
+    setText(
+      elements.statusBadge,
+      text
+    );
+  }
+
+  function getPaymentUpiId() {
+    const direct =
+      clean(
+        state.payment &&
+        (
+          state.payment.upiId ||
+          state.payment.payeeUpiId
+        )
+      );
+
+    if (direct) {
+      return direct;
+    }
+
+    const intent =
+      clean(
+        state.payment &&
+        state.payment.paymentIntentUrl
+      );
+
+    if (!intent) {
+      return '';
+    }
+
+    try {
+      const query =
+        intent.indexOf('?') >= 0
+          ? intent.slice(
+              intent.indexOf('?') + 1
+            )
+          : '';
+
+      return clean(
+        new URLSearchParams(query)
+          .get('pa')
+      );
+    } catch (error) {
+      return '';
+    }
   }
 
   function renderPayment() {
-    const payment = state.payment || {};
-    const status = normalize(payment.paymentStatus);
-    setHidden(elements.loading, true);
-    setHidden(elements.error, true);
-    setHidden(elements.content, false);
-    setText(elements.amount, formatCurrency(payment.expectedAmount));
-    setText(elements.payeeName, payment.payeeName || 'ApnaBite');
-    setText(elements.orderNumber, 'Order ' + clean(payment.orderId || state.orderId).slice(-12));
+    const payment =
+      state.payment || {};
 
-    setHidden(elements.ready, true);
-    setHidden(elements.confirming, true);
-    setHidden(elements.success, true);
-    setHidden(elements.rejected, true);
+    const status =
+      normalize(
+        payment.paymentStatus
+      );
+
+    setHidden(
+      elements.loading,
+      true
+    );
+
+    setHidden(
+      elements.error,
+      true
+    );
+
+    setHidden(
+      elements.content,
+      false
+    );
+
+    setText(
+      elements.amount,
+      formatCurrency(
+        payment.expectedAmount
+      )
+    );
+
+    setText(
+      elements.payeeName,
+      payment.payeeName ||
+      'ApnaBite'
+    );
+
+    const upiId =
+      getPaymentUpiId();
+
+    setText(
+      elements.upiId,
+      upiId
+        ? 'UPI ID: ' + upiId
+        : ''
+    );
+
+    elements.copyUpi.disabled =
+      !upiId;
+
+    setText(
+      elements.orderNumber,
+      'Order ' +
+      clean(
+        payment.orderId ||
+        state.orderId
+      ).slice(-12)
+    );
+
+    setHidden(
+      elements.ready,
+      true
+    );
+
+    setHidden(
+      elements.confirming,
+      true
+    );
+
+    setHidden(
+      elements.success,
+      true
+    );
+
+    setHidden(
+      elements.rejected,
+      true
+    );
+
+    setHidden(
+      elements.launchHelp,
+      !state.showLaunchHelp
+    );
 
     if (status === 'CONFIRMED') {
-      setStatusBadge('PAYMENT RECEIVED', 'success');
-      setHidden(elements.success, false);
+      setStatusBadge(
+        'PAYMENT RECEIVED',
+        'success'
+      );
+
+      setHidden(
+        elements.success,
+        false
+      );
+
       stopPolling();
       return;
     }
 
-    if (status === 'PENDING_VERIFICATION') {
-      setStatusBadge('CONFIRMING PAYMENT', 'pending');
-      setHidden(elements.confirming, false);
+    if (
+      status ===
+      'PENDING_VERIFICATION'
+    ) {
+      setStatusBadge(
+        'CONFIRMING PAYMENT',
+        'pending'
+      );
+
+      setHidden(
+        elements.confirming,
+        false
+      );
+
       startPolling();
       return;
     }
 
-    if (status === 'REJECTED' || status === 'FAILED') {
-      setStatusBadge('PAYMENT NOT CONFIRMED', 'rejected');
+    if (
+      status === 'REJECTED' ||
+      status === 'FAILED'
+    ) {
+      setStatusBadge(
+        'PAYMENT NOT CONFIRMED',
+        'rejected'
+      );
+
       setText(
         elements.rejectionMessage,
-        payment.rejectionReason || 'Please try the payment again.'
+        payment.rejectionReason ||
+        'Please try the payment again.'
       );
-      setHidden(elements.rejected, false);
+
+      setHidden(
+        elements.rejected,
+        false
+      );
+
       stopPolling();
       return;
     }
 
-    setStatusBadge('PAYMENT READY', '');
-    setHidden(elements.ready, false);
-    elements.payNow.disabled = !clean(payment.paymentIntentUrl);
-    elements.completed.disabled = false;
+    setStatusBadge(
+      'PAYMENT READY',
+      ''
+    );
+
+    setHidden(
+      elements.ready,
+      false
+    );
+
+    elements.payNow.disabled =
+      !clean(
+        payment.paymentIntentUrl
+      );
+
+    elements.completed.disabled =
+      false;
+
     stopPolling();
   }
 
   async function fetchPayment(silent) {
-    if (state.checking) return null;
+    if (state.checking) {
+      return null;
+    }
+
     state.checking = true;
-    if (!silent) elements.refresh.disabled = true;
+
+    if (!silent) {
+      elements.refresh.disabled =
+        true;
+    }
+
     try {
-      const response = await window.ApnaBiteAPI.request('payment.get', {
-        paymentId: state.paymentId,
-        orderId: state.orderId
-      }, {
-        retry: false,
-        deduplicate: true,
-        timeoutMs: 15000
-      });
-      const payment = getResponseData(response);
-      if (!clean(payment.paymentId)) {
-        throw new Error('Payment details were not returned.');
+      const response =
+        await window.ApnaBiteAPI.request(
+          'payment.get',
+          {
+            paymentId:
+              state.paymentId,
+
+            orderId:
+              state.orderId
+          },
+          {
+            retry: false,
+            deduplicate: true,
+            timeoutMs: 15000
+          }
+        );
+
+      const payment =
+        getResponseData(response);
+
+      if (
+        !clean(
+          payment.paymentId
+        )
+      ) {
+        throw new Error(
+          'Payment details were not returned.'
+        );
       }
-      state.payment = payment;
-      state.paymentId = clean(payment.paymentId);
-      state.orderId = clean(payment.orderId || state.orderId);
+
+      state.payment =
+        payment;
+
+      state.paymentId =
+        clean(
+          payment.paymentId
+        );
+
+      state.orderId =
+        clean(
+          payment.orderId ||
+          state.orderId
+        );
+
       renderPayment();
+
       return payment;
     } catch (error) {
       if (!silent) {
-        showError('Payment could not be loaded', clean(error && error.message) || 'Please try again.');
+        showError(
+          'Payment could not be loaded',
+          clean(
+            error &&
+            error.message
+          ) ||
+          'Please try again.'
+        );
+
         handleApiError(error);
       }
+
       return null;
     } finally {
       state.checking = false;
@@ -254,157 +685,598 @@
     }
   }
 
+  function showLaunchFallback() {
+    const status =
+      normalize(
+        state.payment &&
+        state.payment.paymentStatus
+      );
+
+    if (
+      document.visibilityState ===
+        'visible' &&
+      status !==
+        'PENDING_VERIFICATION'
+    ) {
+      state.showLaunchHelp =
+        true;
+
+      setHidden(
+        elements.launchHelp,
+        false
+      );
+    }
+  }
+
   function openPaymentApp() {
-    const paymentIntentUrl = clean(state.payment && state.payment.paymentIntentUrl);
+    const paymentIntentUrl =
+      clean(
+        state.payment &&
+        state.payment.paymentIntentUrl
+      );
+
     if (!paymentIntentUrl) {
-      showToast('Payment app could not be opened. Tap Refresh and try again.', 'error');
+      showToast(
+        'Payment app could not be opened. Tap Refresh and try again.',
+        'error'
+      );
+
       return;
     }
-    state.paymentLaunched = true;
-    window.location.href = paymentIntentUrl;
+
+    state.paymentLaunched =
+      true;
+
+    state.showLaunchHelp =
+      false;
+
+    setHidden(
+      elements.launchHelp,
+      true
+    );
+
+    window.sessionStorage.setItem(
+      PAYMENT_LAUNCH_KEY,
+      JSON.stringify({
+        paymentId:
+          state.paymentId,
+
+        launchedAt:
+          Date.now()
+      })
+    );
+
+    window.clearTimeout(
+      state.launchTimer
+    );
+
+    state.launchTimer =
+      window.setTimeout(
+        showLaunchFallback,
+        1800
+      );
+
+    /*
+     * Anchor click works more reliably
+     * for UPI deep links on mobile.
+     */
+    const link =
+      document.createElement('a');
+
+    link.href =
+      paymentIntentUrl;
+
+    link.style.display =
+      'none';
+
+    link.setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+
+    window.setTimeout(
+      function() {
+        link.remove();
+      },
+      1000
+    );
+  }
+
+  async function copyUpiId() {
+    const upiId =
+      getPaymentUpiId();
+
+    if (!upiId) {
+      showToast(
+        'UPI ID is unavailable. Tap Refresh and try again.',
+        'error'
+      );
+
+      return;
+    }
+
+    try {
+      await window.navigator
+        .clipboard
+        .writeText(upiId);
+
+      showToast(
+        'UPI ID copied.',
+        'success'
+      );
+    } catch (error) {
+      const input =
+        document.createElement(
+          'input'
+        );
+
+      input.value =
+        upiId;
+
+      input.style.position =
+        'fixed';
+
+      input.style.opacity =
+        '0';
+
+      document.body.appendChild(
+        input
+      );
+
+      input.select();
+
+      const copied =
+        document.execCommand(
+          'copy'
+        );
+
+      input.remove();
+
+      showToast(
+        copied
+          ? 'UPI ID copied.'
+          : 'UPI ID: ' + upiId,
+        copied
+          ? 'success'
+          : 'info'
+      );
+    }
   }
 
   async function declareCompleted() {
-    if (state.submitting || !state.paymentId) return;
+    if (
+      state.submitting ||
+      !state.paymentId
+    ) {
+      return;
+    }
+
     state.submitting = true;
-    setButtonLoading(elements.completed, true, 'SUBMITTING…', 'I’VE COMPLETED PAYMENT');
+
+    setButtonLoading(
+      elements.completed,
+      true,
+      'SUBMITTING…',
+      'I’VE COMPLETED PAYMENT'
+    );
+
     try {
-      const response = await window.ApnaBiteAPI.request('payment.completed', {
-        paymentId: state.paymentId
-      }, {
-        retry: false,
-        deduplicate: false,
-        timeoutMs: 20000
-      });
-      const result = getResponseData(response);
-      state.payment.paymentStatus = result.paymentStatus || 'PENDING_VERIFICATION';
-      state.payment.message = result.message || 'Payment is being confirmed.';
+      const response =
+        await window.ApnaBiteAPI.request(
+          'payment.completed',
+          {
+            paymentId:
+              state.paymentId
+          },
+          {
+            retry: false,
+            deduplicate: false,
+            timeoutMs: 20000
+          }
+        );
+
+      const result =
+        getResponseData(response);
+
+      state.payment.paymentStatus =
+        result.paymentStatus ||
+        'PENDING_VERIFICATION';
+
+      state.payment.message =
+        result.message ||
+        'Payment is being confirmed.';
+
+      state.showLaunchHelp =
+        false;
+
       renderPayment();
-      showToast('Payment submitted for confirmation.', 'success');
+
+      window.sessionStorage.removeItem(
+        PAYMENT_LAUNCH_KEY
+      );
+
+      showToast(
+        'Payment submitted for confirmation.',
+        'success'
+      );
     } catch (error) {
       handleApiError(error);
     } finally {
       state.submitting = false;
-      setButtonLoading(elements.completed, false, 'SUBMITTING…', 'I’VE COMPLETED PAYMENT');
+
+      setButtonLoading(
+        elements.completed,
+        false,
+        'SUBMITTING…',
+        'I’VE COMPLETED PAYMENT'
+      );
     }
   }
 
   async function createRetryPayment() {
-    if (state.submitting || !state.orderId) return;
+    if (
+      state.submitting ||
+      !state.orderId
+    ) {
+      return;
+    }
+
     state.submitting = true;
-    setButtonLoading(elements.tryAgain, true, 'PREPARING…', 'TRY AGAIN');
+
+    setButtonLoading(
+      elements.tryAgain,
+      true,
+      'PREPARING…',
+      'PREPARE NEW PAYMENT'
+    );
+
     try {
-      const response = await window.ApnaBiteAPI.request('payment.create', {
-        orderId: state.orderId,
-        paymentMethod: 'ONLINE',
-        idempotencyKey: 'RETRY_' + state.orderId + '_' + Date.now()
-      }, {
-        retry: false,
-        deduplicate: false,
-        timeoutMs: 20000
-      });
-      const payment = getResponseData(response);
-      if (!clean(payment.paymentId)) throw new Error('New payment could not be created.');
-      state.payment = payment;
-      state.paymentId = clean(payment.paymentId);
-      window.history.replaceState({}, '', 'payment.html?orderId=' +
-        encodeURIComponent(state.orderId) + '&paymentId=' + encodeURIComponent(state.paymentId));
+      const response =
+        await window.ApnaBiteAPI.request(
+          'payment.create',
+          {
+            orderId:
+              state.orderId,
+
+            paymentMethod:
+              'ONLINE',
+
+            idempotencyKey:
+              'RETRY_' +
+              state.orderId +
+              '_' +
+              Date.now()
+          },
+          {
+            retry: false,
+            deduplicate: false,
+            timeoutMs: 20000
+          }
+        );
+
+      const payment =
+        getResponseData(response);
+
+      if (
+        !clean(
+          payment.paymentId
+        )
+      ) {
+        throw new Error(
+          'New payment could not be created.'
+        );
+      }
+
+      state.payment =
+        payment;
+
+      state.paymentId =
+        clean(
+          payment.paymentId
+        );
+
+      state.showLaunchHelp =
+        false;
+
+      window.history.replaceState(
+        {},
+        '',
+        'payment.html?orderId=' +
+        encodeURIComponent(
+          state.orderId
+        ) +
+        '&paymentId=' +
+        encodeURIComponent(
+          state.paymentId
+        )
+      );
+
       renderPayment();
     } catch (error) {
       handleApiError(error);
     } finally {
       state.submitting = false;
-      setButtonLoading(elements.tryAgain, false, 'PREPARING…', 'TRY AGAIN');
+
+      setButtonLoading(
+        elements.tryAgain,
+        false,
+        'PREPARING…',
+        'PREPARE NEW PAYMENT'
+      );
     }
   }
 
   function trackOrder() {
-    if (!state.orderId) return;
-    window.location.href = 'order-tracking.html?orderId=' + encodeURIComponent(state.orderId);
+    if (!state.orderId) {
+      return;
+    }
+
+    window.location.href =
+      'order-tracking.html?orderId=' +
+      encodeURIComponent(
+        state.orderId
+      );
   }
 
   function stopPolling() {
-    window.clearTimeout(state.pollTimer);
+    window.clearTimeout(
+      state.pollTimer
+    );
+
     state.pollTimer = null;
   }
 
   function startPolling() {
     stopPolling();
-    if (state.pollCount >= MAX_AUTOMATIC_POLLS || document.visibilityState !== 'visible') return;
-    state.pollTimer = window.setTimeout(async function() {
-      state.pollTimer = null;
-      state.pollCount += 1;
-      const payment = await fetchPayment(true);
-      if (payment && normalize(payment.paymentStatus) === 'PENDING_VERIFICATION') {
-        startPolling();
-      }
-    }, POLL_INTERVAL_MS);
+
+    if (
+      state.pollCount >=
+        MAX_AUTOMATIC_POLLS ||
+      document.visibilityState !==
+        'visible'
+    ) {
+      return;
+    }
+
+    state.pollTimer =
+      window.setTimeout(
+        async function() {
+          state.pollTimer = null;
+          state.pollCount += 1;
+
+          const payment =
+            await fetchPayment(true);
+
+          if (
+            payment &&
+            normalize(
+              payment.paymentStatus
+            ) ===
+            'PENDING_VERIFICATION'
+          ) {
+            startPolling();
+          }
+        },
+        POLL_INTERVAL_MS
+      );
   }
 
   function bindEvents() {
-    elements.refresh.addEventListener('click', function() { fetchPayment(false); });
-    elements.retry.addEventListener('click', initializePayment);
-    elements.payNow.addEventListener('click', openPaymentApp);
-    elements.completed.addEventListener('click', declareCompleted);
-    elements.checkStatus.addEventListener('click', function() { fetchPayment(false); });
-    elements.trackOrder.addEventListener('click', trackOrder);
-    elements.tryAgain.addEventListener('click', createRetryPayment);
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible' && state.paymentId) {
-        if (state.paymentLaunched) state.paymentLaunched = false;
-        fetchPayment(true);
-      } else {
+    elements.refresh.addEventListener(
+      'click',
+      function() {
+        fetchPayment(false);
+      }
+    );
+
+    elements.retry.addEventListener(
+      'click',
+      initializePayment
+    );
+
+    elements.payNow.addEventListener(
+      'click',
+      openPaymentApp
+    );
+
+    elements.openAgain.addEventListener(
+      'click',
+      openPaymentApp
+    );
+
+    elements.copyUpi.addEventListener(
+      'click',
+      copyUpiId
+    );
+
+    elements.completed.addEventListener(
+      'click',
+      declareCompleted
+    );
+
+    elements.checkStatus.addEventListener(
+      'click',
+      function() {
+        fetchPayment(false);
+      }
+    );
+
+    elements.trackOrder.addEventListener(
+      'click',
+      trackOrder
+    );
+
+    elements.tryAgain.addEventListener(
+      'click',
+      createRetryPayment
+    );
+
+    document.addEventListener(
+      'visibilitychange',
+      function() {
+        if (
+          document.visibilityState ===
+            'visible' &&
+          state.paymentId
+        ) {
+          window.clearTimeout(
+            state.launchTimer
+          );
+
+          state.paymentLaunched =
+            false;
+
+          state.showLaunchHelp =
+            true;
+
+          setHidden(
+            elements.launchHelp,
+            false
+          );
+
+          fetchPayment(true);
+        } else {
+          stopPolling();
+        }
+      }
+    );
+
+    window.addEventListener(
+      'pageshow',
+      function(event) {
+        if (
+          event.persisted &&
+          state.paymentId
+        ) {
+          fetchPayment(true);
+        }
+      }
+    );
+
+    window.addEventListener(
+      'pagehide',
+      function() {
+        window.clearTimeout(
+          state.launchTimer
+        );
+
         stopPolling();
       }
-    });
-    window.addEventListener('pageshow', function(event) {
-      if (event.persisted && state.paymentId) fetchPayment(true);
-    });
-    window.addEventListener('pagehide', stopPolling);
+    );
   }
 
   async function initializePayment() {
-    if (state.loading) return;
+    if (state.loading) {
+      return;
+    }
+
     state.loading = true;
     showLoading();
+
     try {
-      if (!validateLocalSession()) return;
-      readPageIdentifiers();
-      if (!state.paymentId && !state.orderId) {
-        throw new Error('Payment link is incomplete. Open the order again from My Orders.');
+      if (!validateLocalSession()) {
+        return;
       }
-      const payment = await fetchPayment(true);
+
+      readPageIdentifiers();
+
+      if (
+        !state.paymentId &&
+        !state.orderId
+      ) {
+        throw new Error(
+          'Payment link is incomplete. Open the order again from My Orders.'
+        );
+      }
+
+      const payment =
+        await fetchPayment(true);
+
       if (!payment) {
-        showError('Payment could not be loaded', 'Please check your connection and try again.');
+        showError(
+          'Payment could not be loaded',
+          'Please check your connection and try again.'
+        );
       }
     } catch (error) {
-      showError('Payment could not be loaded', clean(error && error.message) || 'Please try again.');
+      showError(
+        'Payment could not be loaded',
+        clean(
+          error &&
+          error.message
+        ) ||
+        'Please try again.'
+      );
     } finally {
       state.loading = false;
     }
   }
 
   function initialize() {
-    if (state.initialized || !document.body.classList.contains('customer-payment-page')) return;
-    collectElements();
-    if (!requiredElementsAvailable()) {
-      console.error('Customer payment page elements are incomplete.');
+    if (
+      state.initialized ||
+      !document.body.classList
+        .contains(
+          'customer-payment-page'
+        )
+    ) {
       return;
     }
+
+    collectElements();
+
+    if (
+      !requiredElementsAvailable()
+    ) {
+      console.error(
+        'Customer payment page elements are incomplete.'
+      );
+
+      return;
+    }
+
     state.initialized = true;
+
     bindEvents();
     initializePayment();
   }
 
-  window.ApnaBiteCustomerPayment = Object.freeze({
-    refresh: function() { return fetchPayment(false); },
-    getPayment: function() {
-      return state.payment ? JSON.parse(JSON.stringify(state.payment)) : null;
-    }
-  });
+  window.ApnaBiteCustomerPayment =
+    Object.freeze({
+      refresh:
+        function() {
+          return fetchPayment(false);
+        },
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize, { once: true });
+      getPayment:
+        function() {
+          return state.payment
+            ? JSON.parse(
+                JSON.stringify(
+                  state.payment
+                )
+              )
+            : null;
+        }
+    });
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialize,
+      {
+        once: true
+      }
+    );
   } else {
     initialize();
   }
