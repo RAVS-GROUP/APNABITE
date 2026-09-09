@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#f97316">
+
+  <meta
+    name="description"
+    content="ApnaBite Admin dashboard for managing payments, Chefs, orders and deliveries."
+  >
+
+  <title>Admin Dashboard | ApnaBite</title>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/admin.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/admin/dashboard.css?v=20260909-01"
+  >
+</head>
+
+<body class="admin-page admin-dashboard-page">
+  <header class="admin-dashboard-header">
+    <div class="admin-dashboard-header__inner">
+      <div class="admin-dashboard-header__identity">
+        <small>APNABITE ADMIN</small>
+        <strong>Operations Dashboard</strong>
+      </div>
+
+      <div class="admin-dashboard-header__actions">
+        <button
+          id="admin-dashboard-refresh"
+          class="admin-dashboard-header__button"
+          type="button"
+        >
+          Refresh
+        </button>
+
+        <button
+          id="admin-dashboard-logout"
+          class="admin-dashboard-header__button admin-dashboard-header__button--danger"
+          type="button"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-dashboard-main">
+    <section class="admin-dashboard-welcome">
+      <div>
+        <span>ADMIN CONTROL PANEL</span>
+
+        <h1>
+          Welcome,
+          <strong id="admin-dashboard-user-name">
+            Admin
+          </strong>
+        </h1>
+
+        <p>
+          Verify payments, review Chefs and monitor ApnaBite operations.
+        </p>
+      </div>
+
+      <div class="admin-dashboard-status">
+        <span
+          class="admin-dashboard-status__dot"
+          aria-hidden="true"
+        ></span>
+
+        <span>
+          System operational
+        </span>
+      </div>
+    </section>
+
+    <section
+      id="admin-dashboard-loading"
+      class="admin-dashboard-loading"
+      aria-live="polite"
+    >
+      <span
+        class="admin-dashboard-spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>Loading Admin dashboard</strong>
+        <p>Checking pending operations.</p>
+      </div>
+    </section>
+
+    <section
+      id="admin-dashboard-error"
+      class="admin-dashboard-error"
+      role="alert"
+      hidden
+    >
+      <span aria-hidden="true">!</span>
+
+      <div>
+        <strong id="admin-dashboard-error-title">
+          Dashboard could not be loaded
+        </strong>
+
+        <p id="admin-dashboard-error-message">
+          Please check your connection and try again.
+        </p>
+      </div>
+
+      <button
+        id="admin-dashboard-retry"
+        class="button button--secondary"
+        type="button"
+      >
+        RETRY
+      </button>
+    </section>
+
+    <div
+      id="admin-dashboard-content"
+      hidden
+    >
+      <section class="admin-dashboard-summary">
+        <article class="admin-dashboard-summary-card">
+          <span
+            class="admin-dashboard-summary-card__icon"
+            aria-hidden="true"
+          >
+            ₹
+          </span>
+
+          <div>
+            <small>PAYMENTS</small>
+
+            <strong id="admin-dashboard-payment-count">
+              —
+            </strong>
+
+            <p>Pending verification</p>
+          </div>
+        </article>
+
+        <article class="admin-dashboard-summary-card">
+          <span
+            class="admin-dashboard-summary-card__icon"
+            aria-hidden="true"
+          >
+            C
+          </span>
+
+          <div>
+            <small>CHEFS</small>
+
+            <strong id="admin-dashboard-chef-count">
+              —
+            </strong>
+
+            <p>Pending verification</p>
+          </div>
+        </article>
+
+        <article class="admin-dashboard-summary-card">
+          <span
+            class="admin-dashboard-summary-card__icon"
+            aria-hidden="true"
+          >
+            O
+          </span>
+
+          <div>
+            <small>ORDERS</small>
+
+            <strong id="admin-dashboard-order-count">
+              —
+            </strong>
+
+            <p>Active orders</p>
+          </div>
+        </article>
+
+        <article class="admin-dashboard-summary-card">
+          <span
+            class="admin-dashboard-summary-card__icon"
+            aria-hidden="true"
+          >
+            R
+          </span>
+
+          <div>
+            <small>RIDERS</small>
+
+            <strong id="admin-dashboard-rider-count">
+              —
+            </strong>
+
+            <p>Active deliveries</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-dashboard-section">
+        <div class="admin-dashboard-section__heading">
+          <div>
+            <span>PRIORITY ACTIONS</span>
+            <h2>Pending verification</h2>
+            <p>
+              Complete time-sensitive checks before continuing with other operations.
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-dashboard-action-grid">
+          <a
+            class="admin-dashboard-action-card admin-dashboard-action-card--payment"
+            href="payments-finance.html"
+          >
+            <span
+              class="admin-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              ₹
+            </span>
+
+            <div class="admin-dashboard-action-card__content">
+              <div class="admin-dashboard-action-card__title">
+                <h3>Payment Verification</h3>
+
+                <span
+                  id="admin-dashboard-payment-badge"
+                  class="admin-dashboard-action-card__badge"
+                  hidden
+                >
+                  0
+                </span>
+              </div>
+
+              <p>
+                Verify or reject Customer payments waiting for confirmation.
+              </p>
+
+              <strong>
+                OPEN PAYMENTS
+                <span aria-hidden="true">›</span>
+              </strong>
+            </div>
+          </a>
+
+          <a
+            class="admin-dashboard-action-card admin-dashboard-action-card--chef"
+            href="chef-verification.html"
+          >
+            <span
+              class="admin-dashboard-action-card__icon"
+              aria-hidden="true"
+            >
+              C
+            </span>
+
+            <div class="admin-dashboard-action-card__content">
+              <div class="admin-dashboard-action-card__title">
+                <h3>Chef Verification</h3>
+
+                <span
+                  id="admin-dashboard-chef-badge"
+                  class="admin-dashboard-action-card__badge"
+                  hidden
+                >
+                  0
+                </span>
+              </div>
+
+              <p>
+                Review Chef profile, Kitchen, KYC and payout details.
+              </p>
+
+              <strong>
+                OPEN CHEF QUEUE
+                <span aria-hidden="true">›</span>
+              </strong>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="admin-dashboard-section">
+        <div class="admin-dashboard-section__heading">
+          <div>
+            <span>OPERATIONS</span>
+            <h2>Manage ApnaBite</h2>
+            <p>
+              Additional modules will activate as their workflows are completed.
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-dashboard-module-grid">
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">O</span>
+
+            <div>
+              <h3>Order Management</h3>
+              <p>
+                Monitor Chef acceptance, preparation and order status.
+              </p>
+            </div>
+
+            <small>COMING NEXT</small>
+          </article>
+
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">D</span>
+
+            <div>
+              <h3>Delivery Monitoring</h3>
+              <p>
+                Track Rider assignment, pickup and active deliveries.
+              </p>
+            </div>
+
+            <small>UPCOMING</small>
+          </article>
+
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">U</span>
+
+            <div>
+              <h3>User Management</h3>
+              <p>
+                Manage Customers, Chefs, Riders and account status.
+              </p>
+            </div>
+
+            <small>UPCOMING</small>
+          </article>
+
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">F</span>
+
+            <div>
+              <h3>Finance & Settlements</h3>
+              <p>
+                Review Rider cash, Chef payouts and platform earnings.
+              </p>
+            </div>
+
+            <small>UPCOMING</small>
+          </article>
+
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">%</span>
+
+            <div>
+              <h3>Offers & Rewards</h3>
+              <p>
+                Configure discounts, delivery offers and reward rules.
+              </p>
+            </div>
+
+            <small>UPCOMING</small>
+          </article>
+
+          <article class="admin-dashboard-module-card admin-dashboard-module-card--disabled">
+            <span aria-hidden="true">S</span>
+
+            <div>
+              <h3>Business Settings</h3>
+              <p>
+                Update financial limits, fees and operational settings.
+              </p>
+            </div>
+
+            <small>UPCOMING</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-dashboard-footer-note">
+        <span aria-hidden="true">i</span>
+
+        <p>
+          Payment verification immediately sends a confirmed order to the Chef.
+          Verify a payment only after checking the received amount.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+
+  <script
+    src="../assets/js/admin/dashboard.js?v=20260909-01"
+  ></script>
+</body>
+</html>
