@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0f172a"
+  >
+
+  <meta
+    name="description"
+    content="Review and verify ApnaBite customer payments."
+  >
+
+  <title>Payments & Finance | ApnaBite Admin</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/admin.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/admin/payments-finance.css?v=20260909-01"
+  >
+</head>
+
+<body class="admin-page admin-payments-page">
+  <header class="admin-payments-header">
+    <div class="admin-payments-header__inner">
+      <a
+        class="admin-payments-header__back"
+        href="dashboard.html"
+        aria-label="Back to Admin dashboard"
+      >
+        ‹
+      </a>
+
+      <div class="admin-payments-header__title">
+        <small>APNABITE ADMIN</small>
+        <strong>Payments & Finance</strong>
+      </div>
+
+      <button
+        id="admin-payments-refresh"
+        class="admin-payments-header__refresh"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-payments-main">
+    <section
+      id="admin-payments-development-banner"
+      class="admin-payments-development-banner"
+      hidden
+    >
+      <span aria-hidden="true">⚙</span>
+
+      <div>
+        <strong>Development Test Mode</strong>
+
+        <p>
+          Test verification is enabled. Do not use test verification after
+          switching the application to Production.
+        </p>
+      </div>
+    </section>
+
+    <section class="admin-payments-summary">
+      <article>
+        <span>Pending verification</span>
+
+        <strong id="admin-payments-pending-count">
+          0
+        </strong>
+      </article>
+
+      <article>
+        <span>Pending amount</span>
+
+        <strong id="admin-payments-pending-amount">
+          ₹0
+        </strong>
+      </article>
+
+      <article>
+        <span>Oldest pending</span>
+
+        <strong id="admin-payments-oldest-age">
+          —
+        </strong>
+      </article>
+    </section>
+
+    <section class="admin-payments-toolbar">
+      <label class="admin-payments-search">
+        <span aria-hidden="true">⌕</span>
+
+        <input
+          id="admin-payments-search"
+          type="search"
+          maxlength="120"
+          autocomplete="off"
+          placeholder="Search Payment or Order ID"
+          aria-label="Search payments"
+        >
+      </label>
+
+      <label class="admin-payments-limit">
+        <span>Show</span>
+
+        <select
+          id="admin-payments-limit"
+          aria-label="Number of payments"
+        >
+          <option value="20" selected>
+            20
+          </option>
+
+          <option value="30">
+            30
+          </option>
+
+          <option value="50">
+            50
+          </option>
+        </select>
+      </label>
+    </section>
+
+    <section
+      id="admin-payments-loading"
+      class="admin-payments-loading"
+      aria-live="polite"
+    >
+      <span
+        class="admin-payments-spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>Loading pending payments</strong>
+        <p>Please wait a moment.</p>
+      </div>
+    </section>
+
+    <section
+      id="admin-payments-error"
+      class="admin-payments-error"
+      role="alert"
+      hidden
+    >
+      <span aria-hidden="true">!</span>
+
+      <div>
+        <strong id="admin-payments-error-title">
+          Payments could not be loaded
+        </strong>
+
+        <p id="admin-payments-error-message">
+          Please check your connection and try again.
+        </p>
+      </div>
+
+      <button
+        id="admin-payments-retry"
+        class="button button--secondary"
+        type="button"
+      >
+        RETRY
+      </button>
+    </section>
+
+    <section
+      id="admin-payments-empty"
+      class="admin-payments-empty"
+      hidden
+    >
+      <span aria-hidden="true">✓</span>
+
+      <h1>No payment is waiting</h1>
+
+      <p>
+        New customer payments awaiting verification will appear here.
+      </p>
+    </section>
+
+    <section
+      id="admin-payments-content"
+      class="admin-payments-content"
+      hidden
+    >
+      <div class="admin-payments-content__heading">
+        <div>
+          <span>MANUAL REVIEW QUEUE</span>
+          <h1>Pending payments</h1>
+        </div>
+
+        <small id="admin-payments-result-count">
+          0 records
+        </small>
+      </div>
+
+      <div
+        id="admin-payments-list"
+        class="admin-payments-list"
+        aria-live="polite"
+      ></div>
+    </section>
+  </main>
+
+  <div
+    id="admin-payment-modal"
+    class="admin-payment-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admin-payment-modal-title"
+    aria-hidden="true"
+    hidden
+  >
+    <button
+      class="admin-payment-modal__backdrop"
+      type="button"
+      data-close-payment-modal
+      aria-label="Close payment review"
+    ></button>
+
+    <section class="admin-payment-modal__panel">
+      <header class="admin-payment-modal__header">
+        <div>
+          <small>PAYMENT REVIEW</small>
+
+          <h2 id="admin-payment-modal-title">
+            Verify customer payment
+          </h2>
+        </div>
+
+        <button
+          id="admin-payment-modal-close"
+          class="admin-payment-modal__close"
+          type="button"
+          aria-label="Close payment review"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="admin-payment-modal__body">
+        <dl class="admin-payment-detail">
+          <div>
+            <dt>Payment ID</dt>
+            <dd id="admin-payment-detail-payment-id">—</dd>
+          </div>
+
+          <div>
+            <dt>Order ID</dt>
+            <dd id="admin-payment-detail-order-id">—</dd>
+          </div>
+
+          <div>
+            <dt>Customer ID</dt>
+            <dd id="admin-payment-detail-customer-id">—</dd>
+          </div>
+
+          <div>
+            <dt>Expected amount</dt>
+            <dd id="admin-payment-detail-amount">₹0</dd>
+          </div>
+
+          <div>
+            <dt>Declared at</dt>
+            <dd id="admin-payment-detail-declared-at">—</dd>
+          </div>
+
+          <div>
+            <dt>Waiting time</dt>
+            <dd id="admin-payment-detail-waiting-time">—</dd>
+          </div>
+        </dl>
+
+        <div
+          id="admin-payment-test-note"
+          class="admin-payment-test-note"
+          hidden
+        >
+          <strong>Development verification</strong>
+
+          <p>
+            Use this only for testing the Chef and Rider order workflow when
+            no real payment has been transferred.
+          </p>
+        </div>
+
+        <label class="admin-payment-field">
+          <span>Confirmed amount</span>
+
+          <input
+            id="admin-payment-confirmed-amount"
+            type="number"
+            min="0.01"
+            max="100000"
+            step="0.01"
+            inputmode="decimal"
+          >
+
+          <small>
+            This must exactly match the expected amount.
+          </small>
+        </label>
+
+        <label class="admin-payment-field">
+          <span>
+            Bank/payment reference
+            <small>Optional in Development</small>
+          </span>
+
+          <input
+            id="admin-payment-provider-reference"
+            type="text"
+            maxlength="150"
+            autocomplete="off"
+            placeholder="Enter receipt reference"
+          >
+        </label>
+
+        <label class="admin-payment-confirmation">
+          <input
+            id="admin-payment-confirm-checkbox"
+            type="checkbox"
+          >
+
+          <span id="admin-payment-confirm-text">
+            I have checked that the payment amount has been received.
+          </span>
+        </label>
+
+        <p
+          id="admin-payment-modal-error"
+          class="form-error"
+          role="alert"
+          hidden
+        ></p>
+      </div>
+
+      <footer class="admin-payment-modal__footer">
+        <button
+          id="admin-payment-reject-button"
+          class="button button--secondary"
+          type="button"
+        >
+          REJECT
+        </button>
+
+        <button
+          id="admin-payment-verify-button"
+          class="button button--primary"
+          type="button"
+          disabled
+        >
+          VERIFY PAYMENT
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <div
+    id="admin-payment-reject-modal"
+    class="admin-payment-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admin-payment-reject-title"
+    aria-hidden="true"
+    hidden
+  >
+    <button
+      class="admin-payment-modal__backdrop"
+      type="button"
+      data-close-reject-modal
+      aria-label="Close rejection form"
+    ></button>
+
+    <section class="admin-payment-modal__panel admin-payment-modal__panel--small">
+      <header class="admin-payment-modal__header">
+        <div>
+          <small>PAYMENT REVIEW</small>
+
+          <h2 id="admin-payment-reject-title">
+            Reject payment
+          </h2>
+        </div>
+
+        <button
+          id="admin-payment-reject-close"
+          class="admin-payment-modal__close"
+          type="button"
+          aria-label="Close rejection form"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="admin-payment-modal__body">
+        <label class="admin-payment-field">
+          <span>Rejection reason</span>
+
+          <textarea
+            id="admin-payment-rejection-reason"
+            maxlength="300"
+            rows="4"
+            placeholder="Example: Payment was not found in the receiving account."
+          ></textarea>
+        </label>
+
+        <p
+          id="admin-payment-reject-error"
+          class="form-error"
+          role="alert"
+          hidden
+        ></p>
+      </div>
+
+      <footer class="admin-payment-modal__footer">
+        <button
+          id="admin-payment-reject-cancel"
+          class="button button--secondary"
+          type="button"
+        >
+          CANCEL
+        </button>
+
+        <button
+          id="admin-payment-reject-confirm"
+          class="button button--danger"
+          type="button"
+        >
+          CONFIRM REJECTION
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <template id="admin-payment-card-template">
+    <article class="admin-payment-card">
+      <div class="admin-payment-card__top">
+        <div>
+          <span data-payment-waiting-time>
+            Just now
+          </span>
+
+          <h2 data-payment-amount>
+            ₹0
+          </h2>
+        </div>
+
+        <span class="admin-payment-card__status">
+          PENDING
+        </span>
+      </div>
+
+      <div class="admin-payment-card__details">
+        <p>
+          <span>Order</span>
+          <strong data-payment-order-id>—</strong>
+        </p>
+
+        <p>
+          <span>Payment</span>
+          <strong data-payment-id>—</strong>
+        </p>
+
+        <p>
+          <span>Customer</span>
+          <strong data-payment-customer-id>—</strong>
+        </p>
+
+        <p>
+          <span>Declared</span>
+          <strong data-payment-declared-at>—</strong>
+        </p>
+      </div>
+
+      <button
+        class="button button--primary button--block"
+        type="button"
+        data-review-payment
+      >
+        REVIEW PAYMENT
+      </button>
+    </article>
+  </template>
+
+  <script src="../assets/js/core.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/ui.js"></script>
+
+  <script
+    src="../assets/js/admin/payments-finance.js?v=20260909-01"
+  ></script>
+</body>
+</html>
