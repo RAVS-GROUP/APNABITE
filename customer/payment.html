@@ -2,126 +2,344 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f97316">
-  <meta name="description" content="Complete your ApnaBite payment securely.">
-  <title>Payment | ApnaBite</title>
-  <link rel="manifest" href="../manifest.webmanifest">
-  <link rel="stylesheet" href="../assets/css/core.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
-  <link rel="stylesheet" href="../assets/css/customer.css">
-  <link rel="stylesheet" href="../assets/css/customer/payment.css?v=20260908-01">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f97316"
+  >
+
+  <meta
+    name="description"
+    content="Complete your ApnaBite payment securely."
+  >
+
+  <title>Complete Payment | ApnaBite</title>
+
+  <link
+    rel="manifest"
+    href="../manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/core.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/components.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/customer.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../assets/css/customer/payment.css?v=20260909-01"
+  >
 </head>
 
 <body class="customer-page customer-payment-page">
   <header class="customer-payment-header">
     <div class="customer-payment-header__inner">
-      <a class="customer-payment-back" href="orders.html" aria-label="Back to orders">‹</a>
+      <a
+        class="customer-payment-header__back"
+        href="orders.html"
+        aria-label="View orders"
+      >
+        ‹
+      </a>
+
       <div>
         <small>APNABITE</small>
         <strong>Complete Payment</strong>
       </div>
-      <button id="customer-payment-refresh" class="customer-payment-refresh" type="button">
+
+      <button
+        id="customer-payment-refresh"
+        class="customer-payment-header__refresh"
+        type="button"
+      >
         Refresh
       </button>
     </div>
   </header>
 
   <main class="customer-payment-main">
-    <section id="customer-payment-loading" class="customer-payment-loading" aria-live="polite">
-      <span class="customer-payment-spinner" aria-hidden="true"></span>
+    <section
+      id="customer-payment-loading"
+      class="customer-payment-loading"
+      aria-live="polite"
+    >
+      <span
+        class="customer-payment-spinner"
+        aria-hidden="true"
+      ></span>
+
       <div>
-        <strong>Preparing secure payment</strong>
+        <strong>Preparing payment</strong>
         <p>Please wait a moment.</p>
       </div>
     </section>
 
-    <section id="customer-payment-error" class="customer-payment-error" role="alert" hidden>
+    <section
+      id="customer-payment-error"
+      class="customer-payment-error"
+      role="alert"
+      hidden
+    >
       <span aria-hidden="true">!</span>
+
       <div>
-        <strong id="customer-payment-error-title">Payment could not be loaded</strong>
-        <p id="customer-payment-error-message">Please try again.</p>
+        <strong id="customer-payment-error-title">
+          Payment could not be loaded
+        </strong>
+
+        <p id="customer-payment-error-message">
+          Please check your connection and try again.
+        </p>
       </div>
-      <button id="customer-payment-retry" class="button button--primary" type="button">RETRY</button>
+
+      <button
+        id="customer-payment-retry"
+        class="button button--secondary"
+        type="button"
+      >
+        RETRY
+      </button>
     </section>
 
-    <section id="customer-payment-content" class="customer-payment-content" hidden>
-      <div class="customer-payment-status-line">
-        <span id="customer-payment-status-badge" class="customer-payment-badge">PAYMENT READY</span>
-        <small id="customer-payment-order-number">Order</small>
-      </div>
+    <section
+      id="customer-payment-content"
+      class="customer-payment-content"
+      hidden
+    >
+      <article class="customer-payment-summary">
+        <div class="customer-payment-summary__top">
+          <div>
+            <small id="customer-payment-order-number">
+              Order
+            </small>
 
-      <section class="customer-payment-card">
-        <span class="customer-payment-card__icon" aria-hidden="true">₹</span>
-        <p>Amount to pay</p>
-        <strong id="customer-payment-amount">₹0</strong>
-        <small>Pay exactly this amount using your preferred payment app.</small>
-      </section>
+            <span
+              id="customer-payment-status-badge"
+              class="customer-payment-badge"
+            >
+              PAYMENT READY
+            </span>
+          </div>
 
-      <section id="customer-payment-ready" class="customer-payment-section">
+          <strong id="customer-payment-amount">
+            ₹0
+          </strong>
+        </div>
+
+        <p>
+          Confirm the amount before opening your payment app.
+        </p>
+      </article>
+
+      <section
+        id="customer-payment-ready"
+        class="customer-payment-section"
+      >
         <div class="customer-payment-section__heading">
           <span aria-hidden="true">1</span>
+
           <div>
-            <h1>Pay securely</h1>
-            <p>Your available UPI or payment app will open.</p>
+            <h2>Pay securely</h2>
+
+            <p>
+              Complete payment using any available UPI payment app.
+            </p>
           </div>
         </div>
 
         <div class="customer-payment-payee">
           <span>Paying to</span>
-          <strong id="customer-payment-payee-name">ApnaBite</strong>
+
+          <strong id="customer-payment-payee-name">
+            ApnaBite
+          </strong>
         </div>
 
-        <button id="customer-payment-pay-now" class="button button--primary button--large button--block" type="button">
-          PAY NOW
+        <button
+          id="customer-payment-pay-now"
+          class="button button--primary button--large button--block"
+          type="button"
+        >
+          OPEN PAYMENT APP
         </button>
 
-        <div class="customer-payment-divider"><span>After payment</span></div>
+        <div
+          id="customer-payment-launch-help"
+          class="customer-payment-help"
+          hidden
+        >
+          <strong>Payment app did not open?</strong>
 
-        <div class="customer-payment-section__heading customer-payment-section__heading--second">
+          <p>
+            Try another payment app or copy the UPI ID and pay directly.
+          </p>
+
+          <div class="customer-payment-help__actions">
+            <button
+              id="customer-payment-open-again"
+              class="button button--secondary"
+              type="button"
+            >
+              TRY ANOTHER APP
+            </button>
+
+            <button
+              id="customer-payment-copy-upi"
+              class="button button--secondary"
+              type="button"
+            >
+              COPY UPI ID
+            </button>
+          </div>
+
+          <p
+            id="customer-payment-upi-id"
+            class="customer-payment-upi-id"
+          ></p>
+        </div>
+
+        <div class="customer-payment-bank-note">
+          <strong>Bank limit error?</strong>
+
+          <p>
+            UPI limits are controlled by your bank. Try another linked bank
+            account or payment app. Do not pay twice if the first payment was
+            already deducted.
+          </p>
+        </div>
+
+        <div
+          class="customer-payment-section__heading
+            customer-payment-section__heading--second"
+        >
           <span aria-hidden="true">2</span>
+
           <div>
             <h2>Return to ApnaBite</h2>
-            <p>Tap the button below after completing payment.</p>
+
+            <p>
+              Tap the button below only after completing payment.
+            </p>
           </div>
         </div>
 
-        <button id="customer-payment-completed" class="button button--secondary button--large button--block" type="button">
+        <button
+          id="customer-payment-completed"
+          class="button button--secondary button--large button--block"
+          type="button"
+        >
           I’VE COMPLETED PAYMENT
         </button>
 
         <p class="customer-payment-note">
-          You will never be asked to enter a transaction number or upload a payment screenshot here.
+          You will never be asked to enter a transaction number or upload a
+          payment screenshot here.
         </p>
       </section>
 
-      <section id="customer-payment-confirming" class="customer-payment-result" aria-live="polite" hidden>
-        <span class="customer-payment-result__pulse" aria-hidden="true"></span>
+      <section
+        id="customer-payment-confirming"
+        class="customer-payment-result"
+        aria-live="polite"
+        hidden
+      >
+        <span
+          class="customer-payment-result__pulse"
+          aria-hidden="true"
+        ></span>
+
         <h1>Payment is being confirmed</h1>
-        <p>You can stay here or check your order later. We’ll update the order automatically.</p>
-        <button id="customer-payment-check-status" class="button button--secondary" type="button">
+
+        <p>
+          Do not make another payment. You can stay here or check your order
+          later.
+        </p>
+
+        <button
+          id="customer-payment-check-status"
+          class="button button--secondary"
+          type="button"
+        >
           CHECK STATUS
         </button>
-        <a class="customer-payment-link" href="orders.html">View my orders</a>
+
+        <a
+          class="customer-payment-link"
+          href="orders.html"
+        >
+          View my orders
+        </a>
       </section>
 
-      <section id="customer-payment-success" class="customer-payment-result customer-payment-result--success" hidden>
-        <span class="customer-payment-result__check" aria-hidden="true">✓</span>
+      <section
+        id="customer-payment-success"
+        class="customer-payment-result customer-payment-result--success"
+        hidden
+      >
+        <span
+          class="customer-payment-result__check"
+          aria-hidden="true"
+        >
+          ✓
+        </span>
+
         <h1>Payment received</h1>
-        <p>Your order has been sent to the Kitchen.</p>
-        <button id="customer-payment-track-order" class="button button--primary button--large" type="button">
+
+        <p>
+          Your order has been sent to the Kitchen.
+        </p>
+
+        <button
+          id="customer-payment-track-order"
+          class="button button--primary button--large"
+          type="button"
+        >
           TRACK ORDER
         </button>
       </section>
 
-      <section id="customer-payment-rejected" class="customer-payment-result customer-payment-result--rejected" hidden>
+      <section
+        id="customer-payment-rejected"
+        class="customer-payment-result customer-payment-result--rejected"
+        hidden
+      >
         <span aria-hidden="true">!</span>
+
         <h1>Payment could not be confirmed</h1>
-        <p id="customer-payment-rejection-message">Please try the payment again.</p>
-        <button id="customer-payment-try-again" class="button button--primary button--large" type="button">
-          TRY AGAIN
+
+        <p id="customer-payment-rejection-message">
+          Please try the payment again.
+        </p>
+
+        <button
+          id="customer-payment-try-again"
+          class="button button--primary button--large"
+          type="button"
+        >
+          PREPARE NEW PAYMENT
         </button>
-        <a class="customer-payment-link" href="orders.html">View my orders</a>
+
+        <a
+          class="customer-payment-link"
+          href="orders.html"
+        >
+          View my orders
+        </a>
       </section>
     </section>
   </main>
@@ -129,6 +347,9 @@
   <script src="../assets/js/core.js"></script>
   <script src="../assets/js/api.js"></script>
   <script src="../assets/js/ui.js"></script>
-  <script src="../assets/js/customer/payment.js?v=20260908-01"></script>
+
+  <script
+    src="../assets/js/customer/payment.js?v=20260909-01"
+  ></script>
 </body>
 </html>
