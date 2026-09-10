@@ -2,7 +2,7 @@
  * ============================================================
  * APNABITE V1 — ADMIN LOGIN CONTROLLER
  * File: assets/js/admin-login-v1.js
- * Complete file
+ * Complete updated file
  * Requires: core.js, api.js, ui.js
  * ============================================================
  */
@@ -28,53 +28,22 @@
   }
 
   function getElements() {
-    elements.status =
-      byId('admin-login-status');
-
-    elements.statusIcon =
-      byId('admin-login-status-icon');
-
-    elements.statusTitle =
-      byId('admin-login-status-title');
-
-    elements.statusMessage =
-      byId('admin-login-status-message');
-
-    elements.mobileForm =
-      byId('admin-login-mobile-form');
-
-    elements.mobile =
-      byId('admin-login-mobile');
-
-    elements.mobileError =
-      byId('admin-login-mobile-error');
-
-    elements.requestButton =
-      byId('admin-login-request-button');
-
-    elements.otpForm =
-      byId('admin-login-otp-form');
-
-    elements.otp =
-      byId('admin-login-otp');
-
-    elements.otpError =
-      byId('admin-login-otp-error');
-
-    elements.testOtp =
-      byId('admin-login-test-otp');
-
-    elements.testOtpValue =
-      byId('admin-login-test-otp-value');
-
-    elements.verifyButton =
-      byId('admin-login-verify-button');
-
-    elements.resendButton =
-      byId('admin-login-resend-button');
-
-    elements.changeMobile =
-      byId('admin-login-change-mobile');
+    elements.status = byId('admin-login-status');
+    elements.statusIcon = byId('admin-login-status-icon');
+    elements.statusTitle = byId('admin-login-status-title');
+    elements.statusMessage = byId('admin-login-status-message');
+    elements.mobileForm = byId('admin-login-mobile-form');
+    elements.mobile = byId('admin-login-mobile');
+    elements.mobileError = byId('admin-login-mobile-error');
+    elements.requestButton = byId('admin-login-request-button');
+    elements.otpForm = byId('admin-login-otp-form');
+    elements.otp = byId('admin-login-otp');
+    elements.otpError = byId('admin-login-otp-error');
+    elements.testOtp = byId('admin-login-test-otp');
+    elements.testOtpValue = byId('admin-login-test-otp-value');
+    elements.verifyButton = byId('admin-login-verify-button');
+    elements.resendButton = byId('admin-login-resend-button');
+    elements.changeMobile = byId('admin-login-change-mobile');
   }
 
   function cleanText(value) {
@@ -103,15 +72,13 @@
 
   function setText(element, value) {
     if (element) {
-      element.textContent =
-        cleanText(value);
+      element.textContent = cleanText(value);
     }
   }
 
   function setHidden(element, hidden) {
     if (element) {
-      element.hidden =
-        Boolean(hidden);
+      element.hidden = Boolean(hidden);
     }
   }
 
@@ -123,8 +90,7 @@
   function showToast(message, type) {
     if (
       window.ApnaBiteUI &&
-      typeof window.ApnaBiteUI
-        .showToast === 'function'
+      typeof window.ApnaBiteUI.showToast === 'function'
     ) {
       window.ApnaBiteUI.showToast(
         message,
@@ -133,15 +99,9 @@
     }
   }
 
-  function getErrorMessage(
-    error,
-    fallback
-  ) {
+  function getErrorMessage(error, fallback) {
     return (
-      cleanText(
-        error &&
-        error.message
-      ) ||
+      cleanText(error && error.message) ||
       fallback ||
       'Request could not be completed.'
     );
@@ -150,8 +110,7 @@
   function handleApiError(error) {
     if (
       window.ApnaBiteUI &&
-      typeof window.ApnaBiteUI
-        .handleApiError === 'function'
+      typeof window.ApnaBiteUI.handleApiError === 'function'
     ) {
       window.ApnaBiteUI.handleApiError(
         error,
@@ -162,12 +121,7 @@
     }
   }
 
-  function setStatus(
-    type,
-    icon,
-    title,
-    message
-  ) {
+  function setStatus(type, icon, title, message) {
     if (elements.status) {
       elements.status.classList.remove(
         'admin-login-status--loading',
@@ -177,63 +131,43 @@
 
       if (type) {
         elements.status.classList.add(
-          'admin-login-status--' +
-          type
+          'admin-login-status--' + type
         );
       }
     }
 
-    setText(
-      elements.statusIcon,
-      icon
-    );
-
-    setText(
-      elements.statusTitle,
-      title
-    );
-
-    setText(
-      elements.statusMessage,
-      message
-    );
+    setText(elements.statusIcon, icon);
+    setText(elements.statusTitle, title);
+    setText(elements.statusMessage, message);
   }
 
   function normalizeMobile(value) {
-    let mobile =
-      String(value || '')
-        .replace(/\D/g, '');
+    let mobile = String(value || '')
+      .replace(/\D/g, '');
 
     if (
       mobile.length === 12 &&
       mobile.indexOf('91') === 0
     ) {
-      mobile =
-        mobile.slice(2);
+      mobile = mobile.slice(2);
     }
 
     return mobile.slice(0, 10);
   }
 
   function isValidMobile(mobile) {
-    return /^[6-9]\d{9}$/.test(
-      mobile
-    );
+    return /^[6-9]\d{9}$/.test(mobile);
   }
 
   function isValidOtp(otp) {
-    return /^\d{6}$/.test(
-      otp
-    );
+    return /^\d{6}$/.test(otp);
   }
 
   function setRequestLoading(loading) {
-    state.requesting =
-      Boolean(loading);
+    state.requesting = Boolean(loading);
 
     if (elements.requestButton) {
-      elements.requestButton.disabled =
-        state.requesting;
+      elements.requestButton.disabled = state.requesting;
 
       elements.requestButton.textContent =
         state.requesting
@@ -242,18 +176,15 @@
     }
 
     if (elements.mobile) {
-      elements.mobile.disabled =
-        state.requesting;
+      elements.mobile.disabled = state.requesting;
     }
   }
 
   function setVerifyLoading(loading) {
-    state.verifying =
-      Boolean(loading);
+    state.verifying = Boolean(loading);
 
     if (elements.verifyButton) {
-      elements.verifyButton.disabled =
-        state.verifying;
+      elements.verifyButton.disabled = state.verifying;
 
       elements.verifyButton.textContent =
         state.verifying
@@ -262,13 +193,11 @@
     }
 
     if (elements.otp) {
-      elements.otp.disabled =
-        state.verifying;
+      elements.otp.disabled = state.verifying;
     }
 
     if (elements.changeMobile) {
-      elements.changeMobile.disabled =
-        state.verifying;
+      elements.changeMobile.disabled = state.verifying;
     }
 
     renderResendButton();
@@ -276,10 +205,7 @@
 
   function clearResendTimer() {
     if (state.resendTimer) {
-      window.clearInterval(
-        state.resendTimer
-      );
-
+      window.clearInterval(state.resendTimer);
       state.resendTimer = null;
     }
   }
@@ -293,15 +219,12 @@
       state.requesting ||
       state.verifying
     ) {
-      elements.resendButton.disabled =
-        true;
-
+      elements.resendButton.disabled = true;
       return;
     }
 
     if (state.resendSeconds > 0) {
-      elements.resendButton.disabled =
-        true;
+      elements.resendButton.disabled = true;
 
       elements.resendButton.textContent =
         'Resend OTP in ' +
@@ -311,52 +234,38 @@
       return;
     }
 
-    elements.resendButton.disabled =
-      false;
-
-    elements.resendButton.textContent =
-      'Resend OTP';
+    elements.resendButton.disabled = false;
+    elements.resendButton.textContent = 'Resend OTP';
   }
 
   function startResendTimer(seconds) {
     clearResendTimer();
 
-    state.resendSeconds =
-      Math.max(
-        1,
-        Number(seconds) || 60
-      );
+    state.resendSeconds = Math.max(
+      1,
+      Number(seconds) || 60
+    );
 
     renderResendButton();
 
-    state.resendTimer =
-      window.setInterval(
-        function() {
-          state.resendSeconds -= 1;
+    state.resendTimer = window.setInterval(
+      function() {
+        state.resendSeconds -= 1;
 
-          if (
-            state.resendSeconds <= 0
-          ) {
-            state.resendSeconds = 0;
-            clearResendTimer();
-          }
+        if (state.resendSeconds <= 0) {
+          state.resendSeconds = 0;
+          clearResendTimer();
+        }
 
-          renderResendButton();
-        },
-        1000
-      );
+        renderResendButton();
+      },
+      1000
+    );
   }
 
   function showOtpStep() {
-    setHidden(
-      elements.mobileForm,
-      true
-    );
-
-    setHidden(
-      elements.otpForm,
-      false
-    );
+    setHidden(elements.mobileForm, true);
+    setHidden(elements.otpForm, false);
 
     setStatus(
       'success',
@@ -385,30 +294,12 @@
     state.verificationToken = '';
     state.resendSeconds = 0;
 
-    setHidden(
-      elements.mobileForm,
-      false
-    );
+    setHidden(elements.mobileForm, false);
+    setHidden(elements.otpForm, true);
+    setHidden(elements.testOtp, true);
 
-    setHidden(
-      elements.otpForm,
-      true
-    );
-
-    setHidden(
-      elements.testOtp,
-      true
-    );
-
-    setError(
-      elements.mobileError,
-      ''
-    );
-
-    setError(
-      elements.otpError,
-      ''
-    );
+    setError(elements.mobileError, '');
+    setError(elements.otpError, '');
 
     setStatus(
       '',
@@ -461,21 +352,16 @@
       return;
     }
 
-    const mobile =
-      normalizeMobile(
-        elements.mobile &&
-        elements.mobile.value
-      );
+    const mobile = normalizeMobile(
+      elements.mobile &&
+      elements.mobile.value
+    );
 
     if (elements.mobile) {
-      elements.mobile.value =
-        mobile;
+      elements.mobile.value = mobile;
     }
 
-    setError(
-      elements.mobileError,
-      ''
-    );
+    setError(elements.mobileError, '');
 
     if (!isValidMobile(mobile)) {
       setError(
@@ -491,7 +377,6 @@
     }
 
     state.mobile = mobile;
-
     setRequestLoading(true);
 
     setStatus(
@@ -506,12 +391,9 @@
         await window.ApnaBiteAPI.request(
           'auth.requestOtp',
           {
-            mobile:
-              mobile,
-            role:
-              'ADMIN',
-            purpose:
-              'LOGIN'
+            mobile: mobile,
+            role: 'ADMIN',
+            purpose: 'LOGIN'
           },
           {
             retry: false,
@@ -520,14 +402,12 @@
           }
         );
 
-      const data =
-        getResponseData(response);
+      const data = getResponseData(response);
 
       state.otpRequestId =
         extractOtpRequestId(data);
 
-      const testOtp =
-        extractTestOtp(data);
+      const testOtp = extractTestOtp(data);
 
       if (testOtp) {
         setText(
@@ -535,15 +415,9 @@
           testOtp
         );
 
-        setHidden(
-          elements.testOtp,
-          false
-        );
+        setHidden(elements.testOtp, false);
       } else {
-        setHidden(
-          elements.testOtp,
-          true
-        );
+        setHidden(elements.testOtp, true);
       }
 
       showOtpStep();
@@ -554,11 +428,10 @@
         60
       );
     } catch (error) {
-      const message =
-        getErrorMessage(
-          error,
-          'OTP could not be sent.'
-        );
+      const message = getErrorMessage(
+        error,
+        'OTP could not be sent.'
+      );
 
       setError(
         elements.mobileError,
@@ -586,19 +459,15 @@
       return;
     }
 
-    const otp =
-      String(
-        (
-          elements.otp &&
-          elements.otp.value
-        ) ||
-        ''
-      ).replace(/\D/g, '');
-
-    setError(
-      elements.otpError,
+    const otp = String(
+      (
+        elements.otp &&
+        elements.otp.value
+      ) ||
       ''
-    );
+    ).replace(/\D/g, '');
+
+    setError(elements.otpError, '');
 
     if (!isValidOtp(otp)) {
       setError(
@@ -632,18 +501,12 @@
         await window.ApnaBiteAPI.request(
           'auth.verifyOtp',
           {
-            mobile:
-              state.mobile,
-            role:
-              'ADMIN',
-            purpose:
-              'LOGIN',
-            otp:
-              otp,
-            otpRequestId:
-              state.otpRequestId,
-            requestId:
-              state.otpRequestId
+            mobile: state.mobile,
+            role: 'ADMIN',
+            purpose: 'LOGIN',
+            otp: otp,
+            otpRequestId: state.otpRequestId,
+            requestId: state.otpRequestId
           },
           {
             retry: false,
@@ -653,9 +516,7 @@
         );
 
       const verificationData =
-        getResponseData(
-          verifyResponse
-        );
+        getResponseData(verifyResponse);
 
       state.verificationToken =
         extractVerificationToken(
@@ -672,10 +533,8 @@
         await window.ApnaBiteAPI.request(
           'auth.login',
           {
-            mobile:
-              state.mobile,
-            role:
-              'ADMIN',
+            mobile: state.mobile,
+            role: 'ADMIN',
             verificationToken:
               state.verificationToken
           },
@@ -687,19 +546,16 @@
         );
 
       const loginData =
-        getResponseData(
-          loginResponse
-        );
+        getResponseData(loginResponse);
 
-      const sessionToken =
-        cleanText(
-          loginData.sessionToken ||
-          loginData.token ||
-          (
-            loginData.session &&
-            loginData.session.sessionToken
-          )
-        );
+      const sessionToken = cleanText(
+        loginData.sessionToken ||
+        loginData.token ||
+        (
+          loginData.session &&
+          loginData.session.sessionToken
+        )
+      );
 
       const user =
         loginData.user ||
@@ -719,9 +575,8 @@
       }
 
       if (
-        normalizeStatus(
-          user.role
-        ) !== 'ADMIN'
+        normalizeStatus(user.role) !==
+        'ADMIN'
       ) {
         throw new Error(
           'This account does not have Admin access.'
@@ -730,14 +585,12 @@
 
       if (
         window.ApnaBiteCore &&
-        typeof window.ApnaBiteCore
-          .saveSession === 'function'
+        typeof window.ApnaBiteCore.saveSession ===
+          'function'
       ) {
         window.ApnaBiteCore.saveSession({
-          sessionToken:
-            sessionToken,
-          user:
-            user
+          sessionToken: sessionToken,
+          user: user
         });
       } else {
         throw new Error(
@@ -751,7 +604,7 @@
         'success',
         '✓',
         'Admin verified',
-        'Opening the Chef verification queue.'
+        'Opening Admin dashboard.'
       );
 
       showToast(
@@ -761,17 +614,17 @@
 
       window.setTimeout(
         function() {
-          window.location.href =
-            'chef-verification.html';
+          window.location.replace(
+            'dashboard.html'
+          );
         },
         300
       );
     } catch (error) {
-      const message =
-        getErrorMessage(
-          error,
-          'OTP verification failed.'
-        );
+      const message = getErrorMessage(
+        error,
+        'OTP verification failed.'
+      );
 
       setError(
         elements.otpError,
@@ -795,8 +648,7 @@
     if (
       !window.ApnaBiteCore ||
       typeof window.ApnaBiteCore
-        .getStoredSession !==
-        'function'
+        .getStoredSession !== 'function'
     ) {
       return false;
     }
@@ -821,12 +673,12 @@
     if (
       sessionToken &&
       user &&
-      normalizeStatus(
-        user.role
-      ) === 'ADMIN'
+      normalizeStatus(user.role) ===
+        'ADMIN'
     ) {
-      window.location.href =
-        'chef-verification.html';
+      window.location.replace(
+        'dashboard.html'
+      );
 
       return true;
     }
@@ -890,8 +742,7 @@
           );
 
           if (
-            elements.otp.value
-              .length === 6 &&
+            elements.otp.value.length === 6 &&
             !state.verifying
           ) {
             verifyOtpAndLogin();
@@ -904,9 +755,7 @@
       elements.resendButton.addEventListener(
         'click',
         function() {
-          if (
-            state.resendSeconds <= 0
-          ) {
+          if (state.resendSeconds <= 0) {
             if (elements.mobile) {
               elements.mobile.value =
                 state.mobile;
@@ -928,10 +777,9 @@
 
   function initialize() {
     if (
-      !document.body.classList
-        .contains(
-          'admin-login-page'
-        ) ||
+      !document.body.classList.contains(
+        'admin-login-page'
+      ) ||
       state.initialized
     ) {
       return;
@@ -965,10 +813,8 @@
 
   window.ApnaBiteAdminLogin =
     Object.freeze({
-      initialize:
-        initialize,
-      requestOtp:
-        requestOtp
+      initialize: initialize,
+      requestOtp: requestOtp
     });
 
   if (
